@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina el Número - ¿Quién es quién?</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --crossed-bg: #9ca3af;
+            --crossed-text: #e5e7eb;
+            --row-col-btn-bg: #e0e7ff;
+            --row-col-btn-hover: #c7d2fe;
+            --row-col-btn-text: #3730a3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 850px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        p.instructions {
+            color: #6b7280;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            padding: 12px;
+            font-size: 1.2rem;
+            width: 120px;
+            text-align: center;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        button.secondary:hover {
+            background-color: #d1d5db;
+        }
+
+        button.accent {
+            background-color: #059669;
+        }
+
+        button.accent:hover {
+            background-color: #047857;
+        }
+
+        .game-area {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .board-layout {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 100%;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        /* Usamos exactamente la misma estructura de 11 columnas para que coincidan celdas y botones */
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(11, minmax(32px, 45px));
+            grid-template-rows: repeat(10, minmax(32px, 45px));
+            gap: 6px;
+            align-items: center;
+        }
+
+        .col-buttons-container {
+            display: grid;
+            grid-template-columns: repeat(10, minmax(32px, 45px));
+            gap: 6px;
+            margin-bottom: 6px;
+            /* Dejamos un espacio a la derecha idéntico al ancho del botón de fila para que quede perfectamente alineado */
+            padding-right: 41px; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background-color: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+
+        .cell:hover {
+            border-color: var(--primary-color);
+            background-color: #f0fdf4;
+        }
+
+        .cell.crossed {
+            background-color: var(--crossed-bg);
+            border-color: var(--crossed-bg);
+            color: var(--crossed-text);
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .batch-btn {
+            background-color: var(--row-col-btn-bg);
+            color: var(--row-col-btn-text);
+            border: 1px solid #c7d2fe;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.1s;
+            user-select: none;
+        }
+
+        .batch-btn:hover {
+            background-color: var(--row-col-btn-hover);
+        }
+
+        .batch-btn:active {
+            transform: scale(0.95);
+        }
+
+        .col-btn {
+            aspect-ratio: 1;
+            width: 100%;
+        }
+
+        .row-btn {
+            width: 35px;
+            height: 100%;
+            min-height: 100%;
+            font-size: 0.7rem;
+        }
+
+        /* Panel Lateral: Contador de Preguntas */
+        .counter-panel {
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 130px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .counter-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4b5563;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .counter-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .counter-buttons {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .counter-btn {
+            flex: 1;
+            padding: 8px 0;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+
+        .reveal-section {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #secretDisplay {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #059669;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column-reverse;
+                align-items: center;
+            }
+            .counter-panel {
+                width: 100%;
+                max-width: 300px;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+            }
+            .counter-value {
+                margin-bottom: 0;
+                font-size: 1.5rem;
+            }
+            .counter-title {
+                margin-bottom: 0;
+            }
+            .counter-buttons {
+                width: auto;
+                gap: 10px;
+            }
+            .counter-btn {
+                padding: 5px 15px;
+            }
+            .grid-wrapper {
+                grid-template-columns: repeat(11, minmax(26px, 35px));
+                grid-template-rows: repeat(10, minmax(26px, 35px));
+            }
+            .col-buttons-container {
+                grid-template-columns: repeat(10, minmax(26px, 35px));
+                padding-right: 33px;
+            }
+            .row-btn {
+                width: 27px;
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- PANTALLA 1: ELEGIR NÚMERO -->
+        <div id="screenSetup" class="screen active">
+            <h1>¿Quién es Quién?</h1>
+            <p class="instructions">Elegí un número secreto del 1 al 100 para que tu oponente intente adivinarlo.</p>
+            
+            <div class="form-group">
+                <input type="number" id="secretInput" min="1" max="100" placeholder="Ej: 42">
+            </div>
+
+            <button onclick="startGame()">Comenzar Juego</button>
+        </div>
+
+        <!-- PANTALLA 2: EL TABLERO -->
+        <div id="screenBoard" class="screen">
+            <h1>Tablero de Juego</h1>
+            <p class="instructions">Tacha números o usa los botones de los bordes (•) para tachar filas y columnas enteras.</p>
+
+            <div class="controls">
+                <button class="secondary" onclick="resetBoard()">Reiniciar Tablero</button>
+                <button class="secondary" onclick="goToSetup()">Cambiar mi número</button>
+            </div>
+
+            <!-- Área de juego combinada -->
+            <div class="game-area">
+                <div class="board-layout">
+                    <!-- Botones superiores para columnas (sólo un punto discreto) -->
+                    <div class="col-buttons-container" id="colButtonsContainer"></div>
+                    <!-- Grilla interactiva -->
+                    <div class="grid-wrapper" id="gridWrapper"></div>
+                </div>
+
+                <!-- Panel Lateral: Contador de Preguntas -->
+                <div class="counter-panel">
+                    <div class="counter-title">Preguntas</div>
+                    <div class="counter-value" id="questionCount">0</div>
+                    <div class="counter-buttons">
+                        <button class="secondary counter-btn" onclick="changeCount(-1)" title="Restar pregunta">-</button>
+                        <button class="counter-btn" onclick="changeCount(1)" title="Sumar pregunta">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección inferior para revelar número -->
+            <div class="reveal-section">
+                <button class="accent" onclick="revealSecret()">Revelar mi número secreto</button>
+                <div id="secretDisplay"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Cada jugador abre esta página en su computadora. ¡A jugar!
+        </div>
+    </div>
+
+    <script>
+        let secretValue = null;
+        let questionCounter = 0;
+        const totalNumbers = 100;
+
+        function createBoard() {
+            const gridWrapper = document.getElementById('gridWrapper');
+            const colButtonsContainer = document.getElementById('colButtonsContainer');
+            
+            gridWrapper.innerHTML = '';
+            colButtonsContainer.innerHTML = '';
+
+            // 1. Crear botones superiores para columnas con un punto (•)
+            for (let c = 1; c <= 10; c++) {
+                const colBtn = document.createElement('button');
+                colBtn.classList.add('batch-btn', 'col-btn');
+                colBtn.textContent = '•';
+                colBtn.title = `Tachar/Destachar columna ${c}`;
+                colBtn.onclick = () => toggleColumn(c);
+                colButtonsContainer.appendChild(colBtn);
+            }
+
+            // 2. Crear celdas y botones de fila al final de cada decena
+            for (let i = 1; i <= totalNumbers; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.textContent = i;
+                cell.dataset.number = i;
+
+                cell.addEventListener('click', () => {
+                    cell.classList.toggle('crossed');
+                });
+
+                gridWrapper.appendChild(cell);
+
+                if (i % 10 === 0) {
+                    const rowNum = i / 10;
+                    const rowBtn = document.createElement('button');
+                    rowBtn.classList.add('batch-btn', 'row-btn');
+                    rowBtn.textContent = '•';
+                    rowBtn.title = `Tachar/Destachar fila ${rowNum}`;
+                    rowBtn.onclick = () => toggleRow(rowNum);
+                    gridWrapper.appendChild(rowBtn);
+                }
+            }
+        }
+
+        function changeCount(amount) {
+            questionCounter += amount;
+            if (questionCounter < 0) {
+                questionCounter = 0;
+            }
+            document.getElementById('questionCount').textContent = questionCounter;
+        }
+
+        function resetCounter() {
+            questionCounter = 0;
+            document.getElementById('questionCount').textContent = questionCounter;
+        }
+
+        function toggleRow(rowNum) {
+            const start = (rowNum - 1) * 10 + 1;
+            const end = rowNum * 10;
+            
+            let allCrossed = true;
+            for (let i = start; i <= end; i++) {
+                const cell = document.querySelector(`.cell[data-number="${i}"]`);
+                if (!cell.classList.contains('crossed')) {
+                    allCrossed = false;
+                    break;
+                }
+            }
+
+            for (let i = start; i <= end; i++) {
+                const cell = document.querySelector(`.cell[data-number="${i}"]`);
+                if (allCrossed) {
+                    cell.classList.remove('crossed');
+                } else {
+                    cell.classList.add('crossed');
+                }
+            }
+        }
+
+        function toggleColumn(colNum) {
+            const columnNumbers = [];
+            for (let r = 0; r < 10; r++) {
+                columnNumbers.push(colNum + (r * 10));
+            }
+
+            let allCrossed = true;
+            columnNumbers.forEach(num => {
+                const cell = document.querySelector(`.cell[data-number="${num}"]`);
+                if (!cell.classList.contains('crossed')) {
+                    allCrossed = false;
+                }
+            });
+
+            columnNumbers.forEach(num => {
+                const cell = document.querySelector(`.cell[data-number="${num}"]`);
+                if (allCrossed) {
+                    cell.classList.remove('crossed');
+                } else {
+                    cell.classList.add('crossed');
+                }
+            });
+        }
+
+        function startGame() {
+            const input = document.getElementById('secretInput');
+            const val = parseInt(input.value);
+
+            if (isNaN(val) || val < 1 || val > 100) {
+                alert('Por favor, ingresa un número válido entre 1 y 100.');
+                return;
+            }
+
+            secretValue = val;
+            
+            document.getElementById('secretDisplay').textContent = '';
+            resetBoard();
+            resetCounter();
+
+            document.getElementById('screenSetup').classList.remove('active');
+            document.getElementById('screenBoard').classList.add('active');
+        }
+
+        function goToSetup() {
+            document.getElementById('screenBoard').classList.remove('active');
+            document.getElementById('screenSetup').classList.add('active');
+        }
+
+        function resetBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.classList.remove('crossed');
+            });
+            document.getElementById('secretDisplay').textContent = '';
+            resetCounter();
+        }
+
+        function revealSecret() {
+            const display = document.getElementById('secretDisplay');
+            if (secretValue !== null) {
+                display.textContent = `Tu número secreto era: ${secretValue} (Lo adivinaste en ${questionCounter} preguntas)`;
+            }
+        }
+
+        createBoard();
+    </script>
+
+</body>
+</html>
