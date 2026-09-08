@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>El Dragón de las Tablas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Quicksand:wght@500;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#170606; --bg2:#3B0D0D; --bg3:#5E1414;
+    --card:#4A1010; --card-hi:#631818;
+    --coral:#E23B3B; --coral-dk:#B32424;
+    --yellow:#F5C518; --yellow-dk:#C79A00;
+    --turq:#2E8B57; --turq-dk:#1F6740;
+    --lav:#9B2D62; --lav-dk:#701F47;
+    --green:#3FAE6B; --green-dk:#2C7D37;
+    --red:#FF5C5C; --red-dk:#D93E3E;
+    --text:#FDF1D6; --text-dim:#D9B98C;
+    --radius:22px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:radial-gradient(ellipse at 50% -10%, var(--bg3), var(--bg2) 45%, var(--bg1) 100%);
+    font-family:'Quicksand',sans-serif;
+    color:var(--text);
+    overflow-x:hidden;
+    position:relative;
+  }
+  h1,h2,h3,.display{font-family:'Fredoka',sans-serif;}
+  #stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .star{position:absolute;background:var(--yellow);border-radius:50%;opacity:.6;animation:twinkle 3s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.12;}50%{opacity:.85;}}
+  @media (prefers-reduced-motion: reduce){
+    .star{animation:none;opacity:.35;}
+  }
+
+  #app{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:24px 18px 60px;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- MENU ---------- */
+  .hero{text-align:center;margin-bottom:30px;}
+  .hero .dragon{font-size:56px;display:inline-block;animation:float 3s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-10px) rotate(4deg);}}
+  .hero h1{font-family:'Ma Shan Zheng',cursive;font-weight:400;font-size:clamp(32px,7vw,50px);margin:6px 0 6px;letter-spacing:1px;color:var(--yellow);text-shadow:0 2px 10px rgba(245,197,24,.35);}
+  .hero p{color:var(--text-dim);margin:0;font-size:17px;font-weight:600;}
+
+  .section-label{font-size:19px;font-weight:700;margin:26px 0 12px;font-family:'Fredoka',sans-serif;color:var(--yellow);}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:640px){.grid-modes{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:420px){.grid-modes{grid-template-columns:1fr;} .grid-2{grid-template-columns:1fr;}}
+
+  .pick-card{
+    background:var(--card);border:3px solid transparent;border-radius:var(--radius);
+    padding:18px 14px;cursor:pointer;text-align:center;user-select:none;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .pick-card:hover{background:var(--card-hi);transform:translateY(-2px);}
+  .pick-card .icon{font-size:36px;display:block;margin-bottom:8px;}
+  .pick-card .title{font-family:'Fredoka',sans-serif;font-weight:600;font-size:15px;margin-bottom:3px;}
+  .pick-card .desc{font-size:12.5px;color:var(--text-dim);font-weight:600;}
+  .pick-card.selected{border-color:var(--yellow);background:var(--card-hi);transform:translateY(-2px) scale(1.02);box-shadow:0 0 0 4px rgba(245,197,24,.18);}
+
+  .btn{
+    font-family:'Fredoka',sans-serif;font-weight:600;border:none;cursor:pointer;
+    border-radius:999px;padding:14px 28px;font-size:17px;color:#2A0A0A;
+    box-shadow:0 6px 0 rgba(0,0,0,.3);transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.3);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn:disabled:active{transform:none;box-shadow:0 6px 0 rgba(0,0,0,.3);}
+  .btn-yellow{background:var(--yellow);}
+  .btn-turq{background:var(--turq);color:#fff;}
+  .btn-coral{background:var(--coral);color:#fff;}
+  .btn-lav{background:var(--lav);color:#fff;}
+  .btn-ghost{background:transparent;color:var(--text);box-shadow:none;border:2px solid var(--card-hi);padding:10px 20px;font-size:15px;}
+  .btn-ghost:active{transform:none;}
+
+  .start-row{text-align:center;margin-top:32px;}
+
+  /* ---------- GAME ---------- */
+  .game-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .game-title{font-family:'Fredoka',sans-serif;font-weight:600;font-size:15px;color:var(--text-dim);}
+  .stat-pill{background:var(--card);border-radius:999px;padding:8px 16px;font-weight:700;font-family:'Fredoka',sans-serif;font-size:14px;}
+
+  .progress-track{position:relative;height:26px;background:var(--card);border-radius:999px;margin-bottom:26px;overflow:visible;}
+  .progress-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--turq),var(--lav));border-radius:999px;transition:width .35s ease;}
+  .progress-rocket{position:absolute;top:50%;font-size:24px;transform:translate(-50%,-50%);transition:left .35s ease;}
+
+  .qcard{background:var(--card);border-radius:var(--radius);padding:38px 20px;text-align:center;margin-bottom:22px;border:2px solid var(--card-hi);}
+  .qcard .expr{font-family:'Fredoka',sans-serif;font-size:clamp(34px,8vw,52px);font-weight:600;}
+
+  .answer-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;align-items:center;}
+  #write-input{
+    width:110px;font-size:30px;text-align:center;font-family:'Fredoka',sans-serif;font-weight:600;
+    border-radius:16px;border:3px solid var(--card-hi);padding:10px;background:var(--bg1);color:var(--text);
+  }
+  #write-input:focus{outline:none;border-color:var(--turq);}
+
+  .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:420px;margin:0 auto;}
+  .choice-btn{
+    background:var(--card);border:3px solid var(--card-hi);border-radius:18px;padding:20px 10px;
+    font-family:'Fredoka',sans-serif;font-size:26px;font-weight:600;color:var(--text);cursor:pointer;
+    transition:transform .1s ease, border-color .1s ease;
+  }
+  .choice-btn:hover:not(:disabled){transform:translateY(-2px);border-color:var(--lav);}
+  .choice-btn:disabled{cursor:default;}
+  .choice-btn.correct{border-color:var(--green);background:rgba(63,174,107,.2);}
+  .choice-btn.wrong{border-color:var(--red);background:rgba(255,92,92,.18);}
+
+  .feedback{
+    max-width:520px;margin:0 auto 18px;padding:14px 18px;border-radius:16px;font-weight:700;
+    font-family:'Fredoka',sans-serif;text-align:center;font-size:17px;display:none;
+  }
+  .feedback.show{display:block;animation:pop .25s ease;}
+  .feedback.ok{background:rgba(63,174,107,.2);color:#9EF0BC;border:2px solid var(--green);}
+  .feedback.bad{background:rgba(255,92,92,.18);color:#FFB3B3;border:2px solid var(--red);}
+  @keyframes pop{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+  .center-btn{text-align:center;margin-top:8px;}
+
+  /* match mode */
+  .match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:560px;margin:0 auto;}
+  .match-col{display:flex;flex-direction:column;gap:10px;}
+  .match-item{
+    background:var(--card);border:3px solid var(--card-hi);border-radius:14px;padding:14px 8px;
+    text-align:center;font-family:'Fredoka',sans-serif;font-size:19px;font-weight:600;cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, opacity .3s ease;
+  }
+  .match-item:hover:not(.matched){transform:translateY(-2px);}
+  .match-item.selected{border-color:var(--yellow);transform:scale(1.04) rotate(-1deg);box-shadow:0 0 0 4px rgba(245,197,24,.18);}
+  .match-item.matched{opacity:.3;border-color:var(--green);cursor:default;pointer-events:none;}
+  .match-item.shake{animation:shake .4s ease;border-color:var(--red);}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(6px);}}
+
+  /* memory mode */
+  .memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:520px;margin:0 auto;}
+  @media(max-width:480px){.memory-grid{grid-template-columns:repeat(3,1fr);}}
+  .memory-card{
+    aspect-ratio:1/1;background:linear-gradient(135deg,var(--card-hi),var(--card));
+    border:3px solid var(--yellow-dk);border-radius:14px;display:flex;align-items:center;justify-content:center;
+    font-family:'Fredoka',sans-serif;font-weight:600;font-size:18px;cursor:pointer;
+    transition:transform .18s ease, border-color .18s ease;user-select:none;text-align:center;padding:4px;
+  }
+  .memory-card:hover:not(.matched):not(.flipped){transform:translateY(-2px);}
+  .memory-card .hidden-face{font-size:26px;}
+  .memory-card.flipped{border-color:var(--yellow);background:var(--card-hi);}
+  .memory-card.matched{opacity:.3;border-color:var(--green);cursor:default;}
+
+  /* tower mode */
+  .floor-badge{text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;color:var(--yellow);margin-bottom:10px;font-size:17px;}
+
+  /* time attack */
+  .ta-timer-track{height:20px;background:var(--card);border-radius:999px;margin-bottom:20px;overflow:hidden;}
+  .ta-timer-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--yellow));transition:width 1s linear;}
+  .ta-statement{font-family:'Fredoka',sans-serif;font-size:clamp(30px,7vw,44px);font-weight:600;text-align:center;margin:20px 0 30px;}
+  .ta-buttons{display:flex;justify-content:center;gap:18px;}
+  .ta-btn{width:150px;padding:22px 10px;font-size:20px;}
+  .ta-stats{display:flex;justify-content:center;gap:24px;margin-bottom:6px;flex-wrap:wrap;}
+
+  /* summary */
+  .summary-box{text-align:center;padding:20px;}
+  .summary-stars{font-size:52px;margin:14px 0;letter-spacing:8px;}
+  .summary-stars .empty{opacity:.25;}
+  .summary-msg{font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600;margin-bottom:6px;}
+  .summary-detail{color:var(--text-dim);font-weight:600;margin-bottom:26px;}
+  .summary-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+
+  .back-btn{display:flex;align-items:center;gap:6px;}
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div id="app">
+
+  <!-- MENU -->
+  <section id="screen-menu" class="screen active">
+    <div class="hero">
+      <span class="dragon">🐉</span>
+      <h1>El Dragón de las Tablas</h1>
+      <p>Elegí tu templo y tu desafío para comenzar la aventura</p>
+    </div>
+
+    <div class="section-label">🎋 Elegí tu templo</div>
+    <div class="grid-2" id="level-picker">
+      <div class="pick-card" data-level="5">
+        <span class="icon">🎋</span>
+        <div class="title">Aldea de Bambú</div>
+        <div class="desc">Tablas del 1 al 5</div>
+      </div>
+      <div class="pick-card" data-level="9">
+        <span class="icon">🌋</span>
+        <div class="title">Montaña del Dragón de Fuego</div>
+        <div class="desc">Tablas del 1 al 9</div>
+      </div>
+    </div>
+
+    <div class="section-label">🐲 Elegí tu desafío</div>
+    <div class="grid-modes" id="mode-picker">
+      <div class="pick-card" data-mode="write">
+        <span class="icon">🖌️</span>
+        <div class="title">Escribir el resultado</div>
+        <div class="desc">Calculá y escribí la respuesta</div>
+      </div>
+      <div class="pick-card" data-mode="choice">
+        <span class="icon">🎯</span>
+        <div class="title">Opción múltiple</div>
+        <div class="desc">Elegí la respuesta correcta</div>
+      </div>
+      <div class="pick-card" data-mode="match">
+        <span class="icon">🧩</span>
+        <div class="title">Unir</div>
+        <div class="desc">Conectá cada cuenta con su resultado</div>
+      </div>
+      <div class="pick-card" data-mode="timeattack">
+        <span class="icon">⏳</span>
+        <div class="title">Contrarreloj</div>
+        <div class="desc">¿Verdadero o falso? ¡Rápido!</div>
+      </div>
+      <div class="pick-card" data-mode="memory">
+        <span class="icon">🎴</span>
+        <div class="title">Memoria del Dragón</div>
+        <div class="desc">Encontrá las parejas iguales</div>
+      </div>
+      <div class="pick-card" data-mode="tower">
+        <span class="icon">🏯</span>
+        <div class="title">La Torre del Dragón</div>
+        <div class="desc">Subí pisos sin fallar ni una vez</div>
+      </div>
+    </div>
+
+    <div class="start-row">
+      <button class="btn btn-yellow" id="btn-start" disabled>🐉 ¡Comenzar la aventura!</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen">
+    <div class="game-header">
+      <button class="btn btn-ghost back-btn" id="btn-back">← Menú</button>
+      <div class="game-title" id="game-title-label"></div>
+      <div class="stat-pill" id="game-stat-pill">⭐ 0</div>
+    </div>
+
+    <div id="game-content"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="center-btn" id="center-action"></div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section id="screen-summary" class="screen">
+    <div class="summary-box">
+      <div style="font-size:48px;">🐉</div>
+      <div class="summary-stars" id="summary-stars"></div>
+      <div class="summary-msg" id="summary-msg"></div>
+      <div class="summary-detail" id="summary-detail"></div>
+      <div class="summary-actions">
+        <button class="btn btn-turq" id="btn-retry">🔁 Intentar de nuevo</button>
+        <button class="btn btn-coral" id="btn-menu">🏠 Menú principal</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- background sparks ---------- */
+  var starsEl = document.getElementById('stars');
+  for (var i=0;i<50;i++){
+    var s = document.createElement('div');
+    s.className='star';
+    var size = (Math.random()*2.4+1).toFixed(1);
+    s.style.width = size+'px';
+    s.style.height = size+'px';
+    s.style.left = (Math.random()*100)+'%';
+    s.style.top = (Math.random()*100)+'%';
+    s.style.animationDelay = (Math.random()*3).toFixed(2)+'s';
+    starsEl.appendChild(s);
+  }
+
+  /* ---------- tiny sound feedback (optional, safe) ---------- */
+  var AudioCtx = window.AudioContext || window.webkitAudioContext;
+  var actx = null;
+  function beep(good){
+    try{
+      if(!actx) actx = new AudioCtx();
+      var o = actx.createOscillator();
+      var g = actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      o.type = 'sine';
+      o.frequency.value = good ? 740 : 220;
+      g.gain.value = 0.06;
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (good?0.25:0.35));
+      o.stop(actx.currentTime + (good?0.25:0.35));
+    }catch(e){}
+  }
+
+  /* ---------- screens ---------- */
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(el){ el.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ---------- selections ---------- */
+  var chosenLevel = null; // 5 or 9
+  var chosenMode = null;  // write | choice | match | timeattack | memory | tower
+
+  document.querySelectorAll('#level-picker .pick-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      document.querySelectorAll('#level-picker .pick-card').forEach(function(c){c.classList.remove('selected');});
+      card.classList.add('selected');
+      chosenLevel = parseInt(card.getAttribute('data-level'),10);
+      updateStartBtn();
+    });
+  });
+  document.querySelectorAll('#mode-picker .pick-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      document.querySelectorAll('#mode-picker .pick-card').forEach(function(c){c.classList.remove('selected');});
+      card.classList.add('selected');
+      chosenMode = card.getAttribute('data-mode');
+      updateStartBtn();
+    });
+  });
+  function updateStartBtn(){
+    document.getElementById('btn-start').disabled = !(chosenLevel && chosenMode);
+  }
+
+  var modeLabels = {
+    write:'Escribir el resultado', choice:'Opción múltiple',
+    match:'Unir', timeattack:'Contrarreloj',
+    memory:'Memoria del Dragón', tower:'La Torre del Dragón'
+  };
+
+  document.getElementById('btn-start').addEventListener('click', function(){ startGame(); });
+  document.getElementById('btn-back').addEventListener('click', function(){ stopTimers(); showScreen('screen-menu'); });
+  document.getElementById('btn-menu').addEventListener('click', function(){ stopTimers(); showScreen('screen-menu'); });
+  document.getElementById('btn-retry').addEventListener('click', function(){ startGame(); });
+
+  /* ---------- shared state ---------- */
+  var state = {};
+  function stopTimers(){
+    if(state.timerInterval){ clearInterval(state.timerInterval); state.timerInterval=null; }
+  }
+
+  var okMsgs = ['¡Genial! 🎉','¡Muy bien! ✨','¡Excelente! 🌟','¡Así se hace! 💫','¡El dragón está orgulloso! 🐉'];
+  var badMsgs = ['¡Casi! Sigamos 💪','Un poquito más 🙂','¡Tú podés! 🌈','No pasa nada, ¡seguí! 🍀'];
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+  function newQuestion(maxTable){
+    var a = randInt(1,maxTable);
+    var b = randInt(1,10);
+    return {a:a,b:b,answer:a*b};
+  }
+
+  function startGame(){
+    stopTimers();
+    state = {
+      level: chosenLevel, mode: chosenMode, maxTable: chosenLevel,
+      score:0, wrong:0, currentQ:0, questionsPerRound:10,
+      matchedPairs:0, totalPairs:8, mistakesMatch:0,
+      streak:0, maxStreak:0, timeLeft:60, selected:null,
+      memPairsTotal:6, memMatched:0, memMistakes:0, memLock:false, memFlipped:[], memCardMap:{},
+      floor:0
+    };
+    document.getElementById('game-title-label').textContent =
+      (chosenLevel===5?'Aldea de Bambú':'Montaña del Dragón de Fuego') + ' · ' + modeLabels[chosenMode];
+    document.getElementById('feedback').className='feedback';
+    document.getElementById('feedback').textContent='';
+    document.getElementById('center-action').innerHTML='';
+    showScreen('screen-game');
+
+    if(chosenMode==='write') initWrite();
+    else if(chosenMode==='choice') initChoice();
+    else if(chosenMode==='match') initMatch();
+    else if(chosenMode==='timeattack') initTimeAttack();
+    else if(chosenMode==='memory') initMemory();
+    else if(chosenMode==='tower') initTower();
+  }
+
+  function setStatPill(text){ document.getElementById('game-stat-pill').textContent = text; }
+  function clearFeedback(){
+    var f = document.getElementById('feedback');
+    f.className='feedback'; f.textContent='';
+    document.getElementById('center-action').innerHTML='';
+  }
+  function showFeedback(ok, text){
+    var f = document.getElementById('feedback');
+    f.className = 'feedback show ' + (ok?'ok':'bad');
+    f.textContent = text;
+  }
+
+  /* progress bar helper (used by write & choice) */
+  function progressBar(current, total){
+    var pct = Math.round((current/total)*100);
+    return '<div class="progress-track">'+
+      '<div class="progress-fill" style="width:'+pct+'%"></div>'+
+      '<div class="progress-rocket" style="left:'+pct+'%">🐉</div>'+
+      '</div>';
+  }
+
+  function buildChoices(answer){
+    var opts = new Set([answer]);
+    var tries=0;
+    while(opts.size<4 && tries<50){
+      tries++;
+      var offset = randInt(-6,6)* (randInt(1,10));
+      var v = answer + offset;
+      if(v>0 && v!==answer) opts.add(v);
+    }
+    var arr = Array.from(opts);
+    while(arr.length<4){ arr.push(answer + arr.length + randInt(1,5)); }
+    for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+    return arr;
+  }
+  function shuffleArr(arr){
+    for(var i=arr.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  }
+
+  /* ================= WRITE MODE ================= */
+  function initWrite(){
+    setStatPill('⭐ '+state.score+' / '+state.questionsPerRound);
+    nextWriteQuestion();
+  }
+  function nextWriteQuestion(){
+    clearFeedback();
+    if(state.currentQ >= state.questionsPerRound){ finishRound(); return; }
+    state.currentQuestion = newQuestion(state.maxTable);
+    var html = progressBar(state.currentQ, state.questionsPerRound) +
+      '<div class="qcard"><div class="expr">'+state.currentQuestion.a+' × '+state.currentQuestion.b+' = ?</div>'+
+      '<div class="answer-row" style="margin-top:18px;">'+
+      '<input type="number" id="write-input" inputmode="numeric" autocomplete="off">'+
+      '<button class="btn btn-turq" id="write-submit">Comprobar</button>'+
+      '</div></div>';
+    document.getElementById('game-content').innerHTML = html;
+    var input = document.getElementById('write-input');
+    input.focus();
+    input.addEventListener('keydown', function(e){ if(e.key==='Enter') checkWrite(); });
+    document.getElementById('write-submit').addEventListener('click', checkWrite);
+  }
+  function checkWrite(){
+    var input = document.getElementById('write-input');
+    if(input.disabled) return;
+    var val = parseInt(input.value,10);
+    var q = state.currentQuestion;
+    var ok = (val === q.answer);
+    input.disabled = true;
+    document.getElementById('write-submit').disabled = true;
+    state.currentQ++;
+    if(ok){
+      state.score++; beep(true); showFeedback(true, pick(okMsgs));
+      setStatPill('⭐ '+state.score+' / '+state.questionsPerRound);
+      setTimeout(nextWriteQuestion, 900);
+    } else {
+      state.wrong++; beep(false); showFeedback(false, pick(badMsgs)+' La respuesta correcta era '+q.answer+'.');
+      setStatPill('⭐ '+state.score+' / '+state.questionsPerRound);
+      document.getElementById('center-action').innerHTML =
+        '<button class="btn btn-yellow" id="btn-next">'+(state.currentQ>=state.questionsPerRound?'Ver resultado 🏁':'Siguiente ➜')+'</button>';
+      document.getElementById('btn-next').addEventListener('click', nextWriteQuestion);
+    }
+  }
+
+  /* ================= CHOICE MODE ================= */
+  function initChoice(){
+    setStatPill('⭐ '+state.score+' / '+state.questionsPerRound);
+    nextChoiceQuestion();
+  }
+  function nextChoiceQuestion(){
+    clearFeedback();
+    if(state.currentQ >= state.questionsPerRound){ finishRound(); return; }
+    state.currentQuestion = newQuestion(state.maxTable);
+    var q = state.currentQuestion;
+    var choices = buildChoices(q.answer);
+    var html = progressBar(state.currentQ, state.questionsPerRound) +
+      '<div class="qcard"><div class="expr">'+q.a+' × '+q.b+' = ?</div></div>'+
+      '<div class="choice-grid">'+
+      choices.map(function(c){ return '<button class="choice-btn" data-val="'+c+'">'+c+'</button>'; }).join('')+
+      '</div>';
+    document.getElementById('game-content').innerHTML = html;
+    document.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ checkChoice(btn); });
+    });
+  }
+  function checkChoice(btn){
+    var buttons = document.querySelectorAll('.choice-btn');
+    if(buttons[0].disabled) return;
+    var q = state.currentQuestion;
+    var val = parseInt(btn.getAttribute('data-val'),10);
+    var ok = (val === q.answer);
+    buttons.forEach(function(b){
+      b.disabled = true;
+      if(parseInt(b.getAttribute('data-val'),10) === q.answer) b.classList.add('correct');
+      else if(b===btn) b.classList.add('wrong');
+    });
+    state.currentQ++;
+    if(ok){
+      state.score++; beep(true); showFeedback(true, pick(okMsgs));
+      setStatPill('⭐ '+state.score+' / '+state.questionsPerRound);
+      setTimeout(nextChoiceQuestion, 900);
+    } else {
+      state.wrong++; beep(false); showFeedback(false, pick(badMsgs)+' La respuesta correcta era '+q.answer+'.');
+      setStatPill('⭐ '+state.score+' / '+state.questionsPerRound);
+      document.getElementById('center-action').innerHTML =
+        '<button class="btn btn-yellow" id="btn-next">'+(state.currentQ>=state.questionsPerRound?'Ver resultado 🏁':'Siguiente ➜')+'</button>';
+      document.getElementById('btn-next').addEventListener('click', nextChoiceQuestion);
+    }
+  }
+
+  /* ================= MATCH MODE ================= */
+  function initMatch(){
+    state.matchedPairs = 0; state.mistakesMatch = 0; state.selected = null;
+    setStatPill('🧩 0 / '+state.totalPairs);
+    buildMatchRound();
+  }
+  function buildMatchRound(){
+    clearFeedback();
+    var used = new Set();
+    var pairs = [];
+    var attempts = 0;
+    while(pairs.length < state.totalPairs && attempts < 500){
+      attempts++;
+      var q = newQuestion(state.maxTable);
+      if(!used.has(q.answer)){ used.add(q.answer); pairs.push(q); }
+    }
+    state.pairs = pairs;
+    var exprs = pairs.slice();
+    var results = pairs.slice();
+    shuffleArr(exprs); shuffleArr(results);
+    var html = '<p style="text-align:center;color:var(--text-dim);font-weight:700;margin-bottom:16px;">Tocá una cuenta y después su resultado para unirlas ✨</p>'+
+      '<div class="match-wrap">'+
+      '<div class="match-col" id="match-exprs">'+
+      exprs.map(function(p){ return '<div class="match-item" data-group="exp" data-value="'+p.answer+'">'+p.a+' × '+p.b+'</div>'; }).join('')+
+      '</div>'+
+      '<div class="match-col" id="match-results">'+
+      results.map(function(p){ return '<div class="match-item" data-group="res" data-value="'+p.answer+'">'+p.answer+'</div>'; }).join('')+
+      '</div>'+
+      '</div>';
+    document.getElementById('game-content').innerHTML = html;
+    document.querySelectorAll('.match-item').forEach(function(item){
+      item.addEventListener('click', function(){ handleMatchClick(item); });
+    });
+  }
+  function handleMatchClick(item){
+    if(item.classList.contains('matched')) return;
+    if(!state.selected){
+      item.classList.add('selected');
+      state.selected = item;
+      return;
+    }
+    if(state.selected === item){
+      item.classList.remove('selected');
+      state.selected = null;
+      return;
+    }
+    var sameGroup = state.selected.getAttribute('data-group') === item.getAttribute('data-group');
+    if(sameGroup){
+      state.selected.classList.remove('selected');
+      item.classList.add('selected');
+      state.selected = item;
+      return;
+    }
+    var a = state.selected, b = item;
+    if(a.getAttribute('data-value') === b.getAttribute('data-value')){
+      a.classList.remove('selected'); a.classList.add('matched');
+      b.classList.add('matched');
+      state.selected = null;
+      state.matchedPairs++;
+      beep(true);
+      setStatPill('🧩 '+state.matchedPairs+' / '+state.totalPairs);
+      if(state.matchedPairs >= state.totalPairs){
+        setTimeout(finishRound, 500);
+      }
+    } else {
+      state.mistakesMatch++;
+      beep(false);
+      a.classList.add('shake'); b.classList.add('shake');
+      setTimeout(function(){
+        a.classList.remove('selected','shake');
+        b.classList.remove('shake');
+        state.selected = null;
+      }, 420);
+    }
+  }
+
+  /* ================= MEMORY MODE ================= */
+  function initMemory(){
+    state.memMatched=0; state.memMistakes=0; state.memLock=false; state.memFlipped=[];
+    setStatPill('🎴 0 / '+state.memPairsTotal);
+    buildMemoryRound();
+  }
+  function buildMemoryRound(){
+    clearFeedback();
+    var used=new Set(); var pairs=[]; var attempts=0;
+    while(pairs.length<state.memPairsTotal && attempts<500){
+      attempts++;
+      var q=newQuestion(state.maxTable);
+      if(!used.has(q.answer)){ used.add(q.answer); pairs.push(q); }
+    }
+    var cards=[];
+    pairs.forEach(function(p,i){
+      cards.push({id:'e'+i, type:'exp', value:p.answer, label:p.a+' × '+p.b});
+      cards.push({id:'r'+i, type:'res', value:p.answer, label:String(p.answer)});
+    });
+    shuffleArr(cards);
+    state.memCardMap = {};
+    cards.forEach(function(c){ state.memCardMap[c.id]=c.label; });
+    var html = '<p style="text-align:center;color:var(--text-dim);font-weight:700;margin-bottom:16px;">Tocá dos cartas para encontrar las parejas 🐉</p>'+
+      '<div class="memory-grid" id="memory-grid">'+
+      cards.map(function(c){ return '<div class="memory-card" data-id="'+c.id+'" data-type="'+c.type+'" data-value="'+c.value+'"><span class="hidden-face">🐉</span></div>'; }).join('')+
+      '</div>';
+    document.getElementById('game-content').innerHTML = html;
+    document.querySelectorAll('.memory-card').forEach(function(card){
+      card.addEventListener('click', function(){ handleMemoryClick(card); });
+    });
+  }
+  function handleMemoryClick(card){
+    if(state.memLock) return;
+    if(card.classList.contains('flipped') || card.classList.contains('matched')) return;
+    card.classList.add('flipped');
+    card.querySelector('.hidden-face').textContent = state.memCardMap[card.getAttribute('data-id')];
+    state.memFlipped.push(card);
+    if(state.memFlipped.length===2){
+      state.memLock = true;
+      var a = state.memFlipped[0], b = state.memFlipped[1];
+      var match = (a.getAttribute('data-type') !== b.getAttribute('data-type')) && (a.getAttribute('data-value') === b.getAttribute('data-value'));
+      if(match){
+        beep(true);
+        setTimeout(function(){
+          a.classList.add('matched'); b.classList.add('matched');
+          state.memMatched++;
+          setStatPill('🎴 '+state.memMatched+' / '+state.memPairsTotal);
+          state.memFlipped = []; state.memLock=false;
+          if(state.memMatched>=state.memPairsTotal){ setTimeout(finishRound,500); }
+        },350);
+      } else {
+        state.memMistakes++;
+        beep(false);
+        setTimeout(function(){
+          a.classList.remove('flipped'); b.classList.remove('flipped');
+          a.querySelector('.hidden-face').textContent='🐉';
+          b.querySelector('.hidden-face').textContent='🐉';
+          state.memFlipped = []; state.memLock=false;
+        }, 700);
+      }
+    }
+  }
+
+  /* ================= TOWER MODE ================= */
+  function initTower(){
+    state.floor = 0;
+    setStatPill('🏯 Piso 0');
+    nextTowerQuestion();
+  }
+  function nextTowerQuestion(){
+    clearFeedback();
+    state.currentQuestion = newQuestion(state.maxTable);
+    var q = state.currentQuestion;
+    var choices = buildChoices(q.answer);
+    var html = '<div class="floor-badge">🏯 Piso '+(state.floor+1)+'</div>'+
+      '<div class="qcard"><div class="expr">'+q.a+' × '+q.b+' = ?</div></div>'+
+      '<div class="choice-grid">'+
+      choices.map(function(c){ return '<button class="choice-btn" data-val="'+c+'">'+c+'</button>'; }).join('')+
+      '</div>';
+    document.getElementById('game-content').innerHTML = html;
+    document.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){ checkTower(btn); });
+    });
+  }
+  function checkTower(btn){
+    var buttons = document.querySelectorAll('.choice-btn');
+    if(buttons[0].disabled) return;
+    var q = state.currentQuestion;
+    var val = parseInt(btn.getAttribute('data-val'),10);
+    var ok = (val===q.answer);
+    buttons.forEach(function(b){
+      b.disabled = true;
+      if(parseInt(b.getAttribute('data-val'),10)===q.answer) b.classList.add('correct');
+      else if(b===btn) b.classList.add('wrong');
+    });
+    if(ok){
+      state.floor++;
+      beep(true);
+      showFeedback(true, pick(okMsgs));
+      setStatPill('🏯 Piso '+state.floor);
+      setTimeout(nextTowerQuestion, 900);
+    } else {
+      beep(false);
+      showFeedback(false, 'El dragón se cayó... La respuesta correcta era '+q.answer+'.');
+      setTimeout(finishRound, 1800);
+    }
+  }
+
+  /* ================= TIME ATTACK MODE ================= */
+  function initTimeAttack(){
+    state.timeLeft = 60; state.score = 0; state.wrong = 0; state.streak = 0; state.maxStreak = 0;
+    document.getElementById('game-content').innerHTML =
+      '<div class="ta-timer-track"><div class="ta-timer-fill" id="ta-fill" style="width:100%"></div></div>'+
+      '<div class="ta-stats">'+
+      '<div class="stat-pill">⏳ <span id="ta-time">60</span>s</div>'+
+      '<div class="stat-pill">✅ <span id="ta-score">0</span></div>'+
+      '<div class="stat-pill">🔥 <span id="ta-streak">0</span></div>'+
+      '</div>'+
+      '<div class="ta-statement" id="ta-statement"></div>'+
+      '<div class="ta-buttons">'+
+      '<button class="btn btn-turq ta-btn" id="ta-true">✔️ Verdadero</button>'+
+      '<button class="btn btn-coral ta-btn" id="ta-false">❌ Falso</button>'+
+      '</div>';
+    document.getElementById('center-action').innerHTML='';
+    setStatPill('⏳ 60s');
+    document.getElementById('ta-true').addEventListener('click', function(){ checkTA(true); });
+    document.getElementById('ta-false').addEventListener('click', function(){ checkTA(false); });
+    nextTAQuestion();
+    state.timerInterval = setInterval(function(){
+      state.timeLeft--;
+      document.getElementById('ta-time').textContent = state.timeLeft;
+      document.getElementById('ta-fill').style.width = Math.max(0,(state.timeLeft/60*100))+'%';
+      if(state.timeLeft<=0){ stopTimers(); finishRound(); }
+    },1000);
+  }
+  function nextTAQuestion(){
+    clearFeedback();
+    var q = newQuestion(state.maxTable);
+    var isTrue = Math.random() < 0.5;
+    var shown = q.answer;
+    if(!isTrue){
+      var offset = 0;
+      while(offset===0) offset = randInt(-8,8);
+      shown = q.answer + offset;
+      if(shown < 0) shown = q.answer + Math.abs(offset);
+    }
+    state.currentQuestion = {a:q.a,b:q.b,answer:q.answer,shown:shown,isTrue:isTrue};
+    document.getElementById('ta-statement').textContent = q.a+' × '+q.b+' = '+shown;
+    var t = document.getElementById('ta-true'), f = document.getElementById('ta-false');
+    if(t){ t.disabled=false; t.classList.remove('correct','wrong'); }
+    if(f){ f.disabled=false; f.classList.remove('correct','wrong'); }
+  }
+  function checkTA(userSaysTrue){
+    if(state.timeLeft<=0) return;
+    var q = state.currentQuestion;
+    var ok = (userSaysTrue === q.isTrue);
+    if(ok){
+      state.score++; state.streak++; if(state.streak>state.maxStreak) state.maxStreak = state.streak;
+      beep(true); showFeedback(true, pick(okMsgs));
+    } else {
+      state.wrong++; state.streak = 0;
+      beep(false);
+      showFeedback(false, (q.isTrue? 'Era verdadero: '+q.a+' × '+q.b+' = '+q.answer : 'Era falso: '+q.a+' × '+q.b+' = '+q.answer));
+    }
+    document.getElementById('ta-score').textContent = state.score;
+    document.getElementById('ta-streak').textContent = state.streak;
+    setStatPill('⏳ '+state.timeLeft+'s');
+    setTimeout(nextTAQuestion, 550);
+  }
+
+  /* ================= SUMMARY ================= */
+  function starsFor(pct){
+    if(pct>=90) return 3;
+    if(pct>=70) return 2;
+    if(pct>=40) return 1;
+    return 0;
+  }
+  function renderStars(n){
+    var out='';
+    for(var i=0;i<3;i++){ out += (i<n? '⭐' : '<span class="empty">⭐</span>'); }
+    return out;
+  }
+  function finishRound(){
+    stopTimers();
+    var pct, detail, n;
+    if(state.mode==='write' || state.mode==='choice'){
+      pct = Math.round((state.score/state.questionsPerRound)*100);
+      n = starsFor(pct);
+      detail = 'Acertaste '+state.score+' de '+state.questionsPerRound+' preguntas.';
+    } else if(state.mode==='match'){
+      var totalAttempts = state.totalPairs + state.mistakesMatch;
+      pct = Math.round((state.totalPairs/totalAttempts)*100);
+      n = starsFor(pct);
+      detail = 'Uniste las '+state.totalPairs+' parejas con '+state.mistakesMatch+' error(es).';
+    } else if(state.mode==='memory'){
+      var totalMemAttempts = state.memPairsTotal + state.memMistakes;
+      pct = Math.round((state.memPairsTotal/totalMemAttempts)*100);
+      n = starsFor(pct);
+      detail = 'Encontraste las '+state.memPairsTotal+' parejas con '+state.memMistakes+' error(es).';
+    } else if(state.mode==='tower'){
+      n = state.floor>=15?3 : state.floor>=8?2 : state.floor>=3?1 : 0;
+      detail = 'Llegaste al piso '+state.floor+' de la torre.';
+    } else { // timeattack
+      n = state.score>=20?3 : state.score>=12?2 : state.score>=6?1 : 0;
+      detail = 'Respondiste '+state.score+' correctas y '+state.wrong+' incorrectas. Racha máxima: '+state.maxStreak+' 🔥';
+    }
+    var msgs3 = ['¡Sos un maestro del dragón! 🏆','¡Misión perfecta! 🌟','¡Impresionante! 🐉'];
+    var msgs2 = ['¡Muy buen trabajo! 🎉','¡Vas muy bien! 💪'];
+    var msgs1 = ['¡Buen intento! Sigamos practicando 🙂','¡Cada vez mejor! 🌈'];
+    var msgs0 = ['¡A practicar un poco más! 💫','¡No te rindas, vos podés! 🍀'];
+    var msg = n===3?pick(msgs3) : n===2?pick(msgs2) : n===1?pick(msgs1) : pick(msgs0);
+
+    document.getElementById('summary-stars').innerHTML = renderStars(n);
+    document.getElementById('summary-msg').textContent = msg;
+    document.getElementById('summary-detail').textContent = detail;
+    showScreen('screen-summary');
+  }
+
+})();
+</script>
+</body>
+</html>
