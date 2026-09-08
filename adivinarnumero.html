@@ -144,7 +144,6 @@
             padding-bottom: 10px;
         }
 
-        /* Usamos exactamente la misma estructura de 11 columnas para que coincidan celdas y botones */
         .grid-wrapper {
             display: grid;
             grid-template-columns: repeat(11, minmax(32px, 45px));
@@ -158,7 +157,6 @@
             grid-template-columns: repeat(10, minmax(32px, 45px));
             gap: 6px;
             margin-bottom: 6px;
-            /* Dejamos un espacio a la derecha idéntico al ancho del botón de fila para que quede perfectamente alineado */
             padding-right: 41px; 
             width: 100%;
             box-sizing: border-box;
@@ -340,10 +338,10 @@
         <!-- PANTALLA 1: ELEGIR NÚMERO -->
         <div id="screenSetup" class="screen active">
             <h1>¿Quién es Quién?</h1>
-            <p class="instructions">Elegí un número secreto del 1 al 100 para que tu oponente intente adivinarlo.</p>
+            <p class="instructions">Elegí un número secreto del 0 al 99 para que tu oponente intente adivinarlo.</p>
             
             <div class="form-group">
-                <input type="number" id="secretInput" min="1" max="100" placeholder="Ej: 42">
+                <input type="number" id="secretInput" min="0" max="99" placeholder="Ej: 42">
             </div>
 
             <button onclick="startGame()">Comenzar Juego</button>
@@ -352,7 +350,7 @@
         <!-- PANTALLA 2: EL TABLERO -->
         <div id="screenBoard" class="screen">
             <h1>Tablero de Juego</h1>
-            <p class="instructions">Tacha números o usa los botones de los bordes (•) para tachar filas y columnas enteras.</p>
+            <p class="instructions">Tacha números o usa los botones sutiles de los bordes (•) para familias de números y columnas.</p>
 
             <div class="controls">
                 <button class="secondary" onclick="resetBoard()">Reiniciar Tablero</button>
@@ -362,9 +360,9 @@
             <!-- Área de juego combinada -->
             <div class="game-area">
                 <div class="board-layout">
-                    <!-- Botones superiores para columnas (sólo un punto discreto) -->
+                    <!-- Botones superiores para columnas -->
                     <div class="col-buttons-container" id="colButtonsContainer"></div>
-                    <!-- Grilla interactiva -->
+                    <!-- Grilla interactiva del 0 al 99 -->
                     <div class="grid-wrapper" id="gridWrapper"></div>
                 </div>
 
@@ -394,7 +392,7 @@
     <script>
         let secretValue = null;
         let questionCounter = 0;
-        const totalNumbers = 100;
+        const totalNumbers = 100; // Son 100 números (del 0 al 99)
 
         function createBoard() {
             const gridWrapper = document.getElementById('gridWrapper');
@@ -403,8 +401,8 @@
             gridWrapper.innerHTML = '';
             colButtonsContainer.innerHTML = '';
 
-            // 1. Crear botones superiores para columnas con un punto (•)
-            for (let c = 1; c <= 10; c++) {
+            // 1. Crear 10 botones superiores para columnas
+            for (let c = 0; c < 10; c++) {
                 const colBtn = document.createElement('button');
                 colBtn.classList.add('batch-btn', 'col-btn');
                 colBtn.textContent = '•';
@@ -413,8 +411,8 @@
                 colButtonsContainer.appendChild(colBtn);
             }
 
-            // 2. Crear celdas y botones de fila al final de cada decena
-            for (let i = 1; i <= totalNumbers; i++) {
+            // 2. Crear celdas del 0 al 99 y botones de fila al final de cada decena
+            for (let i = 0; i < totalNumbers; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
                 cell.textContent = i;
@@ -426,13 +424,14 @@
 
                 gridWrapper.appendChild(cell);
 
-                if (i % 10 === 0) {
-                    const rowNum = i / 10;
+                // Cada 10 números (cuando i termina en 9), agregamos el botón de fila
+                if ((i + 1) % 10 === 0) {
+                    const rowFamily = Math.floor(i / 10); // Ej: familia del 0, del 10, etc.
                     const rowBtn = document.createElement('button');
                     rowBtn.classList.add('batch-btn', 'row-btn');
                     rowBtn.textContent = '•';
-                    rowBtn.title = `Tachar/Destachar fila ${rowNum}`;
-                    rowBtn.onclick = () => toggleRow(rowNum);
+                    rowBtn.title = `Tachar/Destachar familia del ${rowFamily * 10}`;
+                    rowBtn.onclick = () => toggleRow(rowFamily);
                     gridWrapper.appendChild(rowBtn);
                 }
             }
@@ -451,9 +450,9 @@
             document.getElementById('questionCount').textContent = questionCounter;
         }
 
-        function toggleRow(rowNum) {
-            const start = (rowNum - 1) * 10 + 1;
-            const end = rowNum * 10;
+        function toggleRow(rowFamily) {
+            const start = rowFamily * 10;
+            const end = start + 9;
             
             let allCrossed = true;
             for (let i = start; i <= end; i++) {
@@ -474,10 +473,11 @@
             }
         }
 
-        function toggleColumn(colNum) {
+        function toggleColumn(colIndex) {
+            // Recolectar todos los números que terminan en ese dígito (colIndex)
             const columnNumbers = [];
             for (let r = 0; r < 10; r++) {
-                columnNumbers.push(colNum + (r * 10));
+                columnNumbers.push((r * 10) + colIndex);
             }
 
             let allCrossed = true;
@@ -502,8 +502,8 @@
             const input = document.getElementById('secretInput');
             const val = parseInt(input.value);
 
-            if (isNaN(val) || val < 1 || val > 100) {
-                alert('Por favor, ingresa un número válido entre 1 y 100.');
+            if (isNaN(val) || val < 0 || val > 99) {
+                alert('Por favor, ingresa un número válido entre 0 y 99.');
                 return;
             }
 
