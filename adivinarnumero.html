@@ -272,15 +272,69 @@
             padding-top: 15px;
             border-top: 1px solid #e5e7eb;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
+            justify-content: center;
         }
 
-        #secretDisplay {
-            font-size: 1.3rem;
-            font-weight: bold;
+        /* ESTILOS PARA LA VENTANA EMERGENTE (MODAL) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.show .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-card h2 {
+            margin-top: 0;
             color: #059669;
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-number {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin: 10px 0;
+            line-height: 1;
+        }
+
+        .modal-stats {
+            color: #4b5563;
+            font-size: 1.05rem;
+            margin: 20px 0;
+            background-color: #f3f4f6;
+            padding: 10px;
+            border-radius: 8px;
         }
 
         .footer {
@@ -377,10 +431,9 @@
                 </div>
             </div>
 
-            <!-- Sección inferior para revelar número -->
+            <!-- Botón para revelar número -->
             <div class="reveal-section">
                 <button class="accent" onclick="revealSecret()">Revelar mi número secreto</button>
-                <div id="secretDisplay"></div>
             </div>
         </div>
 
@@ -389,10 +442,21 @@
         </div>
     </div>
 
+    <!-- VENTANA EMERGENTE (MODAL DE REVELACIÓN) -->
+    <div class="modal-overlay" id="revealModal">
+        <div class="modal-card">
+            <h2>¡Número Revelado!</h2>
+            <p>El número secreto era:</p>
+            <div class="modal-number" id="modalSecretNumber">--</div>
+            <div class="modal-stats" id="modalStatsText">Adivinado en 0 preguntas</div>
+            <button onclick="closeModal()">¡Entendido!</button>
+        </div>
+    </div>
+
     <script>
         let secretValue = null;
         let questionCounter = 0;
-        const totalNumbers = 100; // Son 100 números (del 0 al 99)
+        const totalNumbers = 100;
 
         function createBoard() {
             const gridWrapper = document.getElementById('gridWrapper');
@@ -401,7 +465,6 @@
             gridWrapper.innerHTML = '';
             colButtonsContainer.innerHTML = '';
 
-            // 1. Crear 10 botones superiores para columnas
             for (let c = 0; c < 10; c++) {
                 const colBtn = document.createElement('button');
                 colBtn.classList.add('batch-btn', 'col-btn');
@@ -411,7 +474,6 @@
                 colButtonsContainer.appendChild(colBtn);
             }
 
-            // 2. Crear celdas del 0 al 99 y botones de fila al final de cada decena
             for (let i = 0; i < totalNumbers; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
@@ -424,9 +486,8 @@
 
                 gridWrapper.appendChild(cell);
 
-                // Cada 10 números (cuando i termina en 9), agregamos el botón de fila
                 if ((i + 1) % 10 === 0) {
-                    const rowFamily = Math.floor(i / 10); // Ej: familia del 0, del 10, etc.
+                    const rowFamily = Math.floor(i / 10);
                     const rowBtn = document.createElement('button');
                     rowBtn.classList.add('batch-btn', 'row-btn');
                     rowBtn.textContent = '•';
@@ -474,7 +535,6 @@
         }
 
         function toggleColumn(colIndex) {
-            // Recolectar todos los números que terminan en ese dígito (colIndex)
             const columnNumbers = [];
             for (let r = 0; r < 10; r++) {
                 columnNumbers.push((r * 10) + colIndex);
@@ -509,7 +569,6 @@
 
             secretValue = val;
             
-            document.getElementById('secretDisplay').textContent = '';
             resetBoard();
             resetCounter();
 
@@ -527,15 +586,21 @@
             cells.forEach(cell => {
                 cell.classList.remove('crossed');
             });
-            document.getElementById('secretDisplay').textContent = '';
             resetCounter();
         }
 
+        // Mostrar la ventana emergente con animación
         function revealSecret() {
-            const display = document.getElementById('secretDisplay');
             if (secretValue !== null) {
-                display.textContent = `Tu número secreto era: ${secretValue} (Lo adivinaste en ${questionCounter} preguntas)`;
+                document.getElementById('modalSecretNumber').textContent = secretValue;
+                document.getElementById('modalStatsText').textContent = `Adivinado en ${questionCounter} preguntas`;
+                document.getElementById('revealModal').classList.add('show');
             }
+        }
+
+        // Cerrar la ventana emergente
+        function closeModal() {
+            document.getElementById('revealModal').classList.remove('show');
         }
 
         createBoard();
