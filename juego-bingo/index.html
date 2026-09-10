@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ceremonia de los Faroles - Bingo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #f7ebd3;
+            color: #4a1515;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #b31313;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .contenedor-principal {
+            display: flex;
+            gap: 20px;
+            max-width: 850px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        .contenedor-juego {
+            flex: 1;
+            background: #ffffff;
+            padding: 22px;
+            border-radius: 14px;
+            border: 3px solid #b31313;
+            box-shadow: 0 6px 15px rgba(179, 19, 19, 0.15);
+        }
+
+        .panel-historial {
+            width: 230px;
+            background: #ffffff;
+            padding: 18px;
+            border-radius: 14px;
+            border: 3px solid #b31313;
+            box-shadow: 0 6px 15px rgba(179, 19, 19, 0.15);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .panel-historial h3 {
+            margin-top: 0;
+            color: #b31313;
+            border-bottom: 2px solid #f2c94c;
+            padding-bottom: 8px;
+            font-size: 1.15em;
+        }
+
+        .lista-historial {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .lista-historial li {
+            padding: 10px 12px;
+            border-bottom: 1px solid #fbe6d4;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a1515;
+        }
+
+        .lista-historial li:first-child {
+            background-color: #fff3d1;
+            color: #b31313;
+            border-radius: 6px;
+            font-size: 20px;
+            border: 1px solid #f2c94c;
+        }
+
+        .pantalla-imagen {
+            width: 100%;
+            height: 320px;
+            border: 3px dashed #e2a03f;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            background-color: #FBF1DF;
+            overflow: hidden;
+            box-sizing: border-box;
+            transition: transform 0.3s ease;
+        }
+
+        .pantalla-imagen img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .animar-revelar {
+            animation: efectoFarol 0.4s ease-out;
+        }
+
+        @keyframes efectoFarol {
+            0% { transform: scale(0.8) rotate(-4deg); opacity: 0.5; }
+            50% { transform: scale(1.05) rotate(3deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .texto-vacio {
+            color: #9c683b;
+            font-size: 1.15em;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        .botones {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 22px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-sacar {
+            background-color: #b31313;
+            color: #ffffff;
+            border: 2px solid #800a0a;
+        }
+
+        .btn-sacar:hover {
+            background-color: #940e0e;
+        }
+
+        .btn-reiniciar {
+            background-color: #d97724;
+            color: white;
+            border: 2px solid #b3590f;
+        }
+
+        .btn-reiniciar:hover {
+            background-color: #be6315;
+        }
+
+        button:disabled {
+            background-color: #cccccc !important;
+            border-color: #aaaaaa !important;
+            cursor: not-allowed;
+        }
+
+        .contador {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #702e2e;
+            font-weight: bold;
+        }
+
+        .modal-fondo {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-contenido {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            border: 4px solid #b31313;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            animation: aparecerModal 0.3s ease-out;
+        }
+
+        @keyframes aparecerModal {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-contenido h2 {
+            color: #b31313;
+            margin-top: 0;
+            font-size: 1.8em;
+        }
+
+        .modal-contenido p {
+            font-size: 1.1em;
+            color: #4a1515;
+            margin: 15px 0 25px 0;
+        }
+
+        @media (max-width: 650px) {
+            .contenedor-principal {
+                flex-direction: column;
+            }
+            .panel-historial {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🏮 Ceremonia de los Faroles 🏮</h1>
+
+    <div class="contenedor-principal">
+
+        <div class="contenedor-juego">
+            <div class="pantalla-imagen" id="pantalla">
+                <span class="texto-vacio" id="mensaje">Toca "Sacar Farol" para empezar</span>
+                <img id="imagen-desplegada" src="" alt="Imagen del Bingo" style="display: none;">
+            </div>
+
+            <div class="botones">
+                <button class="btn-sacar" id="btnSacar" onclick="sacarImagen()">Sacar Farol</button>
+                <button class="btn-reiniciar" onclick="reiniciarJuego()">Reiniciar</button>
+            </div>
+
+            <div class="contador" id="contadorText">
+                Faroles restantes: <span id="restantes">36</span> / 36
+            </div>
+        </div>
+
+        <div class="panel-historial">
+            <h3>Faroles Encendidos</h3>
+            <ul class="lista-historial" id="historialLista"></ul>
+        </div>
+
+    </div>
+
+    <div class="modal-fondo" id="modalFin">
+        <div class="modal-contenido">
+            <h2>🎉 ¡Fantástico Trabajo! 🎉</h2>
+            <p>¡Has encendido todos los faroles con éxito! Demostraste una excelente precisión y concentración. 👏✨</p>
+            <button class="btn-sacar" onclick="cerrarModalYReiniciar()">¡Jugar de nuevo!</button>
+        </div>
+    </div>
+
+    <script>
+        const extension = '.jpg'; 
+
+        const equivalenciasTexto = {
+            "N01": "2x2",
+            "N02": "2x8",
+            "N03": "3x7",
+            "N04": "4x7",
+            "N05": "5x8",
+            "N06": "8x9",
+            "N07": "2x5",
+            "N08": "3x4",
+            "N09": "4x4",
+            "N10": "5x5",
+            "N11": "5x9",
+            "N12": "8x8",
+            "N13": "2x3",
+            "N14": "2x9",
+            "N15": "3x8",
+            "N16": "4x8",
+            "N17": "6x6",
+            "N18": "7x9",
+            "N19": "2x6",
+            "N20": "3x5",
+            "N21": "4x5",
+            "N22": "5x6",
+            "N23": "6x7",
+            "N24": "7x8",
+            "N25": "2x4",
+            "N26": "3x3",
+            "N27": "3x9",
+            "N28": "4x9",
+            "N29": "6x8",
+            "N30": "9x9",
+            "N31": "2x7",
+            "N32": "3x6",
+            "N33": "4x6",
+            "N34": "5x7",
+            "N35": "6x9",
+            "N36": "7x7"
+        };
+
+        const tarjetasIniciales = [];
+        for (let i = 1; i <= 36; i++) {
+            let num = i < 10 ? '0' + i : '' + i;
+            let id = 'N' + num;
+            tarjetasIniciales.push({
+                id: id,
+                ruta: `imagenes/${id}${extension}`
+            });
+        }
+
+        let tarjetasDisponibles = [];
+
+        function reproducirSonidoMagico() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notas = [523.25, 659.25, 783.99, 1046.50];
+                
+                notas.forEach((frecuencia, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime + i * 0.06);
+                    
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + i * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.06 + 0.15);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(audioCtx.currentTime + i * 0.06);
+                    osc.stop(audioCtx.currentTime + i * 0.06 + 0.15);
+                });
+            } catch (e) {}
+        }
+
+        function reproducirSonidoVictoria() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notas = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+                
+                notas.forEach((frecuencia, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(frecuencia, audioCtx.currentTime + i * 0.09);
+                    
+                    gain.gain.setValueAtTime(0.25, audioCtx.currentTime + i * 0.09);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.09 + 0.3);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(audioCtx.currentTime + i * 0.09);
+                    osc.stop(audioCtx.currentTime + i * 0.09 + 0.3);
+                });
+            } catch (e) {}
+        }
+
+        function reiniciarJuego() {
+            tarjetasDisponibles = [...tarjetasIniciales];
+            
+            document.getElementById('imagen-desplegada').style.display = 'none';
+            document.getElementById('mensaje').style.display = 'inline';
+            document.getElementById('mensaje').innerText = '¡Imágenes mezcladas! Toca "Sacar Farol"';
+            
+            document.getElementById('btnSacar').disabled = false;
+            document.getElementById('historialLista').innerHTML = '';
+            document.getElementById('modalFin').style.display = 'none';
+
+            actualizarContador();
+        }
+
+        function sacarImagen() {
+            if (tarjetasDisponibles.length === 0) return;
+
+            const pantalla = document.getElementById('pantalla');
+            pantalla.classList.remove('animar-revelar');
+            void pantalla.offsetWidth; 
+            pantalla.classList.add('animar-revelar');
+
+            const indiceAzar = Math.floor(Math.random() * tarjetasDisponibles.length);
+            const tarjeta = tarjetasDisponibles.splice(indiceAzar, 1)[0];
+
+            const imgElement = document.getElementById('imagen-desplegada');
+            imgElement.src = tarjeta.ruta;
+            imgElement.style.display = 'block';
+            document.getElementById('mensaje').style.display = 'none';
+
+            agregarAlHistorial(tarjeta.id);
+
+            actualizarContador();
+
+            if (tarjetasDisponibles.length === 0) {
+                document.getElementById('btnSacar').disabled = true;
+                reproducirSonidoVictoria();
+                
+                setTimeout(() => {
+                    document.getElementById('modalFin').style.display = 'flex';
+                }, 600);
+            } else {
+                reproducirSonidoMagico();
+            }
+        }
+
+        function agregarAlHistorial(idTarjeta) {
+            const lista = document.getElementById('historialLista');
+            const textoAsociado = equivalenciasTexto[idTarjeta] || idTarjeta;
+
+            const nuevoItem = document.createElement('li');
+            nuevoItem.innerText = textoAsociado;
+
+            lista.insertBefore(nuevoItem, lista.firstChild);
+        }
+
+        function actualizarContador() {
+            document.getElementById('restantes').innerText = tarjetasDisponibles.length;
+        }
+
+        function cerrarModalYReiniciar() {
+            document.getElementById('modalFin').style.display = 'none';
+            reiniciarJuego();
+        }
+
+        reiniciarJuego();
+    </script>
+</body>
+</html>
