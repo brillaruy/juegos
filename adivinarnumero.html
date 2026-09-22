@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adivina el Número - ¿Quién es quién?</title>
+    <title>Adivina el Número - Centro de Juegos</title>
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f3f4f6;
+            --primary-color: #7F338A;
+            --primary-hover: #6a2a74;
+            --bg-color: #f8f5f9;
             --card-bg: #ffffff;
             --text-color: #1f2937;
             --crossed-bg: #9ca3af;
             --crossed-text: #e5e7eb;
-            --row-col-btn-bg: #e0e7ff;
-            --row-col-btn-hover: #c7d2fe;
-            --row-col-btn-text: #3730a3;
+            --row-col-btn-bg: #f3e8f5;
+            --row-col-btn-hover: #e8d4ec;
+            --row-col-btn-text: #7F338A;
         }
 
         body {
@@ -35,9 +35,9 @@
             max-width: 850px;
             width: 100%;
             background: var(--card-bg);
-            padding: 25px;
+            padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px rgba(127, 51, 138, 0.05);
             text-align: center;
             position: relative;
         }
@@ -45,13 +45,13 @@
         h1 {
             margin-bottom: 8px;
             color: var(--primary-color);
-            font-size: 1.8rem;
+            font-size: 2.2rem;
         }
 
         p.instructions {
             color: #6b7280;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
         }
 
         .screen {
@@ -62,14 +62,63 @@
             display: block;
         }
 
+        /* Pantalla de Inicio / Menú Principal */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .menu-btn {
+            background-color: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 18px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .menu-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .menu-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(127, 51, 138, 0.2);
+        }
+
+        .menu-btn:hover .menu-dot {
+            background-color: white;
+        }
+
+        .back-menu-container {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
         .form-group {
             margin-bottom: 20px;
         }
 
-        input[type="number"] {
+        input[type="number"], input[type="text"] {
             padding: 12px;
             font-size: 1.2rem;
-            width: 120px;
+            width: 140px;
             text-align: center;
             border: 2px solid #d1d5db;
             border-radius: 8px;
@@ -77,7 +126,7 @@
             transition: border-color 0.2s;
         }
 
-        input[type="number"]:focus {
+        input[type="number"]:focus, input[type="text"]:focus {
             border-color: var(--primary-color);
         }
 
@@ -119,11 +168,11 @@
         }
 
         button.accent {
-            background-color: #059669;
+            background-color: #7F338A;
         }
 
         button.accent:hover {
-            background-color: #047857;
+            background-color: #6a2a74;
         }
 
         .game-area {
@@ -152,6 +201,14 @@
             align-items: center;
         }
 
+        .grid-wrapper-7x7 {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(45px, 60px));
+            grid-template-rows: repeat(7, minmax(45px, 60px));
+            gap: 8px;
+            align-items: center;
+        }
+
         .col-buttons-container {
             display: grid;
             grid-template-columns: repeat(10, minmax(32px, 45px));
@@ -170,7 +227,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
             user-select: none;
@@ -179,7 +236,7 @@
 
         .cell:hover {
             border-color: var(--primary-color);
-            background-color: #f0fdf4;
+            background-color: #f8f5f9;
         }
 
         .cell.crossed {
@@ -190,10 +247,15 @@
             opacity: 0.6;
         }
 
+        .cell.secret-candidate {
+            border-color: var(--primary-color) !important;
+            background-color: #f3e8f5 !important;
+        }
+
         .batch-btn {
             background-color: var(--row-col-btn-bg);
             color: var(--row-col-btn-text);
-            border: 1px solid #c7d2fe;
+            border: 1px solid #e8d4ec;
             border-radius: 6px;
             font-size: 0.9rem;
             font-weight: bold;
@@ -225,8 +287,15 @@
             font-size: 0.7rem;
         }
 
-        /* Panel Lateral: Contador de Preguntas */
-        .counter-panel {
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 180px;
+            min-width: 180px;
+        }
+
+        .counter-panel, .mode3-setup-box {
             background-color: #f9fafb;
             border: 2px solid #e5e7eb;
             border-radius: 12px;
@@ -234,23 +303,38 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 130px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 135px;
+            justify-content: space-between;
         }
 
-        .counter-title {
-            font-size: 0.85rem;
+        .mode3-setup-box {
+            background-color: #f3e8f5;
+            border: 2px dashed var(--primary-color);
+            text-align: center;
+        }
+
+        .counter-title, .mode3-setup-box p {
+            font-size: 0.8rem;
             font-weight: 600;
             color: #4b5563;
-            margin-bottom: 8px;
+            margin: 0;
             text-align: center;
+            line-height: 1.2;
+        }
+
+        .mode3-setup-box p {
+            color: var(--primary-color);
         }
 
         .counter-value {
             font-size: 2.2rem;
             font-weight: bold;
             color: var(--primary-color);
-            margin-bottom: 10px;
+            margin: 0;
+            line-height: 1;
         }
 
         .counter-buttons {
@@ -261,7 +345,7 @@
 
         .counter-btn {
             flex: 1;
-            padding: 8px 0;
+            padding: 6px 0;
             font-size: 1.1rem;
             font-weight: bold;
             border-radius: 6px;
@@ -275,7 +359,6 @@
             justify-content: center;
         }
 
-        /* ESTILOS PARA LA VENTANA EMERGENTE (MODAL) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -315,13 +398,13 @@
 
         .modal-card h2 {
             margin-top: 0;
-            color: #059669;
+            color: var(--primary-color);
             font-size: 1.6rem;
             margin-bottom: 15px;
         }
 
         .modal-number {
-            font-size: 4.5rem;
+            font-size: 3.5rem;
             font-weight: 800;
             color: var(--primary-color);
             margin: 10px 0;
@@ -348,9 +431,15 @@
                 flex-direction: column-reverse;
                 align-items: center;
             }
-            .counter-panel {
+            .side-panel {
                 width: 100%;
                 max-width: 300px;
+                min-width: auto;
+            }
+            .counter-panel, .mode3-setup-box {
+                min-height: auto;
+            }
+            .counter-panel {
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
@@ -359,9 +448,6 @@
             .counter-value {
                 margin-bottom: 0;
                 font-size: 1.5rem;
-            }
-            .counter-title {
-                margin-bottom: 0;
             }
             .counter-buttons {
                 width: auto;
@@ -382,6 +468,10 @@
                 width: 27px;
                 font-size: 0.6rem;
             }
+            .grid-wrapper-7x7 {
+                grid-template-columns: repeat(7, minmax(36px, 46px));
+                grid-template-rows: repeat(7, minmax(36px, 46px));
+            }
         }
     </style>
 </head>
@@ -389,44 +479,84 @@
 
     <div class="container">
         
-        <!-- PANTALLA 1: ELEGIR NÚMERO -->
-        <div id="screenSetup" class="screen active">
+        <!-- PANTALLA DE INICIO / MENÚ PRINCIPAL -->
+        <div id="screenMenu" class="screen active">
             <h1>¿Quién es Quién?</h1>
-            <p class="instructions">Elegí un número secreto del 0 al 99 para que tu oponente intente adivinarlo.</p>
+            <p class="instructions">Selecciona la grilla para comenzar:</p>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn" onclick="selectMode(1)">
+                    <span>Grilla 0 a 99</span>
+                    <div class="menu-dot"></div>
+                </button>
+
+                <button class="menu-btn" onclick="selectMode(3)">
+                    <span>Grilla 100 a 999</span>
+                    <div class="menu-dot"></div>
+                </button>
+
+                <button class="menu-btn" onclick="selectMode(4)">
+                    <span>Grilla 1.000 a 9.999</span>
+                    <div class="menu-dot"></div>
+                </button>
+
+                <button class="menu-btn" onclick="selectMode(2)">
+                    <span>Grilla Decimales</span>
+                    <div class="menu-dot"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 1: ELEGIR NÚMERO SECRETO (Común para modo 1 y 2) -->
+        <div id="screenSetup" class="screen">
+            <div class="back-menu-container">
+                <button class="secondary" onclick="goToMenu()">← Volver al Menú</button>
+            </div>
+            <h1 id="setupTitle">Elegir Número</h1>
+            <p class="instructions" id="setupInstructions">Elegí tu número secreto.</p>
             
             <div class="form-group">
-                <input type="number" id="secretInput" min="0" max="99" placeholder="Ej: 42">
+                <input type="text" id="secretInput" placeholder="Ej: 42">
             </div>
 
             <button onclick="startGame()">Comenzar Juego</button>
         </div>
 
-        <!-- PANTALLA 2: EL TABLERO -->
+        <!-- PANTALLA 2: EL TABLERO DE JUEGO -->
         <div id="screenBoard" class="screen">
-            <h1>Tablero de Juego</h1>
-            <p class="instructions">Tacha números o usa los botones sutiles de los bordes (•) para familias de números y columnas.</p>
+            <div class="back-menu-container">
+                <button class="secondary" onclick="goToMenu()">← Volver al Menú</button>
+            </div>
+            <h1 id="boardTitle">Tablero de Juego</h1>
+            <p class="instructions" id="boardInstructions">Tacha números o usa los botones laterales/superiores.</p>
 
             <div class="controls">
                 <button class="secondary" onclick="resetBoard()">Reiniciar Tablero</button>
-                <button class="secondary" onclick="goToSetup()">Cambiar mi número</button>
+                <button class="secondary" onclick="goToSetupOrRestart()">Cambiar mi número</button>
             </div>
 
             <!-- Área de juego combinada -->
             <div class="game-area">
-                <div class="board-layout">
-                    <!-- Botones superiores para columnas -->
-                    <div class="col-buttons-container" id="colButtonsContainer"></div>
-                    <!-- Grilla interactiva del 0 al 99 -->
-                    <div class="grid-wrapper" id="gridWrapper"></div>
+                <div class="board-layout" id="boardLayoutContainer">
+                    <!-- Contenido dinámico según el modo -->
                 </div>
 
-                <!-- Panel Lateral: Contador de Preguntas -->
-                <div class="counter-panel">
-                    <div class="counter-title">Preguntas</div>
-                    <div class="counter-value" id="questionCount">0</div>
-                    <div class="counter-buttons">
-                        <button class="secondary counter-btn" onclick="changeCount(-1)" title="Restar pregunta">-</button>
-                        <button class="counter-btn" onclick="changeCount(1)" title="Sumar pregunta">+</button>
+                <!-- Panel Lateral -->
+                <div class="side-panel">
+                    <!-- Contador de Preguntas -->
+                    <div class="counter-panel">
+                        <div class="counter-title">Preguntas</div>
+                        <div class="counter-value" id="questionCount">0</div>
+                        <div class="counter-buttons">
+                            <button class="secondary counter-btn" onclick="changeCount(-1)" title="Restar pregunta">-</button>
+                            <button class="counter-btn" onclick="changeCount(1)" title="Sumar pregunta">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Cuadro especial para Modo 3 y 4: Elegir número secreto interactivo -->
+                    <div id="mode3SetupPanel" class="mode3-setup-box" style="display: none;">
+                        <p id="mode3StatusText">Haz clic en tu número secreto</p>
+                        <button class="accent" id="mode3ActionBtn" onclick="enableRandomSelection()" style="width: 100%; font-size: 0.8rem; padding: 6px; display: none;">Cambiar número</button>
                     </div>
                 </div>
             </div>
@@ -438,7 +568,7 @@
         </div>
 
         <div class="footer">
-            Cada jugador abre esta página en su computadora. ¡A jugar!
+            Herramienta pedagógica interactiva. ¡A jugar!
         </div>
     </div>
 
@@ -454,27 +584,170 @@
     </div>
 
     <script>
+        let currentMode = 1; 
         let secretValue = null;
         let questionCounter = 0;
-        const totalNumbers = 100;
+        let randomGridNumbers = []; 
+        let isSelectingRandomSecret = false; 
 
-        function createBoard() {
+        function goToMenu() {
+            secretValue = null;
+            isSelectingRandomSecret = false;
+            document.getElementById('screenSetup').classList.remove('active');
+            document.getElementById('screenBoard').classList.remove('active');
+            document.getElementById('screenMenu').classList.add('active');
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            document.getElementById('screenMenu').classList.remove('active');
+
+            if (currentMode === 3) {
+                generateRandomGrid7x7(100, 999);
+                setupRandomGridDirect();
+            } else if (currentMode === 4) {
+                generateRandomGrid7x7(1000, 9999);
+                setupRandomGridDirect();
+            } else {
+                setupModeInputScreen();
+                document.getElementById('screenSetup').classList.add('active');
+            }
+        }
+
+        function setupModeInputScreen() {
+            const title = document.getElementById('setupTitle');
+            const instructions = document.getElementById('setupInstructions');
+            const input = document.getElementById('secretInput');
+
+            if (currentMode === 1) {
+                title.textContent = "Grilla 0 a 99";
+                instructions.textContent = "Elegí un número entero secreto del 0 al 99.";
+                input.placeholder = "Ej: 42";
+                input.type = "number";
+                input.min = "0";
+                input.max = "99";
+                input.step = "1";
+            } else if (currentMode === 2) {
+                title.textContent = "Grilla Decimales";
+                instructions.textContent = "Elegí un número decimal secreto (ej: 3,5 o 3.5).";
+                input.placeholder = "Ej: 4,5";
+                input.type = "text";
+            }
+        }
+
+        function startGame() {
+            const input = document.getElementById('secretInput');
+            let valStr = input.value.trim().replace(',', '.');
+            
+            if (currentMode === 1) {
+                const val = parseInt(valStr);
+                if (isNaN(val) || val < 0 || val > 99) {
+                    alert('Por favor, ingresa un número entero válido entre 0 y 99.');
+                    return;
+                }
+                secretValue = val.toString();
+            } else if (currentMode === 2) {
+                const val = parseFloat(valStr);
+                if (isNaN(val) || val < 0.0 || val > 9.9) {
+                    alert('Por favor, ingresa un número decimal válido entre 0,0 y 9,9.');
+                    return;
+                }
+                secretValue = val.toFixed(1).replace('.', ',');
+            }
+
+            launchBoardScreen();
+        }
+
+        function setupRandomGridDirect() {
+            secretValue = null; 
+            launchBoardScreen();
+            enableRandomSelection();
+        }
+
+        function launchBoardScreen() {
+            const boardTitle = document.getElementById('boardTitle');
+            const boardInstructions = document.getElementById('boardInstructions');
+            const mode3Panel = document.getElementById('mode3SetupPanel');
+
+            if (currentMode === 1) {
+                boardTitle.textContent = "Grilla 0 a 99";
+                boardInstructions.textContent = "Tacha números o usa los botones sutiles de los bordes (•) para familias y columnas.";
+                mode3Panel.style.display = 'none';
+                createBoard0To99();
+            } else if (currentMode === 2) {
+                boardTitle.textContent = "Grilla Decimales";
+                boardInstructions.textContent = "Tacha números o usa los botones sutiles de los bordes (•) para enteros y décimos.";
+                mode3Panel.style.display = 'none';
+                createBoardDecimals();
+            } else if (currentMode === 3) {
+                boardTitle.textContent = "Grilla 100 a 999";
+                boardInstructions.textContent = "Tablero dinámico de 7x7 con números al azar.";
+                mode3Panel.style.display = 'block';
+                createBoard7x7();
+            } else if (currentMode === 4) {
+                boardTitle.textContent = "Grilla 1.000 a 9.999";
+                boardInstructions.textContent = "Tablero dinámico de 7x7 con números del 1.000 al 9.999.";
+                mode3Panel.style.display = 'block';
+                createBoard7x7();
+            }
+
+            resetCounter();
+            document.getElementById('screenSetup').classList.remove('active');
+            document.getElementById('screenMenu').classList.remove('active');
+            document.getElementById('screenBoard').classList.add('active');
+        }
+
+        function goToSetupOrRestart() {
+            if (currentMode === 3) {
+                generateRandomGrid7x7(100, 999);
+                secretValue = null;
+                createBoard7x7();
+                resetBoard();
+                enableRandomSelection(); 
+            } else if (currentMode === 4) {
+                generateRandomGrid7x7(1000, 9999);
+                secretValue = null;
+                createBoard7x7();
+                resetBoard();
+                enableRandomSelection(); 
+            } else {
+                document.getElementById('screenBoard').classList.remove('active');
+                document.getElementById('screenSetup').classList.add('active');
+            }
+        }
+
+        function enableRandomSelection() {
+            isSelectingRandomSecret = true;
+            secretValue = null;
+            document.getElementById('mode3StatusText').textContent = "Haz clic en tu número secreto";
+            
+            const actionBtn = document.getElementById('mode3ActionBtn');
+            actionBtn.style.display = 'none';
+
+            const cells = document.querySelectorAll('#gridWrapper7x7 .cell');
+            cells.forEach(cell => cell.classList.remove('secret-candidate'));
+        }
+
+        function createBoard0To99() {
+            const container = document.getElementById('boardLayoutContainer');
+            container.innerHTML = `
+                <div class="col-buttons-container" id="colButtonsContainer"></div>
+                <div class="grid-wrapper" id="gridWrapper"></div>
+            `;
+
             const gridWrapper = document.getElementById('gridWrapper');
             const colButtonsContainer = document.getElementById('colButtonsContainer');
-            
-            gridWrapper.innerHTML = '';
-            colButtonsContainer.innerHTML = '';
 
             for (let c = 0; c < 10; c++) {
                 const colBtn = document.createElement('button');
                 colBtn.classList.add('batch-btn', 'col-btn');
                 colBtn.textContent = '•';
                 colBtn.title = `Tachar/Destachar columna ${c}`;
-                colBtn.onclick = () => toggleColumn(c);
+                colBtn.onclick = () => toggleColumn0To99(c);
                 colButtonsContainer.appendChild(colBtn);
             }
 
-            for (let i = 0; i < totalNumbers; i++) {
+            for (let i = 0; i < 100; i++) {
                 const cell = document.createElement('div');
                 cell.classList.add('cell');
                 cell.textContent = i;
@@ -492,10 +765,187 @@
                     rowBtn.classList.add('batch-btn', 'row-btn');
                     rowBtn.textContent = '•';
                     rowBtn.title = `Tachar/Destachar familia del ${rowFamily * 10}`;
-                    rowBtn.onclick = () => toggleRow(rowFamily);
+                    rowBtn.onclick = () => toggleRow0To99(rowFamily);
                     gridWrapper.appendChild(rowBtn);
                 }
             }
+        }
+
+        function toggleRow0To99(rowFamily) {
+            const start = rowFamily * 10;
+            const end = start + 9;
+            let allCrossed = true;
+            for (let i = start; i <= end; i++) {
+                const cell = document.querySelector(`.cell[data-number="${i}"]`);
+                if (cell && !cell.classList.contains('crossed')) {
+                    allCrossed = false;
+                    break;
+                }
+            }
+            for (let i = start; i <= end; i++) {
+                const cell = document.querySelector(`.cell[data-number="${i}"]`);
+                if (cell) {
+                    if (allCrossed) cell.classList.remove('crossed');
+                    else cell.classList.add('crossed');
+                }
+            }
+        }
+
+        function toggleColumn0To99(colIndex) {
+            const columnNumbers = [];
+            for (let r = 0; r < 10; r++) {
+                columnNumbers.push((r * 10) + colIndex);
+            }
+            let allCrossed = true;
+            columnNumbers.forEach(num => {
+                const cell = document.querySelector(`.cell[data-number="${num}"]`);
+                if (cell && !cell.classList.contains('crossed')) allCrossed = false;
+            });
+            columnNumbers.forEach(num => {
+                const cell = document.querySelector(`.cell[data-number="${num}"]`);
+                if (cell) {
+                    if (allCrossed) cell.classList.remove('crossed');
+                    else cell.classList.add('crossed');
+                }
+            });
+        }
+
+        function createBoardDecimals() {
+            const container = document.getElementById('boardLayoutContainer');
+            container.innerHTML = `
+                <div class="col-buttons-container" id="colButtonsContainerDec"></div>
+                <div class="grid-wrapper" id="gridWrapperDec"></div>
+            `;
+
+            const gridWrapper = document.getElementById('gridWrapperDec');
+            const colButtonsContainer = document.getElementById('colButtonsContainerDec');
+
+            for (let c = 0; c < 10; c++) {
+                const colBtn = document.createElement('button');
+                colBtn.classList.add('batch-btn', 'col-btn');
+                colBtn.textContent = '•';
+                colBtn.title = `Tachar/Destachar décima ,${c}`;
+                colBtn.onclick = () => toggleColumnDecimals(c);
+                colButtonsContainer.appendChild(colBtn);
+            }
+
+            for (let i = 0; i < 100; i++) {
+                const val = (i / 10).toFixed(1); 
+                const displayVal = val.replace('.', ','); 
+
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.textContent = displayVal;
+                cell.dataset.number = displayVal;
+
+                cell.addEventListener('click', () => {
+                    cell.classList.toggle('crossed');
+                });
+
+                gridWrapper.appendChild(cell);
+
+                if ((i + 1) % 10 === 0) {
+                    const rowInteger = Math.floor(i / 10); 
+                    const rowBtn = document.createElement('button');
+                    rowBtn.classList.add('batch-btn', 'row-btn');
+                    rowBtn.textContent = '•';
+                    rowBtn.title = `Tachar/Destachar enteros con ${rowInteger}`;
+                    rowBtn.onclick = () => toggleRowDecimals(rowInteger);
+                    gridWrapper.appendChild(rowBtn);
+                }
+            }
+        }
+
+        function toggleRowDecimals(rowInteger) {
+            const rowValues = [];
+            for (let d = 0; d < 10; d++) {
+                rowValues.push(`${rowInteger},${d}`);
+            }
+
+            let allCrossed = true;
+            rowValues.forEach(numStr => {
+                const cell = document.querySelector(`.cell[data-number="${numStr}"]`);
+                if (cell && !cell.classList.contains('crossed')) allCrossed = false;
+            });
+
+            rowValues.forEach(numStr => {
+                const cell = document.querySelector(`.cell[data-number="${numStr}"]`);
+                if (cell) {
+                    if (allCrossed) cell.classList.remove('crossed');
+                    else cell.classList.add('crossed');
+                }
+            });
+        }
+
+        function toggleColumnDecimals(colIndex) {
+            const colValues = [];
+            for (let r = 0; r < 10; r++) {
+                colValues.push(`${r},${colIndex}`);
+            }
+
+            let allCrossed = true;
+            colValues.forEach(numStr => {
+                const cell = document.querySelector(`.cell[data-number="${numStr}"]`);
+                if (cell && !cell.classList.contains('crossed')) allCrossed = false;
+            });
+
+            colValues.forEach(numStr => {
+                const cell = document.querySelector(`.cell[data-number="${numStr}"]`);
+                if (cell) {
+                    if (allCrossed) cell.classList.remove('crossed');
+                    else cell.classList.add('crossed');
+                }
+            });
+        }
+
+        function generateRandomGrid7x7(minVal, maxVal) {
+            const pool = [];
+            for (let i = minVal; i <= maxVal; i++) {
+                pool.push(i);
+            }
+            
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+
+            randomGridNumbers = pool.slice(0, 49).sort((a, b) => a - b);
+        }
+
+        function createBoard7x7() {
+            const container = document.getElementById('boardLayoutContainer');
+            container.innerHTML = `
+                <div class="grid-wrapper-7x7" id="gridWrapper7x7"></div>
+            `;
+
+            const gridWrapper = document.getElementById('gridWrapper7x7');
+
+            randomGridNumbers.forEach(num => {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                
+                let formattedNum = num >= 1000 ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : num.toString();
+
+                cell.textContent = formattedNum;
+                cell.dataset.number = num;
+
+                cell.addEventListener('click', () => {
+                    if (isSelectingRandomSecret) {
+                        secretValue = formattedNum;
+                        isSelectingRandomSecret = false;
+                        
+                        document.getElementById('mode3StatusText').textContent = "Número guardado";
+                        const actionBtn = document.getElementById('mode3ActionBtn');
+                        actionBtn.style.display = 'block';
+                        
+                        resetBoard();
+                    } else {
+                        cell.classList.toggle('crossed');
+                    }
+                });
+
+                gridWrapper.appendChild(cell);
+            });
         }
 
         function changeCount(amount) {
@@ -511,76 +961,6 @@
             document.getElementById('questionCount').textContent = questionCounter;
         }
 
-        function toggleRow(rowFamily) {
-            const start = rowFamily * 10;
-            const end = start + 9;
-            
-            let allCrossed = true;
-            for (let i = start; i <= end; i++) {
-                const cell = document.querySelector(`.cell[data-number="${i}"]`);
-                if (!cell.classList.contains('crossed')) {
-                    allCrossed = false;
-                    break;
-                }
-            }
-
-            for (let i = start; i <= end; i++) {
-                const cell = document.querySelector(`.cell[data-number="${i}"]`);
-                if (allCrossed) {
-                    cell.classList.remove('crossed');
-                } else {
-                    cell.classList.add('crossed');
-                }
-            }
-        }
-
-        function toggleColumn(colIndex) {
-            const columnNumbers = [];
-            for (let r = 0; r < 10; r++) {
-                columnNumbers.push((r * 10) + colIndex);
-            }
-
-            let allCrossed = true;
-            columnNumbers.forEach(num => {
-                const cell = document.querySelector(`.cell[data-number="${num}"]`);
-                if (!cell.classList.contains('crossed')) {
-                    allCrossed = false;
-                }
-            });
-
-            columnNumbers.forEach(num => {
-                const cell = document.querySelector(`.cell[data-number="${num}"]`);
-                if (allCrossed) {
-                    cell.classList.remove('crossed');
-                } else {
-                    cell.classList.add('crossed');
-                }
-            });
-        }
-
-        function startGame() {
-            const input = document.getElementById('secretInput');
-            const val = parseInt(input.value);
-
-            if (isNaN(val) || val < 0 || val > 99) {
-                alert('Por favor, ingresa un número válido entre 0 y 99.');
-                return;
-            }
-
-            secretValue = val;
-            
-            resetBoard();
-            resetCounter();
-
-            document.getElementById('screenSetup').classList.remove('active');
-            document.getElementById('screenBoard').classList.add('active');
-        }
-
-        function goToSetup() {
-            document.getElementById('screenBoard').classList.remove('active');
-            document.getElementById('screenSetup').classList.add('active');
-        }
-
         function resetBoard() {
             const cells = document.querySelectorAll('.cell');
             cells.forEach(cell => {
@@ -589,8 +969,11 @@
             resetCounter();
         }
 
-        // Mostrar la ventana emergente con animación
         function revealSecret() {
+            if ((currentMode === 3 || currentMode === 4) && isSelectingRandomSecret) {
+                alert("Primero debes seleccionar tu número secreto haciendo clic en una casilla del tablero.");
+                return;
+            }
             if (secretValue !== null) {
                 document.getElementById('modalSecretNumber').textContent = secretValue;
                 document.getElementById('modalStatsText').textContent = `Adivinado en ${questionCounter} preguntas`;
@@ -598,12 +981,9 @@
             }
         }
 
-        // Cerrar la ventana emergente
         function closeModal() {
             document.getElementById('revealModal').classList.remove('show');
         }
-
-        createBoard();
     </script>
 
 </body>
