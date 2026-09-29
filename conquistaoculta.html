@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conquista oculta - Brillar*UY</title>
+    <!-- Tailwind CSS desde CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .grid-cell {
+            transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .grid-cell:hover {
+            transform: scale(0.96);
+        }
+        .color-none {
+            background-color: #ffffff;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+        /* EFECTO DESTACADO DE RULETA EN MOVIMIENTO */
+        .roulette-active {
+            outline: 4px solid #f59e0b !important;
+            outline-offset: -2px;
+            box-shadow: 0 0 20px #f59e0b, inset 0 0 15px #f59e0b !important;
+            transform: scale(1.08) !important;
+            z-index: 20 !important;
+        }
+
+        /* EFECTO CASILLA GANADORA RULETA */
+        @keyframes pulseWinner {
+            0%, 100% { transform: scale(1.05); box-shadow: 0 0 25px #ec4899; }
+            50% { transform: scale(1.12); box-shadow: 0 0 35px #3b82f6; }
+        }
+        .roulette-winner {
+            animation: pulseWinner 0.8s infinite ease-in-out;
+            z-index: 25 !important;
+            outline: 4px solid #38bdf8 !important;
+        }
+
+        /* Animación para el giro de revelación de puntos */
+        @keyframes flipCard {
+            0% { transform: rotateY(0deg) scale(1); }
+            50% { transform: rotateY(90deg) scale(1.1); }
+            100% { transform: rotateY(0deg) scale(1); }
+        }
+        .cell-flip {
+            animation: flipCard 0.5s ease-in-out forwards;
+        }
+        
+        /* Modal Popup */
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen w-screen flex flex-col font-sans select-none overflow-hidden relative">
+
+    <!-- CANVAS PARA EL CONFETI DE VICTORIA -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <!-- HEADER & BARRA SUPERIOR -->
+    <header class="bg-slate-800 border-b border-slate-700 shadow-xl px-4 py-2 shrink-0 z-30">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-purple-600 to-pink-500 text-white p-2 rounded-xl shadow-lg">
+                    <i class="fa-solid fa-star text-lg sm:text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <!-- TÍTULO ACTUALIZADO -->
+                    <h1 class="font-extrabold text-base sm:text-xl text-white tracking-wide leading-tight">
+                        Conquista oculta - <span class="bg-gradient-to-r from-amber-400 to-pink-400 bg-clip-text text-transparent">Brillar*UY</span>
+                    </h1>
+                    
+                    <div id="header-teams-registry" class="flex items-center gap-2 mt-0.5 flex-wrap"></div>
+                </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                
+                <!-- CRONÓMETRO MODO SORPRESA -->
+                <div id="surprise-timer-display" class="hidden flex items-center gap-2 bg-slate-900/90 border border-purple-500/50 px-3 py-1.5 rounded-xl text-purple-300 font-mono font-bold text-xs sm:text-sm shadow-lg">
+                    <i class="fa-solid fa-stopwatch animate-spin text-purple-400"></i>
+                    <span id="timer-text">05:00</span>
+                </div>
+
+                <!-- BOTÓN RULETA AZAR -->
+                <button id="roulette-btn" onclick="startRoulette()" 
+                        class="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-black rounded-xl transition shadow-lg shadow-purple-500/20 active:scale-95 flex items-center gap-2 text-xs sm:text-sm">
+                    <i class="fa-solid fa-dice text-base"></i>
+                    <span>¡RULETA!</span>
+                </button>
+
+                <!-- BOTÓN 1: REVELAR PUNTOS -->
+                <button id="reveal-points-btn" onclick="revealPoints()" 
+                        class="px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black rounded-xl transition shadow-lg shadow-amber-500/20 active:scale-95 flex items-center gap-2 text-xs sm:text-sm">
+                    <i class="fa-solid fa-eye text-base"></i>
+                    <span>¡REVELAR PUNTUACIÓN!</span>
+                </button>
+
+                <!-- BOTÓN 2: REVELAR GANADOR -->
+                <button id="reveal-winner-btn" onclick="revealWinnerModal()" 
+                        class="hidden px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-xl transition shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-2 text-xs sm:text-sm animate-bounce">
+                    <i class="fa-solid fa-trophy text-base"></i>
+                    <span>🏆 ¡REVELAR GANADOR!</span>
+                </button>
+
+                <button onclick="toggleConfigModal()" 
+                        class="p-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition text-xs font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                    <span class="hidden md:inline">Ajustes</span>
+                </button>
+
+                <button onclick="toggleFullscreen()" 
+                        class="p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl transition text-xs font-semibold">
+                    <i class="fa-solid fa-expand text-sm"></i>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="flex-1 p-2 sm:p-4 w-full max-w-7xl mx-auto flex items-center justify-center min-h-0">
+        <div id="grid-container" class="w-full h-full bg-slate-800/80 p-2 sm:p-3 rounded-2xl border border-slate-700 shadow-2xl flex items-center justify-center">
+            <div id="board-grid" class="grid gap-1.5 sm:gap-2 w-full h-full justify-center items-center"></div>
+        </div>
+    </main>
+
+    <!-- MODAL POPUP DE EVENTO SORPRESA -->
+    <div id="event-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-purple-500/60 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-6 animate-pop relative overflow-hidden">
+            <div class="inline-block bg-gradient-to-tr from-purple-600 to-pink-500 p-4 rounded-full text-white shadow-xl shadow-purple-500/30">
+                <i class="fa-solid fa-gift text-5xl animate-bounce"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-xs font-black uppercase tracking-widest text-purple-400">¡Evento Sorpresa Activado!</h3>
+                <h2 id="event-modal-cell" class="text-xl sm:text-2xl font-black text-amber-400">Casilla #--</h2>
+                <div id="event-modal-text" class="bg-slate-800/90 border border-slate-700 p-4 rounded-2xl text-sm sm:text-base font-bold text-slate-100 shadow-inner"></div>
+            </div>
+            <button onclick="closeEventModal()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-black rounded-xl text-sm shadow-lg hover:from-purple-500 hover:to-pink-400 transition">Entendido</button>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP DEL GANADOR -->
+    <div id="winner-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-amber-400/60 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl text-center space-y-6 animate-pop relative overflow-hidden">
+            <div class="inline-block bg-gradient-to-tr from-amber-500 to-yellow-300 p-4 rounded-full text-slate-950 shadow-xl shadow-amber-500/30">
+                <i class="fa-solid fa-trophy text-5xl animate-bounce"></i>
+            </div>
+            <div class="space-y-1">
+                <h3 class="text-xs font-black uppercase tracking-widest text-amber-400">Resultados Finales</h3>
+                <h2 id="winner-modal-title" class="text-2xl sm:text-3xl font-black text-white tracking-tight">¡EQUIPO GANADOR!</h2>
+                <p id="winner-modal-desc" class="text-xs sm:text-sm text-slate-300 font-medium">¡Suma total calculada!</p>
+            </div>
+            <div id="leaderboard-container" class="bg-slate-800/80 border border-slate-700 rounded-2xl p-2.5 space-y-1.5 text-left max-h-48 overflow-y-auto"></div>
+            <div class="pt-2 flex gap-3">
+                <button onclick="closeWinnerModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold text-xs sm:text-sm transition">Ver Tablero</button>
+                <button onclick="resetBoardState(); closeWinnerModal();" class="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black rounded-xl text-xs sm:text-sm shadow-lg hover:from-amber-400 hover:to-yellow-300 transition">Nueva Partida</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURACIÓN CON MODOS DE JUEGO -->
+    <div id="config-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 my-auto">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-purple-400"></i> Ajustes del Juego
+                </h3>
+                <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- MODOS DE JUEGO -->
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-300">Modo de Juego:</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="mode-btn-classic" onclick="selectGameMode('classic')" 
+                            class="p-2 rounded-xl border border-slate-600 bg-slate-700 text-left transition hover:border-purple-500 flex flex-col justify-between">
+                        <span class="font-black text-[11px] text-amber-400">CLÁSICO</span>
+                        <span class="text-[9px] text-slate-300 leading-tight mt-1">(1, 2, 5, 10)</span>
+                    </button>
+                    <button id="mode-btn-risk" onclick="selectGameMode('risk')" 
+                            class="p-2 rounded-xl border border-slate-600 bg-slate-700 text-left transition hover:border-purple-500 flex flex-col justify-between">
+                        <span class="font-black text-[11px] text-rose-400">RIESGO</span>
+                        <span class="text-[9px] text-slate-300 leading-tight mt-1">(-2, 0, 5, 10)</span>
+                    </button>
+                    <button id="mode-btn-surprise" onclick="selectGameMode('surprise')" 
+                            class="p-2 rounded-xl border border-slate-600 bg-slate-700 text-left transition hover:border-purple-500 flex flex-col justify-between">
+                        <span class="font-black text-[11px] text-purple-400">SORPRESA</span>
+                        <span class="text-[9px] text-slate-300 leading-tight mt-1">(Cronómetro)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONFIGURACIÓN CRONÓMETRO MODO SORPRESA -->
+            <div id="surprise-timer-config" class="hidden space-y-2 bg-slate-900/60 p-3 rounded-2xl border border-purple-500/30">
+                <label class="block text-xs font-semibold text-purple-300">Tiempo del Cronómetro (Modo Sorpresa):</label>
+                <div class="flex gap-2">
+                    <button onclick="setSurpriseTimerMinutes(5)" class="timer-opt-btn flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200">5 min</button>
+                    <button onclick="setSurpriseTimerMinutes(7)" class="timer-opt-btn flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200">7 min</button>
+                    <button onclick="setSurpriseTimerMinutes(10)" class="timer-opt-btn flex-1 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200">10 min</button>
+                </div>
+            </div>
+
+            <!-- TAMAÑO DE CASILLAS -->
+            <div class="space-y-2 border-t border-slate-700/60 pt-3">
+                <label class="block text-xs font-semibold text-slate-300">Número de Casillas:</label>
+                <div class="flex gap-2">
+                    <button onclick="setGridSizePreset(30)" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200">30</button>
+                    <button onclick="setGridSizePreset(50)" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200">50</button>
+                    <button onclick="setGridSizePreset(100)" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs font-bold text-slate-200">100</button>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <span class="text-xs text-slate-400 font-medium">Personalizado:</span>
+                    <input type="number" id="custom-grid-size" min="4" max="200" placeholder="Ej: 40" class="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-600 w-24 text-center focus:outline-none focus:border-purple-500">
+                    <button onclick="applyCustomGridSize()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition">Aplicar</button>
+                </div>
+            </div>
+
+            <!-- EQUIPOS -->
+            <div class="space-y-3 border-t border-slate-700/60 pt-3">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-semibold text-slate-300">Equipos:</label>
+                    <button onclick="addTeam()" class="text-[11px] px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg flex items-center gap-1">
+                        <i class="fa-solid fa-plus"></i> Agregar
+                    </button>
+                </div>
+                <div id="teams-edit-list" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
+            </div>
+
+            <div class="border-t border-slate-700/60 pt-3 flex gap-2">
+                <button onclick="resetBoard()" class="flex-1 py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-rotate-right"></i> Reiniciar
+                </button>
+                <button onclick="toggleConfigModal()" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold text-xs shadow-lg transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        let teams = [
+            { id: 't1', name: 'Rojo', color: '#ef4444', textDark: false },
+            { id: 't2', name: 'Azul', color: '#3b82f6', textDark: false },
+            { id: 't3', name: 'Verde', color: '#22c55e', textDark: false },
+            { id: 't4', name: 'Amarillo', color: '#eab308', textDark: true }
+        ];
+
+        let currentGameMode = 'classic';
+        const gameModes = {
+            classic: [1, 2, 5, 10],
+            risk: [-2, 0, 5, 10],
+            surprise: [1, 2, 5, 10]
+        };
+
+        const surpriseEvents = [
+            { id: 'extra', text: '🎁 ¡Territorio extra! El dueño de la casilla puede conquistar otra casilla libre.' },
+            { id: 'treasure', text: '💎 ¡Tesoro! Esa casilla suma +10 puntos extra.' },
+            { id: 'double', text: '✨ ¡Doble valor! Los puntos ocultos de esa casilla se duplican.' },
+            { id: 'lost', text: '💥 ¡Territorio perdido! La casilla vuelve a quedar libre.' },
+            { id: 'swap', text: '🔄 ¡Intercambio! El dueño intercambia esa casilla por una de otro equipo.' },
+            { id: 'borders', text: '🌪 ¡Cambio de fronteras! La casilla cambia al color de uno de sus territorios vecinos elegido al azar.' },
+            { id: 'expand', text: '🎯 ¡Expansión! El equipo propietario conquista una casilla libre adyacente.' },
+            { id: 'steal', text: '🏴‍☠️ ¡Robo de territorio! El equipo dueño de la casilla le roba una casilla a otro equipo.' }
+        ];
+
+        let totalCells = 50; 
+        let pointsRevealed = false;
+        let winnerRevealed = false;
+        let isRouletteRunning = false;
+        let gridData = [];
+
+        // Variables del Cronómetro
+        let timerMinutes = 5;
+        let timerSecondsLeft = 300;
+        let timerInterval = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initGridData();
+            renderGrid();
+            updateModeButtonsUI();
+            window.addEventListener('resize', renderGrid);
+        });
+
+        function selectGameMode(modeKey) {
+            if (currentGameMode === modeKey) return;
+            currentGameMode = modeKey;
+            updateModeButtonsUI();
+            resetBoardState();
+        }
+
+        function setSurpriseTimerMinutes(mins) {
+            timerMinutes = mins;
+            timerSecondsLeft = mins * 60;
+            updateTimerDisplay();
+            updateTimerButtonsUI();
+            if (currentGameMode === 'surprise') {
+                startSurpriseTimer();
+            }
+        }
+
+        function updateTimerButtonsUI() {
+            document.querySelectorAll('.timer-opt-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white', 'border-purple-400');
+                btn.classList.add('bg-slate-700', 'text-slate-200');
+                if (btn.innerText.includes(`${timerMinutes} min`)) {
+                    btn.classList.remove('bg-slate-700', 'text-slate-200');
+                    btn.classList.add('bg-purple-600', 'text-white');
+                }
+            });
+        }
+
+        function startSurpriseTimer() {
+            clearInterval(timerInterval);
+            timerSecondsLeft = timerMinutes * 60;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                if (isRouletteRunning || pointsRevealed) return;
+
+                timerSecondsLeft--;
+                updateTimerDisplay();
+
+                if (timerSecondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    playAlarmSound();
+                    setTimeout(() => {
+                        startRoulette(true);
+                    }, 1200);
+                }
+            }, 1000);
+        }
+
+        function stopSurpriseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timerSecondsLeft / 60);
+            const secs = timerSecondsLeft % 60;
+            const text = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const timerEl = document.getElementById('timer-text');
+            if (timerEl) timerEl.innerText = text;
+        }
+
+        function updateModeButtonsUI() {
+            const btnClassic = document.getElementById('mode-btn-classic');
+            const btnRisk = document.getElementById('mode-btn-risk');
+            const btnSurprise = document.getElementById('mode-btn-surprise');
+            const timerConfig = document.getElementById('surprise-timer-config');
+            const timerDisplay = document.getElementById('surprise-timer-display');
+
+            if (!btnClassic || !btnRisk || !btnSurprise) return;
+
+            btnClassic.className = "p-2 rounded-xl border border-slate-600 bg-slate-700 text-left transition hover:border-purple-500 flex flex-col justify-between";
+            btnRisk.className = "p-2 rounded-xl border border-slate-600 bg-slate-700 text-left transition hover:border-purple-500 flex flex-col justify-between";
+            btnSurprise.className = "p-2 rounded-xl border border-slate-600 bg-slate-700 text-left transition hover:border-purple-500 flex flex-col justify-between";
+
+            if (currentGameMode === 'classic') {
+                btnClassic.className += " border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/30";
+                timerConfig.classList.add('hidden');
+                timerDisplay.classList.add('hidden');
+                stopSurpriseTimer();
+            } else if (currentGameMode === 'risk') {
+                btnRisk.className += " border-rose-400 bg-rose-500/10 ring-2 ring-rose-400/30";
+                timerConfig.classList.add('hidden');
+                timerDisplay.classList.add('hidden');
+                stopSurpriseTimer();
+            } else if (currentGameMode === 'surprise') {
+                btnSurprise.className += " border-purple-400 bg-purple-500/10 ring-2 ring-purple-400/30";
+                timerConfig.classList.remove('hidden');
+                timerDisplay.classList.remove('hidden');
+                updateTimerButtonsUI();
+                startSurpriseTimer();
+            }
+        }
+
+        function initGridData() {
+            const currentPointsPool = gameModes[currentGameMode] || gameModes.classic;
+            gridData = Array.from({ length: totalCells }, () => ({
+                teamId: null,
+                secretPoints: currentPointsPool[Math.floor(Math.random() * currentPointsPool.length)]
+            }));
+            pointsRevealed = false;
+            winnerRevealed = false;
+            isRouletteRunning = false;
+
+            document.getElementById('reveal-points-btn').classList.remove('hidden');
+            document.getElementById('reveal-winner-btn').classList.add('hidden');
+
+            if (currentGameMode === 'surprise') {
+                startSurpriseTimer();
+            }
+        }
+
+        function renderGrid() {
+            updateHeaderTeamsRegistry();
+            const grid = document.getElementById('board-grid');
+            grid.innerHTML = '';
+
+            let cols = 10;
+            if (totalCells <= 20) cols = 5;
+            else if (totalCells <= 30) cols = 6;
+            else if (totalCells <= 50) cols = 10;
+            else if (totalCells <= 80) cols = 10;
+            else cols = 12;
+
+            let rows = Math.ceil(totalCells / cols);
+
+            grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            grid.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+
+            gridData.forEach((cell, index) => {
+                const cellEl = document.createElement('div');
+                cellEl.id = `cell-${index}`;
+                cellEl.className = 'grid-cell rounded-xl border sm:border-2 flex flex-col items-center justify-center relative font-black shadow-sm text-xs sm:text-base md:text-xl h-full w-full';
+                
+                const team = teams.find(t => t.id === cell.teamId);
+                if (team) {
+                    cellEl.style.backgroundColor = team.color;
+                    cellEl.style.borderColor = 'rgba(255,255,255,0.4)';
+                    cellEl.style.color = team.textDark ? '#0f172a' : '#ffffff';
+                } else {
+                    cellEl.className += ' color-none';
+                }
+
+                if (!pointsRevealed) {
+                    cellEl.onclick = () => handleCellClick(index);
+                    cellEl.classList.add('cursor-pointer');
+                    cellEl.innerText = index + 1;
+                } else {
+                    if (cell.teamId !== null) {
+                        const sign = cell.secretPoints > 0 ? '+' : '';
+                        cellEl.innerHTML = `
+                            <span class="text-[9px] sm:text-xs opacity-60 font-bold absolute top-0.5 left-1">${index + 1}</span>
+                            <div class="flex items-center text-sm sm:text-xl md:text-2xl font-black">
+                                <span>${sign}${cell.secretPoints}</span>
+                            </div>
+                        `;
+                    } else {
+                        cellEl.innerHTML = `<span class="opacity-25 text-[10px] sm:text-xs font-bold">${index + 1}</span>`;
+                    }
+                }
+
+                grid.appendChild(cellEl);
+            });
+
+            updateTeamsEditModal();
+        }
+
+        function startRoulette(isFromTimer = false) {
+            if (isRouletteRunning) return;
+            
+            document.querySelectorAll('.roulette-active, .roulette-winner').forEach(el => {
+                el.classList.remove('roulette-active', 'roulette-winner');
+            });
+
+            isRouletteRunning = true;
+            const btn = document.getElementById('roulette-btn');
+            btn.classList.add('opacity-50', 'pointer-events-none');
+
+            const targetIndex = Math.floor(Math.random() * totalCells);
+            let currentIndex = 0;
+            let speed = 40; 
+            let totalSteps = totalCells * 2 + Math.floor(Math.random() * totalCells);
+            let currentStep = 0;
+
+            function step() {
+                const prevCell = document.getElementById(`cell-${currentIndex}`);
+                if (prevCell) prevCell.classList.remove('roulette-active');
+
+                currentIndex = (currentIndex + Math.floor(Math.random() * 3) + 1) % totalCells;
+                
+                const currentCell = document.getElementById(`cell-${currentIndex}`);
+                if (currentCell) currentCell.classList.add('roulette-active');
+                
+                playBeepSound();
+                currentStep++;
+
+                if (currentStep < totalSteps) {
+                    if (totalSteps - currentStep < 15) {
+                        speed += 25;
+                    } else if (totalSteps - currentStep < 8) {
+                        speed += 60;
+                    }
+                    setTimeout(step, speed);
+                } else {
+                    if (currentCell) currentCell.classList.remove('roulette-active');
+                    
+                    const winningCell = document.getElementById(`cell-${targetIndex}`);
+                    if (winningCell) winningCell.classList.add('roulette-winner');
+
+                    playWinnerBeep();
+                    isRouletteRunning = false;
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+
+                    if (isFromTimer || currentGameMode === 'surprise') {
+                        setTimeout(() => {
+                            triggerSurpriseEvent(targetIndex);
+                        }, 3000);
+                    }
+                }
+            }
+
+            step();
+        }
+
+        function triggerSurpriseEvent(cellIndex) {
+            const randomEvent = surpriseEvents[Math.floor(Math.random() * surpriseEvents.length)];
+            const cell = gridData[cellIndex];
+
+            // Aplicar efectos lógicos del evento
+            if (randomEvent.id === 'treasure') {
+                cell.secretPoints += 10;
+            } else if (randomEvent.id === 'double') {
+                cell.secretPoints *= 2;
+            } else if (randomEvent.id === 'lost') {
+                cell.teamId = null;
+            } else if (randomEvent.id === 'borders') {
+                const otherTeams = teams.filter(t => t.id !== cell.teamId);
+                if (otherTeams.length > 0) {
+                    const randomTeam = otherTeams[Math.floor(Math.random() * otherTeams.length)];
+                    cell.teamId = randomTeam.id;
+                }
+            }
+
+            renderGrid();
+
+            document.getElementById('event-modal-cell').innerText = `Casilla #${cellIndex + 1}`;
+            document.getElementById('event-modal-text').innerText = randomEvent.text;
+            document.getElementById('event-modal').classList.remove('hidden');
+
+            playMagicEventSound();
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+            if (currentGameMode === 'surprise' && !pointsRevealed) {
+                startSurpriseTimer();
+            }
+        }
+
+        function updateHeaderTeamsRegistry() {
+            const registry = document.getElementById('header-teams-registry');
+            if (!registry) return;
+            registry.innerHTML = '';
+
+            teams.forEach(t => {
+                const badge = document.createElement('div');
+                badge.className = 'flex items-center gap-1.5 bg-slate-900/80 border border-slate-700/80 px-2 py-0.5 rounded-full text-[11px] font-bold text-slate-300';
+                badge.innerHTML = `
+                    <span class="w-2.5 h-2.5 rounded-full inline-block shrink-0" style="background-color: ${t.color}"></span>
+                    <span>${t.name}</span>
+                `;
+                registry.appendChild(badge);
+            });
+        }
+
+        function handleCellClick(index) {
+            if (pointsRevealed || isRouletteRunning) return;
+
+            const currentTeamId = gridData[index].teamId;
+
+            if (currentTeamId === null) {
+                gridData[index].teamId = teams[0].id;
+            } else {
+                const currentIndex = teams.findIndex(t => t.id === currentTeamId);
+                if (currentIndex === teams.length - 1) {
+                    gridData[index].teamId = null;
+                } else {
+                    gridData[index].teamId = teams[currentIndex + 1].id;
+                }
+            }
+
+            renderGrid();
+        }
+
+        function revealPoints() {
+            if (pointsRevealed || isRouletteRunning) return;
+            
+            const paintedCount = gridData.filter(c => c.teamId !== null).length;
+            if (paintedCount === 0) {
+                alert('¡Pinten algunas casillas primero antes de revelar los puntos!');
+                return;
+            }
+
+            stopSurpriseTimer();
+            pointsRevealed = true;
+            document.getElementById('reveal-points-btn').classList.add('hidden');
+            document.getElementById('reveal-winner-btn').classList.remove('hidden');
+
+            gridData.forEach((cell, index) => {
+                if (cell.teamId !== null) {
+                    const cellEl = document.getElementById(`cell-${index}`);
+                    if (cellEl) cellEl.classList.add('cell-flip');
+                }
+            });
+
+            playShortMagicSound();
+
+            setTimeout(() => {
+                renderGrid();
+            }, 250);
+        }
+
+        function revealWinnerModal() {
+            winnerRevealed = true;
+
+            let scores = teams.map(team => {
+                const owned = gridData.filter(c => c.teamId === team.id);
+                const total = owned.reduce((sum, c) => sum + c.secretPoints, 0);
+                return { ...team, totalScore: total, cellCount: owned.length };
+            });
+
+            scores.sort((a, b) => b.totalScore - a.totalScore);
+            const winner = scores[0];
+
+            const boardContainer = document.getElementById('leaderboard-container');
+            boardContainer.innerHTML = '';
+
+            scores.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-2 rounded-xl font-bold text-xs sm:text-sm ${index === 0 ? 'bg-amber-400/20 border border-amber-400/40 text-amber-300' : 'bg-slate-900/60 text-slate-300'}`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 text-center font-black ${index === 0 ? 'text-amber-400' : 'text-slate-500'}">#${index + 1}</span>
+                        <div class="w-3 h-3 rounded-full" style="background-color: ${item.color}"></div>
+                        <span>${item.name}</span>
+                    </div>
+                    <div class="font-black">${item.totalScore} pts <span class="text-[10px] font-normal text-slate-400">(${item.cellCount} casillas)</span></div>
+                `;
+                boardContainer.appendChild(row);
+            });
+
+            document.getElementById('winner-modal-title').innerText = `¡${winner.name.toUpperCase()}!`;
+            document.getElementById('winner-modal-desc').innerText = `Logró un total de ${winner.totalScore} puntos.`;
+
+            document.getElementById('winner-modal').classList.remove('hidden');
+
+            playFanfareSound();
+            launchConfetti();
+        }
+
+        function closeWinnerModal() {
+            document.getElementById('winner-modal').classList.add('hidden');
+        }
+
+        function setGridSizePreset(size) {
+            totalCells = size;
+            document.getElementById('custom-grid-size').value = '';
+            resetBoardState();
+        }
+
+        function applyCustomGridSize() {
+            const input = document.getElementById('custom-grid-size');
+            const val = parseInt(input.value);
+            if (val && val >= 4 && val <= 200) {
+                totalCells = val;
+                resetBoardState();
+                toggleConfigModal();
+            } else {
+                alert('Ingresa un número de casilleros válido (entre 4 y 200).');
+            }
+        }
+
+        function resetBoardState() {
+            stopSurpriseTimer();
+            initGridData();
+            renderGrid();
+        }
+
+        function resetBoard() {
+            if (confirm('¿Quieres reiniciar la partida y volver a ocultar todos los puntos?')) {
+                resetBoardState();
+            }
+        }
+
+        function toggleConfigModal() {
+            document.getElementById('config-modal').classList.toggle('hidden');
+        }
+
+        function updateTeamsEditModal() {
+            const list = document.getElementById('teams-edit-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            teams.forEach((t) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-700';
+                item.innerHTML = `
+                    <input type="color" value="${t.color}" onchange="updateTeamColor('${t.id}', this.value)" class="w-7 h-7 rounded cursor-pointer border-0 bg-transparent">
+                    <input type="text" value="${t.name}" onchange="updateTeamName('${t.id}', this.value)" class="bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded-lg border border-slate-600 flex-1">
+                    ${teams.length > 1 ? `
+                        <button onclick="removeTeam('${t.id}')" class="text-rose-400 hover:text-rose-300 p-1 text-xs">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    ` : ''}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function addTeam() {
+            const colors = ['#ec4899', '#8b5cf6', '#06b6d4', '#f97316', '#a855f7'];
+            const newId = 't_' + Date.now();
+            const color = colors[teams.length % colors.length];
+            teams.push({ id: newId, name: `Equipo ${teams.length + 1}`, color: color, textDark: false });
+            renderGrid();
+        }
+
+        function removeTeam(id) {
+            teams = teams.filter(t => t.id !== id);
+            gridData.forEach(c => { if (c.teamId === id) c.teamId = null; });
+            renderGrid();
+        }
+
+        function updateTeamName(id, val) {
+            const t = teams.find(team => team.id === id);
+            if (t) t.name = val;
+            renderGrid();
+        }
+
+        function updateTeamColor(id, val) {
+            const t = teams.find(team => team.id === id);
+            if (t) t.color = val;
+            renderGrid();
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => alert("Error al activar pantalla completa: " + err.message));
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // SONIDOS SINTETIZADOS NATIVOS
+        function playAlarmSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                for (let i = 0; i < 3; i++) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + i * 0.25);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.25);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.25 + 0.18);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + i * 0.25);
+                    osc.stop(ctx.currentTime + i * 0.25 + 0.18);
+                }
+            } catch (e) {}
+        }
+
+        function playMagicEventSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.06);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.06 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + i * 0.06);
+                    osc.stop(ctx.currentTime + i * 0.06 + 0.2);
+                });
+            } catch (e) {}
+        }
+
+        function playBeepSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.04);
+            } catch (e) {}
+        }
+
+        function playWinnerBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.08 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + i * 0.08);
+                    osc.stop(ctx.currentTime + i * 0.08 + 0.2);
+                });
+            } catch (e) {}
+        }
+
+        function playShortMagicSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.08 + 0.15);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + i * 0.08);
+                    osc.stop(ctx.currentTime + i * 0.08 + 0.15);
+                });
+            } catch (e) {}
+        }
+
+        function playFanfareSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99, 1046.50, 880, 1046.50];
+                const times = [0, 0.12, 0.24, 0.36, 0.55, 0.70];
+                const durations = [0.1, 0.1, 0.1, 0.18, 0.12, 0.4];
+
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + times[i]);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime + times[i]);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + times[i] + durations[i]);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + times[i]);
+                    osc.stop(ctx.currentTime + times[i] + durations[i]);
+                });
+            } catch (e) {}
+        }
+
+        function launchConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444'];
+
+            for (let i = 0; i < 80; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 16,
+                    vy: (Math.random() - 0.7) * 16,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    vRot: (Math.random() - 0.5) * 10
+                });
+            }
+
+            let animationFrame;
+            let timer = 0;
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3;
+                    p.rotation += p.vRot;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                timer++;
+                if (timer < 100) {
+                    animationFrame = requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            animate();
+        }
+    </script>
+</body>
+</html>
