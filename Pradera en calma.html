@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pradera en calma</title>
+<style>
+:root{color-scheme:light dark;--btn:rgba(255,255,255,.55);--btn-ink:#2f5d3a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--btn:rgba(255,255,255,.5);--btn-ink:#2f5d3a}}
+html,body,#root{margin:0;height:100%;overflow:hidden;background:#8fd3f4}
+svg.scene{position:fixed;inset:0;width:100%;height:100%;display:block}
+.cloud{animation:drift 170s linear infinite}
+@keyframes drift{from{transform:translateX(-420px)}to{transform:translateX(2500px)}}
+.sway{animation:sway 5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes sway{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
+.paused *{animation-play-state:paused !important}
+button.pp{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));width:38px;height:38px;border-radius:50%;border:0;background:var(--btn);color:var(--btn-ink);cursor:pointer;display:grid;place-items:center;padding:0;backdrop-filter:blur(4px)}
+button.pp:hover{background:rgba(255,255,255,.8)}
+button.pp:focus-visible{outline:2px solid var(--btn-ink);outline-offset:2px}
+.np{position:fixed;left:max(14px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));font:12px/1.35 system-ui,sans-serif;color:var(--btn-ink)}
+.np .tg{height:38px;padding:0 14px;border:0;border-radius:19px;background:var(--btn);color:inherit;font:inherit;cursor:pointer;backdrop-filter:blur(4px)}
+.np .tg:hover{background:rgba(255,255,255,.8)}
+.np .box{width:208px;margin-bottom:8px;padding:10px 12px 8px;border-radius:12px;background:rgba(255,255,255,.72);backdrop-filter:blur(4px)}
+.np label{display:block;margin-bottom:8px}.np label b{float:right;font-weight:600}
+.np input{display:block;width:100%;margin:4px 0 0;accent-color:#3f8c3d}
+.np .st{font-weight:600}.np .st.over{color:#b8402c}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const {useRef,useEffect,useState,memo}=React;
+
+const legPath=(c,b)=>`M${c-14} 142 C${c-15+b} 168 ${c-11+b} 190 ${c-10} 210 C${c-10} 219 ${c-11} 224 ${c-11} 228 L${c-12} 240 C${c-6} 242 ${c+6} 242 ${c+12} 240 L${c+11} 228 C${c+11} 224 ${c+10} 219 ${c+10} 210 C${c+11} 190 ${c+15} 168 ${c+14} 142Z`;
+const hoofPath=c=>`M${c-11} 228 C${c-4} 230 ${c+4} 230 ${c+11} 228 L${c+12} 240 C${c+6} 242 ${c-6} 242 ${c-12} 240Z`;
+const Leg=({id,c,b,r,fill})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 142px`}}>
+    <path d={legPath(c,b)} fill={fill}/><path d={hoofPath(c)} fill="#4a3b36"/>
+  </g>
+);
+
+const BODY="M48 110 C46 94 64 84 92 83 C124 81 160 85 196 84 C226 83 246 92 258 108 C272 126 276 152 264 170 C254 186 234 190 208 188 C172 190 124 190 94 188 C64 188 50 172 48 150 C47 136 49 122 48 110Z";
+const HEAD="M288 100 C304 92 322 104 334 122 C344 132 353 143 353 156 C353 168 345 174 335 173 C324 172 316 164 304 161 C292 160 284 148 284 132 C284 118 282 106 288 100Z";
+
+const Cow=({R,u})=>(
+  <g ref={e=>R.cow=e}>
+    <ellipse cx="160" cy="241" rx="150" ry="9" fill="#2f6b32" opacity=".28"/>
+    <Leg id={`pata-trasera-lejana-${u}`} c={98} b={-4} fill="#dcd5c6" r={e=>R.bf=e}/>
+    <Leg id={`pata-delantera-lejana-${u}`} c={188} b={0} fill="#dcd5c6" r={e=>R.ff=e}/>
+    <g id={`ubre-${u}`}>
+      <path d="M118 183 C117 197 123 206 133 206 C143 206 149 197 148 183Z" fill="#f4b6ae"/>
+      <path d="M127 203 L127 209 M139 203 L139 209" stroke="#e99e96" strokeWidth="4" strokeLinecap="round"/>
+    </g>
+    <g id={`cuello-${u}`} ref={e=>R.neck=e} style={{transformOrigin:"222px 112px"}}>
+      <path d="M182 116 C204 92 240 83 284 98 L300 112 L300 150 C282 162 254 158 238 180 C230 192 222 197 208 197 L180 160Z" fill="#fbf8f1"/>
+    </g>
+    <g id={`cuerpo-${u}`}>
+      <clipPath id={`cp-${u}`}><path d={BODY}/></clipPath>
+      <path d={BODY} fill="#fbf8f1"/>
+      <g clipPath={`url(#cp-${u})`} fill="#3b3633">
+        <path d="M70 76 C100 72 114 100 98 122 C82 136 54 120 58 98Z"/>
+        <path d="M150 150 C180 140 206 158 194 182 C172 198 138 188 140 166Z"/>
+        <path d="M168 74 C190 70 212 76 214 90 C204 102 176 98 166 88Z"/>
+        <path d="M30 150 C50 140 70 150 66 172 C54 186 30 180 30 160Z"/>
+        <path d="M40 160 C80 180 180 186 280 160 L280 200 L30 200Z" fill="#efe9dc"/>
+      </g>
+    </g>
+    <g id={`cola-${u}`} ref={e=>R.tail=e} style={{transformOrigin:"51px 98px"}}>
+      <path d="M51 98 C34 106 31 140 36 168" stroke="#efe8da" strokeWidth="5" fill="none" strokeLinecap="round"/>
+      <path d="M36 160 C27 170 28 190 36 202 C45 190 46 172 36 160Z" fill="#3b3633"/>
+    </g>
+    <Leg id={`pata-trasera-cercana-${u}`} c={68} b={-4} fill="#fbf8f1" r={e=>R.bn=e}/>
+    <Leg id={`pata-delantera-cercana-${u}`} c={214} b={0} fill="#fbf8f1" r={e=>R.fn=e}/>
+    <g id={`cabeza-${u}`} ref={e=>R.headO=e} style={{transformOrigin:"222px 112px"}}>
+      <g id={`cara-${u}`} ref={e=>R.head=e} style={{transformOrigin:"292px 124px"}}>
+        <clipPath id={`ch-${u}`}><path d={HEAD}/></clipPath>
+        <path d="M298 101 C298 90 304 85 311 86 C308 91 308 96 309 103Z" fill="#efe3c4"/>
+        <path d={HEAD} fill="#fbf8f1"/>
+        <path d="M286 100 C300 91 318 96 326 108 C312 112 296 114 285 112Z" fill="#3b3633" clipPath={`url(#ch-${u})`}/>
+        <path d="M338 136 C349 142 356 150 354 161 C352 170 345 175 335 173 C328 172 330 160 331 150 C332 143 334 139 338 136Z" fill="#f2b3ad"/>
+        <path d="M296 106 C282 97 264 99 256 110 C268 121 286 121 298 115Z" fill="#3b3633"/>
+        <path d="M290 107 C281 103 271 105 266 110 C274 115 284 115 292 112Z" fill="#f2b3ad"/>
+        <circle cx="321" cy="125" r="3.6" fill="#2a2523"/><circle cx="322.2" cy="123.8" r="1.1" fill="#fff"/>
+        <path d="M345 150 C347 148 350 149 350 152" stroke="#b9776f" strokeWidth="2" fill="none" strokeLinecap="round"/>
+        <path d="M337 169 C343 169 349 167 351 163" stroke="#c98a82" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+      </g>
+    </g>
+  </g>
+);
+
+const DOME="M24 47 C22 32 32 19 52 15 C76 10 102 14 116 26 C124 33 124 42 120 47 C100 50 50 50 24 47Z";
+const mleg=c=>`M${c-6} 40 C${c-8} 50 ${c-6} 56 ${c-6} 60 C${c-6} 63 ${c-3} 64 ${c+1} 64 L${c+9} 64 C${c+11} 64 ${c+11} 61.5 ${c+8} 61 C${c+6} 60 ${c+6} 58 ${c+6} 56 C${c+6} 50 ${c+7} 46 ${c+6} 40Z`;
+const mnail=c=>`M${c+8} 61 C${c+11} 61 ${c+12.5} 63 ${c+12.5} 64.5 C${c+10.5} 64.2 ${c+8.8} 63.3 ${c+8} 61Z`;
+const MLeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 42px`}}>
+    <path d={mleg(c)} fill={fill}/><path d={mnail(c)} fill="#5e4a3e"/>
+  </g>
+);
+const bandX=Array.from({length:8},(_,i)=>52+i*6.3);
+const bandLine=x=>`M${x} 8 C${x+3} 22 ${x+3} 36 ${x-1} 52`;
+const bandFill=(x,x2)=>`M${x} 8 L${x2} 8 C${x2+3} 22 ${x2+3} 36 ${x2-1} 52 L${x-1} 52 C${x+3} 36 ${x+3} 22 ${x} 8Z`;
+
+const Mulita=({R,u})=>(
+  <g>
+    <ellipse cx="82" cy="64.5" rx="70" ry="5" fill="#2f6b32" opacity=".28"/>
+    <MLeg id={`mulita-pata-trasera-lejana-${u}`} c={52} fill="#bda68f" r={e=>R.mbf=e}/>
+    <MLeg id={`mulita-pata-delantera-lejana-${u}`} c={88} fill="#bda68f" r={e=>R.mff=e}/>
+    <g id={`mulita-cola-${u}`} ref={e=>R.mtail=e} style={{transformOrigin:"24px 42px"}}>
+      <path d="M26 36 C16 35 7 41 3 50 C2 53 5 54 8 52 C14 47 20 46 27 47Z" fill="#d0b49a"/>
+    </g>
+    <g id={`mulita-cabeza-${u}`} ref={e=>R.mhead=e} style={{transformOrigin:"106px 40px"}}>
+      <path d="M117 29 C116 21 119 17 123 18 C126 22 126 27 125 31Z" fill="#c9ac93"/>
+      <path d="M100 30 C112 25 126 27 136 34 C144 40 151 45 157 49 C158 52 155 54 151 53 C140 52 128 53 118 51 C106 49 98 42 100 30Z" fill="#d9c0a8"/>
+      <circle cx="131" cy="34" r="1.9" fill="#2a2523"/><circle cx="131.6" cy="33.4" r=".6" fill="#fff"/>
+      <path d="M152 49 C154 48.5 155.5 49.5 155.5 51" stroke="#8a6a58" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+      <path d="M149 52.5 C142 52 136 50.5 131 48.5" stroke="#b08f78" strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+    </g>
+    <MLeg id={`mulita-pata-trasera-cercana-${u}`} c={38} fill="#d9c0a8" r={e=>R.mbn=e}/>
+    <MLeg id={`mulita-pata-delantera-cercana-${u}`} c={100} fill="#d9c0a8" r={e=>R.mfn=e}/>
+    <g id={`mulita-caparazon-${u}`}>
+      <clipPath id={`cm-${u}`}><path d={DOME}/></clipPath>
+      <path d={DOME} fill="#b4aea3"/>
+      <g clipPath={`url(#cm-${u})`}>
+        <path d="M18 6 L46 6 C52 22 52 38 48 54 L18 54Z" fill="#9d978c"/>
+        <path d="M98 6 C104 22 106 38 102 54 L132 54 L132 6Z" fill="#9d978c"/>
+        {bandX.slice(0,7).filter((_,i)=>i%2===0).map(x=><path key={x} d={bandFill(x,x+6.3)} fill="#bdb7ac"/>)}
+        {bandX.map(x=><path key={x} d={bandLine(x)} stroke="#7d776d" strokeWidth="1.5" fill="none"/>)}
+        <path d="M46 6 C52 22 52 38 48 54 M98 6 C104 22 106 38 102 54" stroke="#7d776d" strokeWidth="1.8" fill="none"/>
+        <g fill="#857f74"><circle cx="30" cy="34" r="1.3"/><circle cx="36" cy="26" r="1.3"/><circle cx="42" cy="36" r="1.3"/><circle cx="36" cy="41" r="1.3"/><circle cx="40" cy="22" r="1.3"/>
+          <circle cx="107" cy="30" r="1.3"/><circle cx="113" cy="37" r="1.3"/><circle cx="108" cy="41" r="1.3"/><circle cx="115" cy="29" r="1.3"/><circle cx="106" cy="22" r="1.3"/></g>
+        <path d="M46 24 C62 14 92 14 108 24 C92 20 64 20 46 24Z" fill="#cbc5ba" opacity=".8"/>
+      </g>
+      <path d="M24 47 C50 50 100 50 120 47" stroke="#7d776d" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    </g>
+  </g>
+);
+
+const tleg=c=>`M${c} 56 C${c+1} 70 ${c-3} 78 ${c-1} 86 C${c} 92 ${c} 95 ${c} 98`;
+const TLeg=({id,c,col,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 58px`}}>
+    <path d={tleg(c)} stroke={col} strokeWidth="2.8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d={`M${c-3} 99.4 C${c+1} 100.4 ${c+5} 100.4 ${c+9} 99.4`} stroke={col} strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+  </g>
+);
+const Tero=({R,u})=>(
+  <g>
+    <defs><linearGradient id={`tg-${u}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#a9a8a2"/><stop offset=".6" stopColor="#a9a8a2"/><stop offset="1" stopColor="#968b7b"/></linearGradient></defs>
+    <ellipse cx="50" cy="101" rx="38" ry="3.6" fill="#2f6b32" opacity=".28"/>
+    <TLeg id={`tero-pata-lejana-${u}`} c={57} col="#b84c47" r={e=>R.tfar=e}/>
+    <TLeg id={`tero-pata-cercana-${u}`} c={44} col="#e0675f" r={e=>R.tnear=e}/>
+    <g id={`tero-cuerpo-${u}`} ref={e=>R.ttorso=e} style={{transformOrigin:"50px 60px"}}>
+      <path d="M14 44 C8 46 2 50 1 55 C7 57 13 55 17 52Z" fill="#3b3633"/>
+      <path d="M12 46 C16 36 32 32 50 33 C64 34 74 40 76 48 C77 58 66 66 50 67 C32 68 18 62 12 52Z" fill="#f7f4ec"/>
+      <g id={`tero-cabeza-${u}`} ref={e=>R.thead=e} style={{transformOrigin:"66px 46px"}}>
+        <path d="M80 20 C72 12 62 11 54 14 C63 15 70 19 77 24Z" fill="#2f2b2b"/>
+        <path d="M56 46 C57 40 60 38 64 37 C68 36 70 34 72 31 C74 27 77 22 82 20 C88 17.5 95 20 96.5 26 C97.5 31 93.5 34 88.5 35 C84 36.5 80 37 77 40 C75 44 75 49 76 53 L70 58 L58 56Z" fill={`url(#tg-${u})`}/>
+        <path d="M86 28 C92 28 95.5 30 94.5 33 C92.5 35 91 35 88.5 35 C84 36.5 80 37 77 40 C75 44 75 49 76 53 L68 58 C67 51 70 44 74 38 C76 33 80 30 86 28Z" fill="#2f2b2b"/>
+        <path d="M95 26 C102 27 107 30 110 33 C103 33 99 32 95 31Z" fill="#e0605a"/>
+        <path d="M106 31.2 L110 33 L105.5 33Z" fill="#2f2b2b"/>
+        <circle cx="89" cy="25" r="2.2" fill="#c63b3b"/><circle cx="89.3" cy="24.8" r=".9" fill="#2a2523"/>
+      </g>
+      <path d="M13 45 C17 36 32 32 50 33 C60 34 68 37 72 42 C58 44 38 48 22 55 C16 54 13 50 13 45Z" fill="#8d7557"/>
+      <path d="M24 44 C38 39 56 41 66 45 C54 52 36 56 22 52Z" fill="#6f5a43"/>
+      <path d="M56 43 C62 39 71 38 76 45 C78 54 73 63 64 64 C56 61 54 50 56 43Z" fill="#2f2b2b"/>
+    </g>
+  </g>
+);
+
+const fleg=c=>`M${c-5} 58 C${c-5} 74 ${c-3} 84 ${c-3} 94 L${c-4} 100 L${c+4.5} 100 L${c+3.5} 94 C${c+3} 84 ${c+5} 74 ${c+5} 58Z`;
+const fsock=c=>`M${c-3.2} 86 L${c+3.3} 86 L${c+3.6} 94 L${c+4.5} 100 L${c-4} 100 L${c-3.8} 94Z`;
+const FLeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 58px`}}>
+    <path d={fleg(c)} fill={fill}/><path d={fsock(c)} fill="#5b4636"/>
+  </g>
+);
+const Fox=({R,u})=>(
+  <g>
+    <ellipse cx="100" cy="100.5" rx="84" ry="6" fill="#2f6b32" opacity=".28"/>
+    <FLeg id={`zorro-pata-trasera-lejana-${u}`} c={76} fill="#a77d52" r={e=>R.zbf=e}/>
+    <FLeg id={`zorro-pata-delantera-lejana-${u}`} c={108} fill="#a77d52" r={e=>R.zff=e}/>
+    <g id={`zorro-cola-${u}`} ref={e=>R.ztail=e} style={{transformOrigin:"46px 46px"}}>
+      <path d="M46 46 C30 36 12 38 5 50 C0 60 6 72 17 74 C29 76 41 66 47 56Z" fill="#9a8f84"/>
+      <path d="M46 44 C30 34 13 36 6 46 C18 40 32 42 47 50Z" fill="#6f665c"/>
+      <path d="M5 52 C0 60 6 72 17 74 C10 66 8 58 12 50Z" fill="#2f2b2b"/>
+      <path d="M24 70 C34 70 42 64 47 56 C42 62 34 66 24 70Z" fill="#efe3cc"/>
+    </g>
+    <g id={`zorro-cuerpo-${u}`}>
+      <path d="M42 52 C40 42 52 36 72 36 C96 34 120 36 138 40 C148 44 152 54 146 62 C140 68 126 66 106 66 C86 68 62 68 50 64 C44 62 42 58 42 52Z" fill="#a39a8e"/>
+      <path d="M52 40 C80 34 118 34 140 42 C118 42 80 44 52 46Z" fill="#7f766b"/>
+      <path d="M60 62 C86 66 120 66 142 62 C134 70 100 70 66 68Z" fill="#efe3cc"/>
+    </g>
+    <FLeg id={`zorro-pata-trasera-cercana-${u}`} c={58} fill="#c49a68" r={e=>R.zbn=e}/>
+    <FLeg id={`zorro-pata-delantera-cercana-${u}`} c={124} fill="#c49a68" r={e=>R.zfn=e}/>
+    <g id={`zorro-cabeza-${u}`} ref={e=>R.zhead=e} style={{transformOrigin:"134px 46px"}}>
+      <path d="M150 32 L148 14 L160 30Z" fill="#8a7058"/>
+      <path d="M122 40 C134 34 146 30 156 30 C162 28 168 32 172 38 C180 42 190 46 194 50 C196 53 194 56 190 56 C182 56 174 55 168 55 C160 57 152 60 146 64 C136 64 126 62 120 56Z" fill="#a39a8e"/>
+      <path d="M164 52 C174 53 184 53 192 54 C190 57 182 57 172 56 C166 56 160 58 154 60 C158 56 160 54 164 52Z" fill="#efe3cc"/>
+      <path d="M160 32 L156 12 L170 28Z" fill="#c49a68"/><path d="M161 29 L159 18 L167 27Z" fill="#4a3b36"/>
+      <circle cx="194" cy="51" r="2.8" fill="#2a2523"/>
+      <path d="M166 40 C169 38 173 38 175 41 C172 42 169 42 166 40Z" fill="#2a2523"/>
+    </g>
+  </g>
+);
+
+const WING="M104 54 C104 30 96 4 84 -24 C80 -34 78 -44 76 -54 L70 -44 L66 -52 L60 -40 L56 -46 L52 -32 L48 -38 C44 -30 42 -20 46 -10 C52 8 56 30 68 54Z";
+const CWing=({id,r,fill,flip})=>(
+  <g transform={flip?"translate(0 108) scale(1 -1)":undefined}>
+    <g id={id} ref={r} style={{transformOrigin:"96px 54px"}}>
+      <path d={WING} fill={fill} stroke={fill} strokeWidth="1.6" strokeLinejoin="round"/>
+      <path d="M96 50 C94 34 88 14 80 -6 C74 8 68 24 66 44 C74 52 86 54 96 50Z" fill="#7b5b40"/>
+      <path d="M66 -22 C60 -16 56 -8 56 0 C64 -2 70 -10 72 -20Z" fill="#eee3cf"/>
+      <path d="M64 -32 C60 -22 58 -12 58 -2 M72 -18 C68 -8 66 4 66 14" stroke="#3b2c24" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity=".45"/>
+    </g>
+  </g>
+);
+const Carancho=({R,u})=>(
+  <g>
+    <CWing id={`carancho-ala-lejana-${u}`} r={e=>R.cwf=e} fill="#4a3629"/>
+    <g id={`carancho-cola-${u}`} ref={e=>R.ctail=e} style={{transformOrigin:"54px 54px"}}>
+      <path d="M54 50 C40 48 24 50 12 54 C12 58 14 62 18 64 C32 64 44 64 56 60Z" fill="#eadfc6"/>
+      <path d="M12 54 C12 58 14 62 18 64 C23 64.5 27 64 29 63 C26 58 26 54 28 51 C22 51 16 52 12 54Z" fill="#3b2c24"/>
+    </g>
+    <g id={`carancho-cuerpo-${u}`}>
+      <path d="M126 42 C112 37 92 37 74 43 C64 46 56 50 52 54 L52 60 C62 65 76 69 94 69 C110 69 122 63 129 55Z" fill="#7b5b40"/>
+      <path d="M129 55 C126 63 114 68 100 69 C104 62 106 52 106 44 C114 41 122 41 127 42Z" fill="#eadfc6"/>
+      <path d="M108 50 C112 52 118 52 124 50 M104 57 C110 60 118 60 126 57 M104 64 C110 66 116 66 122 64" stroke="#6b4f38" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <g id={`carancho-cabeza-${u}`}>
+        <path d="M122 40 C126 33 133 31 139 34 L141 55 C135 59 128 58 124 56Z" fill="#eadfc6"/>
+        <path d="M132 32 C127 29 123 29 119 31 C124 33 128 36 132 38Z" fill="#2a2523"/>
+        <path d="M131 35 C132 27 142 23 150 27 C156 31 157 37 155 40 C148 41 138 41 131 40Z" fill="#2a2523"/>
+        <path d="M133 40 C140 41 150 41 156 40 C159 46 155 53 148 55 C141 55 135 50 133 40Z" fill="#f09a3e"/>
+        <path d="M156 40 C163 40 169 45 168 51 C167 55 163 56 161 54 C162 51 160 48 157 47Z" fill="#d8d0b5"/>
+        <circle cx="146" cy="44" r="2" fill="#2a2523"/><circle cx="146.5" cy="43.4" r=".7" fill="#fff"/>
+      </g>
+    </g>
+    <CWing id={`carancho-ala-cercana-${u}`} r={e=>R.cwn=e} fill="#5a4232" flip/>
+  </g>
+);
+
+const rot=(e,d)=>{e.style.transform=`rotate(${d}deg)`};
+const SP={
+  carancho:{ex:[142,16],C:Carancho,fly:true,s:1,cx:90,gy:54,half:100,v:100,
+    pose(r,m,e,c){const u=c%8,f=u<2.2?Math.pow(Math.sin(Math.PI*u/1.1),2):0,
+      k=1-.24*f-.03*(.5+.5*Math.sin(c*.6)),w=`scaleY(${k}) rotate(${(1-k)*-10}deg)`;
+      r.cwf.style.transform=w;r.cwn.style.transform=w;rot(r.ctail,Math.sin(c*.9)*3);}},
+  vaca:{ex:[305,78],C:Cow,s:1.25,cx:165,gy:240,half:190,v:75,dw:[12,30],c0:.1,rt:1.2,
+    tg:a=>{const u=a.t%9;return u>1.2&&u<6.6?1:0},
+    pose(r,m,e,c,sn,ph){const A=22*m,b=Math.sin(ph*2)*1.6*m,t1=36*e+b+Math.sin(c*.7)*1.2*(1-e);
+      rot(r.fn,A*sn);rot(r.bf,A*sn);rot(r.ff,-A*sn);rot(r.bn,-A*sn);
+      rot(r.neck,t1);rot(r.headO,t1);rot(r.head,28*e+(e>.9?Math.sin(c*4.5)*1.8:0)-b*.6);
+      rot(r.tail,Math.sin(c*1.5)*6+m*7*sn+e*9*Math.sin(c*3));}},
+  mulita:{ex:[128,10],C:Mulita,s:.9,cx:80,gy:64,half:78,v:65,dw:[9,24],c0:.21,rt:2,
+    tg:a=>{const u=a.t%10;return u>.8&&u<7.6?((u>4.3&&u<5.3)?.3:1):0},
+    pose(r,m,e,c,sn,ph){const A=20*m;
+      rot(r.mfn,A*sn);rot(r.mbf,A*sn);rot(r.mff,-A*sn);rot(r.mbn,-A*sn);
+      rot(r.mhead,-4*(1-e)+11*e+e*(Math.sin(c*2.4)*3.5+Math.sin(c*6.1)*1.2)+Math.sin(ph*2)*1.2*m);
+      rot(r.mtail,Math.sin(c*1.3)*4+m*5*sn);}},
+  tero:{ex:[88,6],C:Tero,s:1,cx:50,gy:100,half:52,v:45,dw:[8,20],c0:.11,rt:6,
+    tg:a=>{const u=a.t%6.5;return (u>2.2&&u<2.9)||(u>3.3&&u<3.9)?1:0},
+    pose(r,m,e,c,sn,ph){const A=18*m,nod=Math.sin(ph*2);
+      rot(r.tnear,A*sn);rot(r.tfar,-A*sn);
+      r.ttorso.style.transform=`translate(0px ${4*e}px) rotate(${30*e+nod*1.2*m}deg)`;
+      rot(r.thead,35*e+(1-e)*(Math.sin(c*1.1)*8+Math.sin(c*.37)*5)+nod*4*m);}},
+  zorro:{ex:[160,8],C:Fox,s:.9,cx:100,gy:100,half:98,v:90,dw:[7,18],c0:.105,rt:1.8,
+    tg:a=>{const u=a.t%8;return u>.8&&u<6.5?1:0},
+    pose(r,m,e,c,sn,ph){const A=22*m;
+      rot(r.zfn,A*sn);rot(r.zbf,A*sn);rot(r.zff,-A*sn);rot(r.zbn,-A*sn);
+      rot(r.zhead,-3*(1-e)+42*e+e*Math.sin(c*3)*3+Math.sin(ph*2)*1.5*m);
+      rot(r.ztail,Math.sin(c*1.4)*4+m*5*sn+e*9*Math.sin(c*2.6));}}
+};
+const KEYS=Object.keys(SP).filter(k=>!SP[k].fly);
+const LN=[[0,692],[0,716],[1,768],[1,800],[2,846],[2,868]], DK=[.5,1,1.3], DIRS=[1,-1,1];
+const Layered=({list})=>{
+  const it=[];
+  TUFTS.forEach(([x,y,s],i)=>{const f=y>=790;it.push([y,<g key={"t"+i} transform={`translate(${x} ${y}) scale(${s})`}><use href="#tuft" className="sway" fill={f?(i%2?"#4a9640":"#3a8438"):(i%2?"#4f9a45":"#3f8c3d")} style={{animationDelay:`${-i*(f?.9:.7)}s`}}/></g>]);});
+  FLOWERS.forEach(([x,y,s,c],i)=>it.push([y,<use key={"f"+i} href="#flor" fill={c} transform={`translate(${x} ${y}) scale(${s})`}/>]));
+  list.forEach(a=>{const Sp=SP[a.type].C;it.push([a.y+.5,<g key={"a"+a.id} ref={e=>a.root=e} transform="translate(-4000 0)"><Sp R={a.r} u={a.id}/><Bang a={a}/></g>]);});
+  return it.sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+};
+
+const TUFTS=[[90,720,.8],[300,700,.6],[470,760,1],[640,672,.45],[900,690,.55],[1010,760,1.05],[1210,720,.8],[1450,700,.7],[1540,760,1],[760,652,.4],[1330,650,.4],[200,655,.4],
+ [60,904,1],[360,908,1.1],[640,903,.9],[900,908,1.1],[1180,905,1],[1500,910,1.1]];
+const FLOWERS=[[150,740,.9,"#fff7e6"],[400,720,.7,"#ffd84d"],[560,775,1,"#fff7e6"],[830,700,.6,"#d9c2f0"],[1090,735,.9,"#ffd84d"],[1300,765,1,"#fff7e6"],[1420,712,.7,"#d9c2f0"],[250,900,1,"#ffd84d"],[800,905,1,"#fff7e6"],[1360,900,1,"#d9c2f0"]];
+const BUSHES=[[170,652,.8],[560,640,.5],[1000,636,.45],[1390,662,.95]];
+const CLOUDS=[[90,.9,0],[170,1.2,-55],[60,.7,-110],[230,.8,-135]];
+
+const Scene=memo(({R,list})=>(
+  <svg className="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Una vaca camina y pasta en la pradera">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7cc9f2"/><stop offset="1" stopColor="#d4f0fb"/></linearGradient>
+      <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8fcb64"/><stop offset="1" stopColor="#5aa84a"/></linearGradient>
+      <path id="tuft" d="M-14 0 C-14 -14 -18 -22 -24 -30 C-14 -24 -10 -18 -8 -10 C-8 -24 -6 -34 -2 -44 C0 -32 2 -22 2 -10 C6 -22 12 -30 20 -34 C14 -24 12 -14 12 0Z"/>
+      <g id="flor"><path d="M0 0 C-2 -12 2 -22 0 -32" stroke="#4f9a45" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+        <g><circle cx="0" cy="-38" r="4.6"/><circle cx="5.5" cy="-33.5" r="4.6"/><circle cx="-5.5" cy="-33.5" r="4.6"/><circle cx="3.4" cy="-27.5" r="4.6" transform="translate(-3.4 -7)"/><circle cx="-3.4" cy="-27.5" r="4.6" transform="translate(3.4 -7)"/></g>
+        <circle cx="0" cy="-34.5" r="2.8" fill="#f2a93b"/></g>
+      <g id="mata"><path d="M-40 0 C-44 -22 -24 -36 -4 -32 C8 -44 38 -40 42 -18 C54 -14 52 0 40 0Z" fill="#4d9a47"/>
+        <path d="M-20 -20 C-10 -30 8 -30 14 -24 C4 -22 -8 -18 -20 -20Z" fill="#68b55c"/></g>
+    </defs>
+    <rect width="1600" height="900" fill="url(#sky)"/>
+    {CLOUDS.map(([y,s,d],i)=>(
+      <g key={i} transform={`translate(0 ${y}) scale(${s})`}>
+        <g className="cloud" style={{animationDelay:`${d}s`}}>
+          <path d="M0 44 C-2 26 16 16 32 22 C38 4 64 -2 78 14 C92 4 118 12 118 30 C134 30 142 42 134 50 L12 50 C4 50 0 48 0 44Z" fill="#fff" opacity=".92"/>
+        </g>
+      </g>
+    ))}
+    <path d="M0 560 C200 500 380 490 560 530 C760 570 900 510 1120 500 C1320 492 1480 530 1600 520 L1600 640 L0 640Z" fill="#bfe3a8"/>
+    <path d="M0 604 C220 546 420 562 640 588 C860 612 1000 552 1240 548 C1420 546 1520 570 1600 566 L1600 700 L0 700Z" fill="#a2d48a"/>
+    <path d="M1228 552 C1232 530 1234 515 1230 500 L1250 500 C1246 516 1250 532 1254 552Z" fill="#8a6a4a"/>
+    <path d="M1180 505 C1170 470 1210 450 1240 456 C1275 446 1316 466 1304 500 C1300 516 1200 520 1180 505Z" fill="#4f9a4b"/>
+    <path d="M1204 480 C1216 462 1244 460 1262 468 C1244 472 1224 480 1204 480Z" fill="#69b25e"/>
+    <path d="M0 644 C300 612 600 630 900 624 C1200 618 1400 634 1600 626 L1600 900 L0 900Z" fill="url(#gr)"/>
+    <path d="M0 700 C400 678 800 700 1200 686 C1400 680 1500 690 1600 688 L1600 760 C1200 770 600 740 0 760Z" fill="#7bbf57" opacity=".55"/>
+    {BUSHES.map(([x,y,s],i)=><use key={i} href="#mata" transform={`translate(${x} ${y}) scale(${s})`}/>)}
+    <Layered list={list}/>
+  </svg>
+));
+
+// ---- Control de ruido: la fuente del nivel (0-100) llega por levelRef/limitRef.
+// Hoy lo escribe el panel de prueba; luego se reemplazará por el volumen de Web Audio API.
+const NC={loudSec:5,calmSec:5,countSec:20,warnAt:10};
+const makeGate=()=>({phase:"calm",loudT:0,calmT:0,cd:0,target:null});
+const eligible=a=>!a.done&&a.st!=="out"&&a.x>80&&a.x<1520;
+function noiseStep(g,dt,level,limit,A,flee){
+  const loud=level>limit;
+  if(g.phase==="calm"){
+    g.loudT=loud?g.loudT+dt:0;
+    if(g.loudT>=NC.loudSec){g.phase="excess";g.cd=0;g.calmT=0;}
+    return;
+  }
+  if(loud){g.calmT=0;g.cd+=dt;}
+  else{
+    g.calmT+=dt;
+    if(g.calmT>=NC.calmSec){if(g.target)g.target.alert=false;g.target=null;g.phase="calm";g.loudT=0;g.cd=0;return;}
+  }
+  const leaving=A.some(a=>a.st==="out"&&!a.done);
+  if(g.cd>=NC.warnAt&&!g.target){
+    const c=A.filter(eligible);
+    if(c.length&&!leaving){g.target=c[Math.random()*c.length|0];g.target.alert=true;}
+    else g.cd=Math.min(g.cd,NC.warnAt);
+  }
+  if(g.target&&g.cd>=NC.countSec){
+    if(!leaving){flee(g.target);g.target=null;g.cd=0;}else g.cd=NC.countSec;
+  }
+}
+const alertFx=(a,dt)=>{
+  if(!a.ex) return;
+  a.exo+=((a.alert?1:0)-a.exo)*Math.min(1,dt*6);
+  a.ex.style.opacity=a.exo;
+  a.ex.style.transform=`scale(${.8+.2*a.exo+.07*a.exo*Math.sin(a.clk*7)})`;
+};
+const Bang=({a})=>{const [x,y]=SP[a.type].ex;return(
+  <g transform={`translate(${x} ${y}) scale(${1.1/a.s})`}>
+    <g ref={e=>a.ex=e} style={{opacity:0,transformOrigin:"0px 0px"}}>
+      <g fill="#e8503a" stroke="#fff" strokeWidth="2.4" strokeLinejoin="round" paintOrder="stroke">
+        <path d="M-3.2 -26 C-3.2 -29.5 3.2 -29.5 3.2 -26 L2.2 -11 C2.1 -8.6 -2.1 -8.6 -2.2 -11Z"/>
+        <circle cx="0" cy="-3.4" r="3.1"/>
+      </g>
+    </g>
+  </g>);};
+
+function App(){
+  const levelRef=useRef(15), limitRef=useRef(60);
+  const [open,setOpen]=useState(false), [vol,setVol]=useState(15), [lim,setLim]=useState(60), [ui,setUi]=useState({ph:"calm",cd:0});
+  const R=useRef({}).current;
+  const [list,setList]=useState([]);
+  const pRef=useRef(false);
+  const [paused,setPaused]=useState(false);
+  pRef.current=paused;
+  useEffect(()=>{
+    const cl=(a,b,c)=>Math.max(b,Math.min(c,a)), rnd=(a,b)=>a+Math.random()*(b-a);
+    const A=[]; let nid=0, nextSp=.3, last=performance.now(), raf, uiT=0, uiK=""; const gate=makeGate();
+    const flee=a=>{a.alert=false;a.st="out";a.V*=1.5;if(SP[a.type].fly)a.dir=a.x<800?-1:1;};
+    const spawn=()=>{
+      if(A.length>=6) return false;
+      if(Math.random()<.12&&!A.some(a=>a.type==="carancho")){
+        const T=SP.carancho, d=Math.random(), dir=Math.random()<.5?-1:1;
+        A.push({id:++nid,type:"carancho",lane:-1,y:400-110*d,s:T.s*(.6+.5*d),half:0,dir,stop:-9999,V:T.v*(.7+.3*d),x:dir>0?-450:2050,v:0,st:"fly",fl:dir,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,alert:false});
+        A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
+      }
+      const free=LN.map((_,i)=>i).filter(i=>!A.some(a=>a.lane===i));
+      if(!free.length) return false;
+      const type=KEYS[Math.random()*KEYS.length|0], T=SP[type];
+      for(let n=0;n<40;n++){
+        const lane=free[Math.random()*free.length|0], [d,y]=LN[lane], k=DK[d], s=T.s*k, half=T.half*s, stop=rnd(300,1300);
+        if(stop-half<20||stop+half>1580||A.some(b=>Math.abs(stop-b.stop)<half+b.half+40)) continue;
+        const dir=DIRS[d], V=T.v*(.55+.45*k);
+        A.push({id:++nid,type,lane,y,k,s,half,dir,stop,V,D:rnd(...T.dw),x:dir>0?-700:2300,v:0,st:"in",t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,alert:false});
+        A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
+      }
+      return false;
+    };
+    const step=(a,dt)=>{
+      const T=SP[a.type]; a.clk+=dt;
+      if(T.fly){
+        if(a.st==="fly"&&((a.dir>0&&a.x>1250)||(a.dir<0&&a.x<350))) a.dir=-a.dir;
+        a.fl+=(a.dir-a.fl)*Math.min(1,dt*2.2);
+        a.x+=a.dir*a.V*dt*(a.st==="out"?1:Math.max(.25,Math.abs(a.fl)));
+        if(a.x<-720||a.x>2320){a.done=true;return;}
+        const yy=a.y+22*Math.sin(a.clk*.35)+9*Math.sin(a.clk*.9+1), bank=Math.sin(a.clk*.35+1.2)*2.5;
+        a.root.setAttribute("transform",`translate(${a.x} ${yy}) rotate(${bank}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+        T.pose(a.r,0,0,a.clk); alertFx(a,dt); return;
+      }
+      if(a.st==="in"){
+        const rem=(a.stop-a.x)*a.dir, tg=rem>200?a.V:Math.max(4,a.V*rem/200);
+        a.v+=(tg-a.v)*Math.min(1,dt*1.6); a.x+=a.dir*a.v*dt;
+        if(rem<1.5){a.st="stay";a.t=0;}
+      }else if(a.st==="stay"){
+        a.v+=(0-a.v)*Math.min(1,dt*3); a.x+=a.dir*a.v*dt; a.t+=dt;
+      }else{
+        a.v+=(a.V-a.v)*Math.min(1,dt*1.2); a.x+=a.dir*a.v*dt;
+        if(a.x<-720||a.x>2320){a.done=true;return;}
+      }
+      const hT=a.st==="stay"?T.tg(a):0;
+      a.h+=(hT-a.h)*Math.min(1,dt*T.rt);
+      a.ph+=a.v*dt*T.c0/a.s;
+      const m=cl(a.v/a.V*1.4,0,1), e=a.h*a.h*(3-2*a.h);
+      a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.dir*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+      T.pose(a.r,m,e,a.clk,Math.sin(a.ph),a.ph);
+      alertFx(a,dt);
+    };
+    const tick=now=>{
+      const dt=Math.min(.05,(now-last)/1000); last=now;
+      uiT+=dt;
+      if(uiT>.25){uiT=0;const k=gate.phase+Math.floor(gate.cd);if(k!==uiK){uiK=k;setUi({ph:gate.phase,cd:Math.floor(gate.cd)});}}
+      if(!pRef.current){
+        noiseStep(gate,dt,levelRef.current,limitRef.current,A,flee);
+        if(gate.phase==="calm"){nextSp-=dt;if(nextSp<=0) nextSp=spawn()?rnd(10,15):2;}
+        for(const a of A) if(a.root&&!a.done) step(a,dt);
+        if(A.some(a=>a.done)){
+          for(let i=A.length-1;i>=0;i--) if(A[i].done) A.splice(i,1);
+          setList([...A]);
+        }
+      }
+      raf=requestAnimationFrame(tick);
+    };
+    raf=requestAnimationFrame(tick);
+    return()=>cancelAnimationFrame(raf);
+  },[]);
+  return(
+    <div className={paused?"paused":""} style={{height:"100%"}}>
+      <Scene R={R} list={list}/>
+      <div className="np">
+        {open&&<div className="box">
+          <label>Volumen del salón<b>{vol}</b>
+            <input type="range" min="0" max="100" value={vol} onChange={e=>{const v=+e.target.value;setVol(v);levelRef.current=v;}}/></label>
+          <label>Límite permitido<b>{lim}</b>
+            <input type="range" min="0" max="100" value={lim} onChange={e=>{const v=+e.target.value;setLim(v);limitRef.current=v;}}/></label>
+          <div className={"st"+(vol>lim?" over":"")}>{vol>lim?"Demasiado ruido":"Tranquilo"}{ui.ph==="excess"&&<span> · {ui.cd} s</span>}</div>
+        </div>}
+        <button className="tg" onClick={()=>setOpen(o=>!o)} aria-expanded={open}>Prueba de ruido</button>
+      </div>
+      <button className="pp" onClick={()=>setPaused(p=>!p)} aria-label={paused?"Reanudar":"Pausar"} title={paused?"Reanudar":"Pausar"}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          {paused?<path d="M4 2.5 C4 1.8 4.7 1.4 5.3 1.8 L13 6.8 C13.6 7.2 13.6 8.8 13 9.2 L5.3 14.2 C4.7 14.6 4 14.2 4 13.5Z"/>
+                 :<><path d="M3.5 2.6 C3.5 2 4 1.6 4.6 1.6 L5.6 1.6 C6.2 1.6 6.7 2 6.7 2.6 L6.7 13.4 C6.7 14 6.2 14.4 5.6 14.4 L4.6 14.4 C4 14.4 3.5 14 3.5 13.4Z"/><path d="M9.3 2.6 C9.3 2 9.8 1.6 10.4 1.6 L11.4 1.6 C12 1.6 12.5 2 12.5 2.6 L12.5 13.4 C12.5 14 12 14.4 11.4 14.4 L10.4 14.4 C9.8 14.4 9.3 14 9.3 13.4Z"/></>}
+        </svg>
+      </button>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
