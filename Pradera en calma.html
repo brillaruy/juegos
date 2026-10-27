@@ -14,16 +14,62 @@ svg.scene{position:fixed;inset:0;width:100%;height:100%;display:block}
 .sway{animation:sway 5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
 @keyframes sway{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
 .paused *{animation-play-state:paused !important}
-button.pp{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));width:38px;height:38px;border-radius:50%;border:0;background:var(--btn);color:var(--btn-ink);cursor:pointer;display:grid;place-items:center;padding:0;backdrop-filter:blur(4px)}
+button.pp{position:static;flex:none;width:38px;height:38px;border-radius:50%;border:0;background:var(--btn);color:var(--btn-ink);cursor:pointer;display:grid;place-items:center;padding:0;backdrop-filter:blur(4px)}
 button.pp:hover{background:rgba(255,255,255,.8)}
 button.pp:focus-visible{outline:2px solid var(--btn-ink);outline-offset:2px}
-.np{position:fixed;left:max(14px,env(safe-area-inset-left,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));font:12px/1.35 system-ui,sans-serif;color:var(--btn-ink)}
-.np .tg{height:38px;padding:0 14px;border:0;border-radius:19px;background:var(--btn);color:inherit;font:inherit;cursor:pointer;backdrop-filter:blur(4px)}
-.np .tg:hover{background:rgba(255,255,255,.8)}
-.np .box{width:208px;margin-bottom:8px;padding:10px 12px 8px;border-radius:12px;background:rgba(255,255,255,.72);backdrop-filter:blur(4px)}
+.bar{position:fixed;z-index:3;top:max(12px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));display:flex;gap:8px}
+.np{position:fixed;z-index:3;top:calc(max(12px,env(safe-area-inset-top,0px)) + 48px);right:max(14px,env(safe-area-inset-right,0px));font:12px/1.35 system-ui,sans-serif;color:var(--btn-ink)}
+.np .box{width:min(244px,calc(100vw - 28px));max-height:calc(100vh - 80px);overflow:auto;padding:10px 12px 12px;border-radius:12px;background:rgba(255,255,255,.86);backdrop-filter:blur(4px)}
+.np .hd2{font-weight:600;margin-bottom:8px}
+.np .sep{margin-top:10px;padding-top:10px;border-top:1px solid rgba(47,93,58,.18)}
+.np .rs{height:30px;padding:0 12px;border:0;border-radius:15px;background:rgba(47,93,58,.12);color:inherit;font:inherit;cursor:pointer}
+.np .rs.danger{background:#b8402c;color:#fff}
+.np .ask{padding:8px;border-radius:10px;background:rgba(184,64,44,.1)}
+.np .row{display:flex;gap:6px;margin-top:8px}
 .np label{display:block;margin-bottom:8px}.np label b{float:right;font-weight:600}
 .np input{display:block;width:100%;margin:4px 0 0;accent-color:#3f8c3d}
 .np .st{font-weight:600}.np .st.over{color:#b8402c}
+.pz{position:fixed;top:calc(max(12px,env(safe-area-inset-top,0px)) + 62px);left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:999px;background:rgba(255,255,255,.6);color:var(--btn-ink);font:12px/1.4 system-ui,sans-serif;opacity:0;transition:opacity .5s;pointer-events:none}
+.pz.on{opacity:1}
+.np .modes{display:flex;gap:4px;margin-bottom:8px}
+.np .modes button{flex:1;height:26px;border:0;border-radius:13px;background:rgba(47,93,58,.12);color:inherit;font:inherit;cursor:pointer}
+.np .modes button.on{background:var(--btn-ink);color:#fff}
+.np .msg{margin-top:4px;opacity:.85}
+.np input:disabled{opacity:.55}
+.al{position:fixed;z-index:2;bottom:max(14px,env(safe-area-inset-bottom,0px));left:max(14px,env(safe-area-inset-left,0px));font:12px/1.35 system-ui,sans-serif;color:var(--btn-ink)}
+.al .tg{position:relative;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 10px;border:2px solid #bcd3a4;border-radius:14px;background:linear-gradient(#fffaf0,#f1ecd2);color:#3b6b3a;font:inherit;font-weight:600;letter-spacing:.2px;cursor:pointer;box-shadow:0 2px 0 #a9c293,0 5px 10px rgba(47,93,58,.18);transition:transform .12s,box-shadow .12s,background .2s}
+.al .tg .ic{width:20px;height:20px;flex:none}
+.al .tg:active{transform:translateY(1px);box-shadow:0 1px 0 #a9c293,0 3px 6px rgba(47,93,58,.18)}
+.al .tg[aria-expanded="true"]{background:linear-gradient(#f3f9e6,#e3efcf)}
+.al .tg:focus-visible{outline:2px solid #3f8c3d;outline-offset:2px}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.al .tg:hover{background:linear-gradient(#fffdf5,#f6f1da)}
+.al .dot{position:absolute;top:-5px;right:-4px;width:12px;height:12px;border-radius:50%;background:#e8503a;border:2px solid #fffaf0;box-sizing:border-box;box-shadow:0 1px 2px rgba(0,0,0,.25);animation:pop 1.8s ease-in-out infinite}
+.al .box{margin:0 0 8px;width:min(92vw,560px);max-height:calc(100vh - 110px);overflow:auto;padding:12px;border-radius:14px;background:rgba(255,255,255,.9);backdrop-filter:blur(4px)}
+.al .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:600}
+.al .x{border:0;background:none;color:inherit;font:inherit;cursor:pointer;padding:2px 6px}
+.al .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.al .card{height:132px;box-sizing:border-box;padding:6px;border-radius:12px;background:#f4f8ee;border:2px solid #cfe3bf;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.al .card svg{width:100%;height:86px}
+.al .nm{font-weight:600}
+.al .mis{background:#e7eee0;border:2px dashed #b9cfa8}
+.al .q{font:700 44px/1 system-ui,sans-serif;opacity:.45}
+.hud{position:fixed;z-index:1;top:max(12px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:grid;grid-template-columns:auto 112px;align-items:center;gap:7px 8px;box-sizing:border-box;padding:8px 12px;border-radius:12px;background:rgba(255,250,240,.84);border:2px solid #cfe3bf;font:600 11px/1 system-ui,sans-serif;color:#3b6b3a;pointer-events:none;backdrop-filter:blur(4px)}
+.hud[data-modo="viva"] .rw{display:none}
+.hud .trk{position:relative;height:7px;border-radius:4px;background:#dfe9d0}
+.hud .trk i{display:block;height:100%;width:0;border-radius:4px}
+.hud .lv{background:linear-gradient(90deg,#9fd77a,#5aa84a)}
+.hud.over .lv{background:linear-gradient(90deg,#f2b35e,#d9573c)}
+.hud .mk{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;border-radius:1px;background:#3b6b3a}
+.hud .fill{background:linear-gradient(90deg,#9fd77a,#5aa84a);transition:background .3s}
+.hud.hold .fill{background:linear-gradient(90deg,#d9d2b0,#c3bb94)}
+@media (max-width:480px){.hud{left:max(14px,env(safe-area-inset-left,0px));transform:none}.pz{left:max(14px,env(safe-area-inset-left,0px));transform:none}}
+.np .lbl{font-weight:600;margin:2px 0 4px}
+.np .chips{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px}
+.np .chips button{height:26px;border:0;border-radius:13px;background:rgba(47,93,58,.12);color:inherit;font:inherit;cursor:pointer}
+.np .chips button.on{background:var(--btn-ink);color:#fff}
+@keyframes tw{0%,100%{opacity:.55}50%{opacity:1}}
+.tw{animation:tw 3.2s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -240,31 +286,32 @@ const Carancho=({R,u})=>(
   </g>
 );
 
-const rot=(e,d)=>{e.style.transform=`rotate(${d}deg)`};
+let PZ=0; // mezcla hacia la pose de pausa del animal que se está dibujando (0 = normal, 1 = atento)
+const rot=(e,d)=>{e.style.transform=`rotate(${d*(1-PZ)}deg)`};
 const SP={
   carancho:{ex:[142,16],C:Carancho,fly:true,s:1,cx:90,gy:54,half:100,v:100,
     pose(r,m,e,c){const u=c%8,f=u<2.2?Math.pow(Math.sin(Math.PI*u/1.1),2):0,
-      k=1-.24*f-.03*(.5+.5*Math.sin(c*.6)),w=`scaleY(${k}) rotate(${(1-k)*-10}deg)`;
+      k=1-(.24*f+.03*(.5+.5*Math.sin(c*.6)))*(1-PZ),w=`scaleY(${k}) rotate(${(1-k)*-10}deg)`;
       r.cwf.style.transform=w;r.cwn.style.transform=w;rot(r.ctail,Math.sin(c*.9)*3);}},
-  vaca:{ex:[305,78],C:Cow,s:1.25,cx:165,gy:240,half:190,v:75,dw:[12,30],c0:.1,rt:1.2,
+  vaca:{ex:[305,78],rs:[10,24],C:Cow,s:1.25,cx:165,gy:240,half:190,v:75,dw:[12,30],c0:.1,rt:1.2,
     tg:a=>{const u=a.t%9;return u>1.2&&u<6.6?1:0},
     pose(r,m,e,c,sn,ph){const A=22*m,b=Math.sin(ph*2)*1.6*m,t1=36*e+b+Math.sin(c*.7)*1.2*(1-e);
       rot(r.fn,A*sn);rot(r.bf,A*sn);rot(r.ff,-A*sn);rot(r.bn,-A*sn);
       rot(r.neck,t1);rot(r.headO,t1);rot(r.head,28*e+(e>.9?Math.sin(c*4.5)*1.8:0)-b*.6);
       rot(r.tail,Math.sin(c*1.5)*6+m*7*sn+e*9*Math.sin(c*3));}},
-  mulita:{ex:[128,10],C:Mulita,s:.9,cx:80,gy:64,half:78,v:65,dw:[9,24],c0:.21,rt:2,
+  mulita:{ex:[128,10],rs:[7,16],C:Mulita,s:.9,cx:80,gy:64,half:78,v:65,dw:[9,24],c0:.21,rt:2,
     tg:a=>{const u=a.t%10;return u>.8&&u<7.6?((u>4.3&&u<5.3)?.3:1):0},
     pose(r,m,e,c,sn,ph){const A=20*m;
       rot(r.mfn,A*sn);rot(r.mbf,A*sn);rot(r.mff,-A*sn);rot(r.mbn,-A*sn);
       rot(r.mhead,-4*(1-e)+11*e+e*(Math.sin(c*2.4)*3.5+Math.sin(c*6.1)*1.2)+Math.sin(ph*2)*1.2*m);
       rot(r.mtail,Math.sin(c*1.3)*4+m*5*sn);}},
-  tero:{ex:[88,6],C:Tero,s:1,cx:50,gy:100,half:52,v:45,dw:[8,20],c0:.11,rt:6,
+  tero:{ex:[88,6],rs:[6,14],C:Tero,s:1,cx:50,gy:100,half:52,v:45,dw:[8,20],c0:.11,rt:6,
     tg:a=>{const u=a.t%6.5;return (u>2.2&&u<2.9)||(u>3.3&&u<3.9)?1:0},
     pose(r,m,e,c,sn,ph){const A=18*m,nod=Math.sin(ph*2);
       rot(r.tnear,A*sn);rot(r.tfar,-A*sn);
       r.ttorso.style.transform=`translate(0px ${4*e}px) rotate(${30*e+nod*1.2*m}deg)`;
       rot(r.thead,35*e+(1-e)*(Math.sin(c*1.1)*8+Math.sin(c*.37)*5)+nod*4*m);}},
-  zorro:{ex:[160,8],C:Fox,s:.9,cx:100,gy:100,half:98,v:90,dw:[7,18],c0:.105,rt:1.8,
+  zorro:{ex:[160,8],rs:[5,12],C:Fox,s:.9,cx:100,gy:100,half:98,v:90,dw:[7,18],c0:.105,rt:1.8,
     tg:a=>{const u=a.t%8;return u>.8&&u<6.5?1:0},
     pose(r,m,e,c,sn,ph){const A=22*m;
       rot(r.zfn,A*sn);rot(r.zbf,A*sn);rot(r.zff,-A*sn);rot(r.zbn,-A*sn);
@@ -272,7 +319,7 @@ const SP={
       rot(r.ztail,Math.sin(c*1.4)*4+m*5*sn+e*9*Math.sin(c*2.6));}}
 };
 const KEYS=Object.keys(SP).filter(k=>!SP[k].fly);
-const LN=[[0,692],[0,716],[1,768],[1,800],[2,846],[2,868]], DK=[.5,1,1.3], DIRS=[1,-1,1];
+const LN=[[0,692],[0,716],[0,704],[1,768],[1,800],[1,784],[2,846],[2,868]], DK=[.5,1,1.3], DIRS=[1,-1,1];
 const Layered=({list})=>{
   const it=[];
   TUFTS.forEach(([x,y,s],i)=>{const f=y>=790;it.push([y,<g key={"t"+i} transform={`translate(${x} ${y}) scale(${s})`}><use href="#tuft" className="sway" fill={f?(i%2?"#4a9640":"#3a8438"):(i%2?"#4f9a45":"#3f8c3d")} style={{animationDelay:`${-i*(f?.9:.7)}s`}}/></g>]);});
@@ -290,7 +337,8 @@ const CLOUDS=[[90,.9,0],[170,1.2,-55],[60,.7,-110],[230,.8,-135]];
 const Scene=memo(({R,list})=>(
   <svg className="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Una vaca camina y pasta en la pradera">
     <defs>
-      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7cc9f2"/><stop offset="1" stopColor="#d4f0fb"/></linearGradient>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop id="sky-top" offset="0" stopColor="#7cc9f2"/><stop id="sky-bot" offset="1" stopColor="#d4f0fb"/></linearGradient>
+      <radialGradient id="glw"><stop offset="0" stopColor="#ffb870"/><stop offset="1" stopColor="#ffb870" stopOpacity="0"/></radialGradient>
       <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8fcb64"/><stop offset="1" stopColor="#5aa84a"/></linearGradient>
       <path id="tuft" d="M-14 0 C-14 -14 -18 -22 -24 -30 C-14 -24 -10 -18 -8 -10 C-8 -24 -6 -34 -2 -44 C0 -32 2 -22 2 -10 C6 -22 12 -30 20 -34 C14 -24 12 -14 12 0Z"/>
       <g id="flor"><path d="M0 0 C-2 -12 2 -22 0 -32" stroke="#4f9a45" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
@@ -300,6 +348,13 @@ const Scene=memo(({R,list})=>(
         <path d="M-20 -20 C-10 -30 8 -30 14 -24 C4 -22 -8 -18 -20 -20Z" fill="#68b55c"/></g>
     </defs>
     <rect width="1600" height="900" fill="url(#sky)"/>
+    <ellipse id="glow" cx="800" cy="548" rx="780" ry="210" fill="url(#glw)" opacity="0"/>
+    <g id="stars" opacity="0">{STARS.map(([x,y,r],i)=><circle key={i} className="tw" cx={x} cy={y} r={r} fill="#fffbe6" style={{animationDelay:`${-(i%7)*.6}s`}}/>)}</g>
+    <g id="moon" opacity="0" transform="translate(1250 300)">
+      <circle r="40" fill="#fff4cf" opacity=".14"/><circle r="24" fill="#fff4cf"/>
+      <circle cx="-7" cy="-5" r="4" fill="#efe1ae"/><circle cx="8" cy="6" r="5.5" fill="#efe1ae"/><circle cx="5" cy="-11" r="2.6" fill="#efe1ae"/>
+    </g>
+    <g id="lit">
     {CLOUDS.map(([y,s,d],i)=>(
       <g key={i} transform={`translate(0 ${y}) scale(${s})`}>
         <g className="cloud" style={{animationDelay:`${d}s`}}>
@@ -316,6 +371,7 @@ const Scene=memo(({R,list})=>(
     <path d="M0 700 C400 678 800 700 1200 686 C1400 680 1500 690 1600 688 L1600 760 C1200 770 600 740 0 760Z" fill="#7bbf57" opacity=".55"/>
     {BUSHES.map(([x,y,s],i)=><use key={i} href="#mata" transform={`translate(${x} ${y}) scale(${s})`}/>)}
     <Layered list={list}/>
+    </g>
   </svg>
 ));
 
@@ -323,19 +379,22 @@ const Scene=memo(({R,list})=>(
 // Hoy lo escribe el panel de prueba; luego se reemplazará por el volumen de Web Audio API.
 const NC={loudSec:5,calmSec:5,countSec:20,warnAt:10};
 const makeGate=()=>({phase:"calm",loudT:0,calmT:0,cd:0,target:null});
-const eligible=a=>!a.done&&a.st!=="out"&&a.x>80&&a.x<1520;
-function noiseStep(g,dt,level,limit,A,flee){
+const eligible=a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&a.x>80&&a.x<1520;
+function noiseStep(g,dt,level,limit,A,flee,onDone){
   const loud=level>limit;
   if(g.phase==="calm"){
-    g.loudT=loud?g.loudT+dt:0;
-    if(g.loudT>=NC.loudSec){g.phase="excess";g.cd=0;g.calmT=0;}
+    g.loudT=loud?g.loudT+dt:0;                       // un ruido breve no cuenta
+    if(g.loudT>=NC.loudSec){g.phase="episode";g.cd=0;g.calmT=0;}
     return;
   }
-  if(loud){g.calmT=0;g.cd+=dt;}
+  // Recuperación: un período de volumen adecuado rearma el sistema y cancela una advertencia pendiente.
+  if(loud) g.calmT=0;
   else{
     g.calmT+=dt;
-    if(g.calmT>=NC.calmSec){if(g.target)g.target.alert=false;g.target=null;g.phase="calm";g.loudT=0;g.cd=0;return;}
+    if(g.calmT>=NC.calmSec){if(g.target)g.target.alert=false;g.target=null;g.phase="calm";g.loudT=0;g.cd=0;g.calmT=0;return;}
   }
+  if(g.phase!=="episode") return;                    // "spent": la consecuencia ya ocurrió en este episodio
+  if(loud) g.cd+=dt;
   const leaving=A.some(a=>a.st==="out"&&!a.done);
   if(g.cd>=NC.warnAt&&!g.target){
     const c=A.filter(eligible);
@@ -343,7 +402,7 @@ function noiseStep(g,dt,level,limit,A,flee){
     else g.cd=Math.min(g.cd,NC.warnAt);
   }
   if(g.target&&g.cd>=NC.countSec){
-    if(!leaving){flee(g.target);g.target=null;g.cd=0;}else g.cd=NC.countSec;
+    if(!leaving){flee(g.target);g.target=null;g.cd=0;g.phase="spent";onDone();}else g.cd=NC.countSec;
   }
 }
 const alertFx=(a,dt)=>{
@@ -362,9 +421,154 @@ const Bang=({a})=>{const [x,y]=SP[a.type].ex;return(
     </g>
   </g>);};
 
+// ---- Álbum de descubrimientos: una figurita por especie, desbloqueada la primera vez que aparece en la pradera.
+const SPECIES=[
+  {id:"vaca",name:"Vaca",C:Cow,vb:"20 66 350 184"},
+  {id:"mulita",name:"Mulita",C:Mulita,vb:"-2 6 164 64"},
+  {id:"tero",name:"Tero",C:Tero,vb:"-2 -4 118 116"},
+  {id:"zorro",name:"Zorro de campo",C:Fox,vb:"0 6 200 98"},
+  {id:"carancho",name:"Carancho",C:Carancho,vb:"4 -58 172 222"}
+];
+const loadAlbum=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.album")||"{}"),r={};SPECIES.forEach(sp=>{if(o&&o[sp.id])r[sp.id]=true;});return r;}catch(e){return {};}};
+const saveAlbum=o=>{try{localStorage.setItem("pradera.album",JSON.stringify(o));}catch(e){}};
+const Album=({found})=>(
+  <div className="grid">{SPECIES.map(sp=>{const Sp=sp.C;return found[sp.id]?(
+    <div className="card" key={sp.id}>
+      <svg viewBox={sp.vb} preserveAspectRatio="xMidYMid meet" role="img" aria-label={sp.name}><Sp R={{}} u={"alb-"+sp.id}/></svg>
+      <div className="nm">{sp.name}</div>
+    </div>):(
+    <div className="card mis" key={sp.id} role="img" aria-label="Especie sin descubrir"><span className="q">?</span></div>);})}
+  </div>);
+
+// Duración de la barra «Próximo visitante»: Rápido 15 s, Normal 35 s, Lento 60 s o Personalizado (10-120 s).
+const loadRitmo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ritmo")||"null")||{};
+  return {m:["rapido","normal","lento","personalizado"].includes(o.m)?o.m:"normal",s:Math.min(120,Math.max(10,Math.round(+o.s)||35))};}catch(e){return {m:"normal",s:35};}};
+const ritmoSecs=r=>r.m==="rapido"?15:r.m==="lento"?60:r.m==="personalizado"?r.s:35;
+
+// Modo de juego: "calma" (control de ruido) o "viva" (solo la barra de visitantes, sin ruido ni sustos).
+const loadJuego=()=>{try{return localStorage.getItem("pradera.modo")==="viva"?"viva":"calma";}catch(e){return "calma";}};
+
+// Ciclo día/noche: se interpola entre puntos de luz (cielo, brillo del paisaje, estrellas, luna, resplandor del horizonte).
+const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const LP={
+  day:{top:hex("#7cc9f2"),bot:hex("#d4f0fb"),b:1,s:1,sp:0,h:0,st:0,mo:0,gl:0},
+  dusk:{top:hex("#5b6fb8"),bot:hex("#f6a66a"),b:.94,s:1.1,sp:.22,h:0,st:.05,mo:0,gl:.7},
+  night:{top:hex("#0f1c48"),bot:hex("#33447f"),b:.72,s:.9,sp:0,h:12,st:1,mo:1,gl:0},
+  dawn:{top:hex("#7f9bd2"),bot:hex("#f7c9a0"),b:.93,s:1.05,sp:.15,h:-5,st:.15,mo:.25,gl:.55}
+};
+const WP=[[0,"day"],[.38,"day"],[.52,"dusk"],[.62,"night"],[.78,"night"],[.88,"dawn"],[1,"day"]];
+const mix=(a,b,f)=>Array.isArray(a)?a.map((v,i)=>v+(b[i]-v)*f):a+(b-a)*f;
+const lightAt=u=>{
+  let i=0; while(i<WP.length-2&&u>=WP[i+1][0]) i++;
+  const [t0,n0]=WP[i],[t1,n1]=WP[i+1],f=(u-t0)/(t1-t0),e=f*f*(3-2*f),A=LP[n0],B=LP[n1],o={};
+  for(const k in A) o[k]=mix(A[k],B[k],e);
+  return o;
+};
+const STARS=Array.from({length:34},(_,i)=>[50+(i*397)%1500,225+(i*181)%240,i%5===0?2:1.3]);
+const CICLO_D=[[60,"Prueba · 1 min"],[300,"5 min"],[900,"15 min"],[1800,"30 min"]];
+const loadCiclo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ciclo")||"null")||{};return {on:o.on===true,d:CICLO_D.some(x=>x[0]===+o.d)?+o.d:300};}catch(e){return {on:false,d:300};}};
+
+// Almacenamiento local de los ajustes (límite y sensibilidad), tolerante a fallos.
+const store={
+  get:(k,d)=>{try{const v=localStorage.getItem("pradera."+k);return v===null?d:Math.min(100,Math.max(0,+v||0));}catch(e){return d;}},
+  set:(k,v)=>{try{localStorage.setItem("pradera."+k,String(v));}catch(e){}}
+};
+// Convierte el volumen del micrófono (RMS en dBFS) a 0-100. La sensibilidad (0-100) mueve el techo de la escala.
+const micLevel=(rms,sens)=>{
+  const db=20*Math.log10(rms||1e-8), ceil=-10-(sens-50)*.4;
+  return Math.max(0,Math.min(100,(db+70)/(ceil+70)*100));
+};
+
 function App(){
-  const levelRef=useRef(15), limitRef=useRef(60);
-  const [open,setOpen]=useState(false), [vol,setVol]=useState(15), [lim,setLim]=useState(60), [ui,setUi]=useState({ph:"calm",cd:0});
+  const levelRef=useRef(15), limitRef=useRef(store.get("limite",60));
+  const sensRef=useRef(store.get("sensibilidad",50)), modeRef=useRef("sim"), simVolRef=useRef(15), micRef=useRef(null), resetRef=useRef(()=>{});
+  const foundRef=useRef(loadAlbum()), discoverRef=useRef(()=>{}), restartRef=useRef(()=>{});
+  const [askReset,setAskReset]=useState(false);
+  const juegoRef=useRef(loadJuego()), [juego,setJuego]=useState(()=>juegoRef.current);
+  const pvRef=useRef(null), fillRef=useRef(null), lvRef=useRef(null), mkRef=useRef(null);
+  const ritmoRef=useRef(loadRitmo()), durRef=useRef(ritmoSecs(ritmoRef.current));
+  const [ritmo,setRitmo]=useState(()=>ritmoRef.current);
+  const cicloRef=useRef(loadCiclo()), [ciclo,setCiclo]=useState(()=>cicloRef.current);
+  const chooseCiclo=c=>{setCiclo(c);cicloRef.current=c;try{localStorage.setItem("pradera.ciclo",JSON.stringify(c));}catch(e){}};
+  const chooseRitmo=r=>{      // al cambiarlo se conserva el porcentaje de progreso: la barra guarda una fracción, no segundos
+    setRitmo(r); ritmoRef.current=r; durRef.current=ritmoSecs(r);
+    try{localStorage.setItem("pradera.ritmo",JSON.stringify(r));}catch(e){}
+  };
+  const [found,setFound]=useState(()=>foundRef.current), [albumOpen,setAlbumOpen]=useState(false), [fresh,setFresh]=useState(false);
+  discoverRef.current=id=>{
+    if(foundRef.current[id]) return;
+    foundRef.current={...foundRef.current,[id]:true}; saveAlbum(foundRef.current); setFound(foundRef.current); setFresh(true);
+  };
+  useEffect(()=>{const k=e=>{if(e.key==="Escape")setAlbumOpen(false);};window.addEventListener("keydown",k);return()=>window.removeEventListener("keydown",k);},[]);
+  const [mode,setMode]=useState("sim"), [micSt,setMicSt]=useState("idle"), [msg,setMsg]=useState(""), [sens,setSens]=useState(()=>sensRef.current);
+  const [isFs,setIsFs]=useState(false);
+  const fsOk=!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
+  useEffect(()=>{
+    const f=()=>setIsFs(!!(document.fullscreenElement||document.webkitFullscreenElement));
+    document.addEventListener("fullscreenchange",f);document.addEventListener("webkitfullscreenchange",f);
+    return()=>{document.removeEventListener("fullscreenchange",f);document.removeEventListener("webkitfullscreenchange",f);};
+  },[]);
+  const stopMic=()=>{
+    const m=micRef.current; if(!m) return;
+    clearInterval(m.timer); m.stream.getTracks().forEach(t=>t.stop()); try{m.ctx.close();}catch(e){}
+    micRef.current=null;
+  };
+  useEffect(()=>()=>stopMic(),[]);
+  const startMic=async()=>{
+    setMicSt("pidiendo");
+    try{
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw {name:"NotFoundError"};
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      if(modeRef.current!=="mic"||juegoRef.current==="viva"){stream.getTracks().forEach(t=>t.stop());return;}
+      const ctx=new (window.AudioContext||window.webkitAudioContext)();
+      if(ctx.state==="suspended") await ctx.resume();
+      const an=ctx.createAnalyser(); an.fftSize=1024;
+      ctx.createMediaStreamSource(stream).connect(an);   // sin conexión a la salida: no se reproduce ni se graba
+      const buf=new Float32Array(an.fftSize); let sm=0, last=performance.now(), n=0;
+      const timer=setInterval(()=>{
+        an.getFloatTimeDomainData(buf);
+        let sum=0; for(let i=0;i<buf.length;i++) sum+=buf[i]*buf[i];
+        const raw=micLevel(Math.sqrt(sum/buf.length),sensRef.current), now=performance.now(), dt=(now-last)/1000; last=now;
+        sm+=(raw-sm)*(1-Math.exp(-dt/(raw>sm?.4:1.2)));   // sube en ~0,4 s y baja en ~1,2 s
+        levelRef.current=sm;
+        if(++n%3===0) setVol(Math.round(sm));
+      },60);
+      micRef.current={stream,ctx,timer}; setMicSt("activo");
+    }catch(err){
+      const nm=err&&err.name;
+      const text=(nm==="NotAllowedError"||nm==="SecurityError")?"Permiso de micrófono denegado o bloqueado. Se usa la simulación."
+        :(nm==="NotFoundError"||nm==="OverconstrainedError"||nm==="DevicesNotFoundError")?"No se encontró un micrófono. Se usa la simulación."
+        :"No se pudo usar el micrófono. Se usa la simulación.";
+      chooseMode("sim"); setMsg(text);
+    }
+  };
+  const chooseMode=m=>{
+    if(m===modeRef.current) return;
+    modeRef.current=m; setMode(m); setMsg("");
+    resetRef.current();                       // cancela advertencias pendientes; los animales visibles se quedan
+    if(m==="mic"){levelRef.current=0;setVol(0);startMic();}
+    else{stopMic();setMicSt("idle");const v=simVolRef.current;setVol(v);levelRef.current=v;}
+  };
+  const chooseJuego=j=>{
+    if(j===juegoRef.current) return;
+    juegoRef.current=j; setJuego(j);
+    try{localStorage.setItem("pradera.modo",j);}catch(e){}
+    resetRef.current();                         // cancela advertencias pendientes; animales y descubrimientos se conservan
+    if(j==="viva"){stopMic();setMicSt("idle");setMsg("");}          // sin micrófono en Pradera viva
+    else if(modeRef.current==="mic"){levelRef.current=0;setVol(0);startMic();}   // vuelve a la fuente elegida
+  };
+  const doReset=()=>{
+    try{localStorage.removeItem("pradera.album");}catch(e){}   // solo los descubrimientos; ajustes de ruido intactos
+    foundRef.current={}; setFound({}); setFresh(false); setAskReset(false);
+    restartRef.current();
+  };
+  const toggleFs=()=>{try{
+    let p;
+    if(document.fullscreenElement||document.webkitFullscreenElement) p=(document.exitFullscreen||document.webkitExitFullscreen).call(document);
+    else{const el=document.documentElement;p=(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}
+    if(p&&p.catch)p.catch(()=>{});
+  }catch(e){}};
+  const [open,setOpen]=useState(false), [vol,setVol]=useState(15), [lim,setLim]=useState(()=>limitRef.current), [ui,setUi]=useState({ph:"calm",cd:0});
   const R=useRef({}).current;
   const [list,setList]=useState([]);
   const pRef=useRef(false);
@@ -372,13 +576,24 @@ function App(){
   pRef.current=paused;
   useEffect(()=>{
     const cl=(a,b,c)=>Math.max(b,Math.min(c,a)), rnd=(a,b)=>a+Math.random()*(b-a);
-    const A=[]; let nid=0, nextSp=.3, last=performance.now(), raf, uiT=0, uiK=""; const gate=makeGate();
+    const A=[]; let nid=0, last=performance.now(), raf, uiT=0, uiK=""; const gate=makeGate();
+    resetRef.current=()=>{if(gate.target)gate.target.alert=false;Object.assign(gate,makeGate());};
+    // Barra «Próximo visitante»: única responsable de las apariciones.
+    const prog={v:0,fixed:2.5,jit:1,retry:0};   // fixed: primer visitante rápido; luego duración = ajuste ±10 %
+    const active=()=>A.filter(a=>!a.done&&a.st!=="out"&&a.st!=="bye").length;
+    // Salidas naturales escalonadas de los animales más antiguos (distintas de las salidas por ruido).
+    const retire=n=>{
+      A.filter(a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&!a.alert&&!a.retiring&&a!==gate.target)
+       .sort((p,q)=>q.age-p.age).slice(0,n).forEach((a,i)=>{a.retiring=true;a.life=Math.min(a.life,a.age+6+i*12);});
+    };
+    restartRef.current=()=>{A.length=0;prog.v=0;prog.fixed=2.5;prog.jit=1;prog.retry=0;resetRef.current();setList([]);};   // pradera vacía; vuelve a poblarse desde cero
     const flee=a=>{a.alert=false;a.st="out";a.V*=1.5;if(SP[a.type].fly)a.dir=a.x<800?-1:1;};
+    const vis=()=>{const w=Math.min(1600,900*innerWidth/Math.max(1,innerHeight));return [800-w/2,800+w/2];};
     const spawn=()=>{
-      if(A.length>=6) return false;
+      if(A.length>=9) return false;
       if(Math.random()<.12&&!A.some(a=>a.type==="carancho")){
         const T=SP.carancho, d=Math.random(), dir=Math.random()<.5?-1:1;
-        A.push({id:++nid,type:"carancho",lane:-1,y:400-110*d,s:T.s*(.6+.5*d),half:0,dir,stop:-9999,V:T.v*(.7+.3*d),x:dir>0?-450:2050,v:0,st:"fly",fl:dir,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,alert:false});
+        A.push({id:++nid,type:"carancho",lane:-1,y:400-110*d,s:T.s*(.6+.5*d),half:0,dir,stop:-9999,V:T.v*(.7+.3*d),x:dir>0?vis()[0]-T.half*(.6+.5*d)-30:vis()[1]+T.half*(.6+.5*d)+30,v:0,st:"fly",fl:dir,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(55,110)});
         A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
       }
       const free=LN.map((_,i)=>i).filter(i=>!A.some(a=>a.lane===i));
@@ -386,54 +601,135 @@ function App(){
       const type=KEYS[Math.random()*KEYS.length|0], T=SP[type];
       for(let n=0;n<40;n++){
         const lane=free[Math.random()*free.length|0], [d,y]=LN[lane], k=DK[d], s=T.s*k, half=T.half*s, stop=rnd(300,1300);
-        if(stop-half<20||stop+half>1580||A.some(b=>Math.abs(stop-b.stop)<half+b.half+40)) continue;
+        if(type==="vaca"){const cw=A.filter(b=>b.type==="vaca"&&!b.done), nd=cw.filter(b=>b.depth===d).length;
+          if(((d===1||d===2)&&nd>=1)||(d===0&&cw.length>=3)) continue;}
+        if(stop-half<20||stop+half>1580||A.some(b=>!SP[b.type].fly&&(Math.abs(stop-b.stop)<half+b.half+40||Math.abs(stop-b.x)<half+b.half+40))) continue;
         const dir=DIRS[d], V=T.v*(.55+.45*k);
-        A.push({id:++nid,type,lane,y,k,s,half,dir,stop,V,D:rnd(...T.dw),x:dir>0?-700:2300,v:0,st:"in",t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,alert:false});
+        A.push({id:++nid,type,lane,depth:d,y,k,s,half,dir,stop,V,fl:dir,rest:0,x:dir>0?vis()[0]-half-30:vis()[1]+half+30,v:V*.8,st:"in",t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(55,110)});
         A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
+      }
+      return false;
+    };
+    const wander=a=>{
+      if(A.some(b=>b.st==="walk")) return false;
+      const lo=a.half+40, hi=1600-a.half-40;
+      for(let n=0;n<14;n++){
+        const tx=Math.max(lo,Math.min(hi,a.x+(Math.random()<.5?-1:1)*rnd(110,300)*(.6+.4*a.k)));
+        if(Math.abs(tx-a.x)<70) continue;
+        const l=Math.min(a.x,tx), r=Math.max(a.x,tx);
+        if(A.some(b=>{if(b===a||b.done||SP[b.type].fly||b.st==="out"||b.st==="bye") return false;
+          const pad=a.half+b.half+30; return Math.abs(tx-b.stop)<pad+10||(b.x>l-pad&&b.x<r+pad);})) continue;
+        a.stop=tx;a.dir=tx>a.x?1:-1;a.st="walk";return true;
       }
       return false;
     };
     const step=(a,dt)=>{
       const T=SP[a.type]; a.clk+=dt;
+      a.pz=a.pz>.004?a.pz*(1-Math.min(1,dt*3)):0;
+      if(!a.seen&&a.x>0&&a.x<1600){a.seen=true;discoverRef.current(a.type);}
       if(T.fly){
+        if(a.st==="fly"){a.age+=dt;if(a.age>a.life&&!a.alert){a.dir=a.x<800?-1:1;a.st="bye";}}
         if(a.st==="fly"&&((a.dir>0&&a.x>1250)||(a.dir<0&&a.x<350))) a.dir=-a.dir;
         a.fl+=(a.dir-a.fl)*Math.min(1,dt*2.2);
-        a.x+=a.dir*a.V*dt*(a.st==="out"?1:Math.max(.25,Math.abs(a.fl)));
+        a.x+=a.dir*a.V*dt*(a.st==="out"||a.st==="bye"?1:Math.max(.25,Math.abs(a.fl)));
         if(a.x<-720||a.x>2320){a.done=true;return;}
         const yy=a.y+22*Math.sin(a.clk*.35)+9*Math.sin(a.clk*.9+1), bank=Math.sin(a.clk*.35+1.2)*2.5;
         a.root.setAttribute("transform",`translate(${a.x} ${yy}) rotate(${bank}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
-        T.pose(a.r,0,0,a.clk); alertFx(a,dt); return;
+        a.lyy=yy;a.lbank=bank;PZ=a.pz;T.pose(a.r,0,0,a.clk); alertFx(a,dt); return;
       }
+      a.fl+=(a.dir-a.fl)*Math.min(1,dt*3);
+      const turn=Math.max(0,1-Math.abs(a.fl-a.dir));
+      if(a.st!=="out"&&a.st!=="bye") a.age+=dt;
       if(a.st==="in"){
         const rem=(a.stop-a.x)*a.dir, tg=rem>200?a.V:Math.max(4,a.V*rem/200);
         a.v+=(tg-a.v)*Math.min(1,dt*1.6); a.x+=a.dir*a.v*dt;
-        if(rem<1.5){a.st="stay";a.t=0;}
-      }else if(a.st==="stay"){
-        a.v+=(0-a.v)*Math.min(1,dt*3); a.x+=a.dir*a.v*dt; a.t+=dt;
+        if(rem<1.5){a.st="rest";a.t=0;a.rest=rnd(...T.rs);a.stop=a.x;}
+      }else if(a.st==="rest"){
+        a.v+=(0-a.v)*Math.min(1,dt*3); a.x+=a.dir*a.v*dt*turn; a.t+=dt;
+        if(a.age>a.life&&!a.alert){a.dir=a.x<800?-1:1;a.st="bye";}
+        else if(a.t>a.rest&&!wander(a)) a.rest+=rnd(2,4);
+      }else if(a.st==="walk"){
+        const rem=(a.stop-a.x)*a.dir, W=a.V*.6, tg=rem>120?W:Math.max(3,W*rem/120);
+        a.v+=(tg-a.v)*Math.min(1,dt*1.4); a.x+=a.dir*a.v*dt*turn;
+        if(rem<1.5){a.st="rest";a.t=0;a.rest=rnd(...T.rs);a.stop=a.x;}
       }else{
-        a.v+=(a.V-a.v)*Math.min(1,dt*1.2); a.x+=a.dir*a.v*dt;
+        a.v+=(a.V-a.v)*Math.min(1,dt*1.2); a.x+=a.dir*a.v*dt*turn;
         if(a.x<-720||a.x>2320){a.done=true;return;}
       }
-      const hT=a.st==="stay"?T.tg(a):0;
+      const hT=a.st==="rest"?T.tg(a):0;
       a.h+=(hT-a.h)*Math.min(1,dt*T.rt);
-      a.ph+=a.v*dt*T.c0/a.s;
-      const m=cl(a.v/a.V*1.4,0,1), e=a.h*a.h*(3-2*a.h);
-      a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.dir*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
-      T.pose(a.r,m,e,a.clk,Math.sin(a.ph),a.ph);
+      a.ph+=a.v*turn*dt*T.c0/a.s;
+      const m=cl(a.v*turn/a.V*1.4,0,1), e=a.h*a.h*(3-2*a.h);
+      a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+      a.lm=m;a.le=e;PZ=a.pz;T.pose(a.r,m*(1-a.pz),e*(1-a.pz),a.clk,Math.sin(a.ph),a.ph);
       alertFx(a,dt);
+    };
+    // Pausa: sin avanzar tiempo ni posición, cada animal pasa suavemente a una pose neutra y atenta.
+    const pauseStep=(a,dt)=>{
+      if(!a.root||a.done) return;
+      if(a.pz>=1&&a.fl===a.dir) return;
+      const T=SP[a.type];
+      a.pz+=(1-a.pz)*Math.min(1,dt*3.2); if(a.pz>.998) a.pz=1;
+      a.fl+=(a.dir-a.fl)*Math.min(1,dt*3); if(Math.abs(a.fl-a.dir)<.002) a.fl=a.dir;
+      PZ=a.pz;
+      if(T.fly){
+        a.root.setAttribute("transform",`translate(${a.x} ${a.lyy||a.y}) rotate(${a.lbank||0}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+        T.pose(a.r,0,0,a.clk);
+      }else{
+        a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+        T.pose(a.r,(a.lm||0)*(1-a.pz),(a.le||0)*(1-a.pz),a.clk,Math.sin(a.ph),a.ph);
+      }
+      alertFx(a,dt);
+    };
+    const E={top:document.getElementById("sky-top"),bot:document.getElementById("sky-bot"),lit:document.getElementById("lit"),
+      stars:document.getElementById("stars"),moon:document.getElementById("moon"),glow:document.getElementById("glow")};
+    const cyc={t:0,k:0,acc:0,was:false,dirty:false};
+    const applyLight=(u,k)=>{
+      const L=lightAt(u), D=LP.day, m=key=>mix(D[key],L[key],k), rgb=c=>"rgb("+c.map(Math.round).join(",")+")";
+      E.top.setAttribute("stop-color",rgb(mix(D.top,L.top,k))); E.bot.setAttribute("stop-color",rgb(mix(D.bot,L.bot,k)));
+      E.lit.style.filter=k<.003?"":`brightness(${m("b")}) saturate(${m("s")}) sepia(${m("sp")}) hue-rotate(${m("h")}deg)`;
+      E.stars.setAttribute("opacity",m("st")); E.glow.setAttribute("opacity",m("gl")); E.moon.setAttribute("opacity",m("mo"));
+      const mu=Math.max(0,Math.min(1,(u-.5)/.4));
+      E.moon.setAttribute("transform",`translate(${1250-900*mu} ${300-70*Math.sin(Math.PI*mu)})`);
     };
     const tick=now=>{
       const dt=Math.min(.05,(now-last)/1000); last=now;
+      {  // ciclo día/noche: avanza solo sin pausa; al desactivarlo vuelve suavemente al paisaje diurno
+        const c=cicloRef.current;
+        cyc.k+=((c.on?1:0)-cyc.k)*Math.min(1,dt*1.5); if(!c.on&&cyc.k<.002) cyc.k=0;
+        if(c.on&&!cyc.was) cyc.t=0; cyc.was=c.on;
+        if(!pRef.current&&c.on) cyc.t=(cyc.t+dt/c.d)%1;
+        cyc.acc+=dt;
+        if(cyc.acc>.1){cyc.acc=0; if(cyc.k>0||cyc.dirty){applyLight(cyc.t,cyc.k);cyc.dirty=cyc.k>0;}}
+      }
       uiT+=dt;
       if(uiT>.25){uiT=0;const k=gate.phase+Math.floor(gate.cd);if(k!==uiK){uiK=k;setUi({ph:gate.phase,cd:Math.floor(gate.cd)});}}
+      if(lvRef.current){
+        const lv=levelRef.current, lm=limitRef.current;
+        lvRef.current.style.width=Math.max(0,Math.min(100,lv))+"%"; mkRef.current.style.left=lm+"%";
+        pvRef.current.classList.toggle("over",lv>lm);
+      }
       if(!pRef.current){
-        noiseStep(gate,dt,levelRef.current,limitRef.current,A,flee);
-        if(gate.phase==="calm"){nextSp-=dt;if(nextSp<=0) nextSp=spawn()?rnd(10,15):2;}
+        if(juegoRef.current==="calma") noiseStep(gate,dt,levelRef.current,limitRef.current,A,flee,()=>{prog.v=0;prog.fixed=0;prog.jit=rnd(.9,1.1);prog.retry=0;});
+        const loud=juegoRef.current==="calma"&&levelRef.current>limitRef.current;
+        if(!loud&&gate.phase!=="episode"){                 // con ruido excesivo (o una advertencia en curso) la barra se detiene
+          if(prog.retry>0) prog.retry-=dt;
+          else{
+            prog.v=Math.min(1,prog.v+dt/(prog.fixed||durRef.current*prog.jit));
+            if(prog.v>=1){
+              if(spawn()){prog.v=0;prog.fixed=0;prog.jit=rnd(.9,1.1);const n=active();if(n>6) retire(n>7?2:1);}
+              else{prog.retry=1.2;if(!A.some(a=>a.retiring&&!a.done)) retire(1);}   // sin sitio: libera espacio con salidas naturales
+            }
+          }
+        }
+        if(fillRef.current){fillRef.current.style.width=(prog.v*100)+"%";pvRef.current.classList.toggle("hold",loud||gate.phase==="episode");}
         for(const a of A) if(a.root&&!a.done) step(a,dt);
         if(A.some(a=>a.done)){
           for(let i=A.length-1;i>=0;i--) if(A[i].done) A.splice(i,1);
           setList([...A]);
         }
+      }else{
+        for(const a of A) pauseStep(a,dt);
       }
       raf=requestAnimationFrame(tick);
     };
@@ -443,22 +739,72 @@ function App(){
   return(
     <div className={paused?"paused":""} style={{height:"100%"}}>
       <Scene R={R} list={list}/>
-      <div className="np">
-        {open&&<div className="box">
-          <label>Volumen del salón<b>{vol}</b>
-            <input type="range" min="0" max="100" value={vol} onChange={e=>{const v=+e.target.value;setVol(v);levelRef.current=v;}}/></label>
-          <label>Límite permitido<b>{lim}</b>
-            <input type="range" min="0" max="100" value={lim} onChange={e=>{const v=+e.target.value;setLim(v);limitRef.current=v;}}/></label>
-          <div className={"st"+(vol>lim?" over":"")}>{vol>lim?"Demasiado ruido":"Tranquilo"}{ui.ph==="excess"&&<span> · {ui.cd} s</span>}</div>
+      <div className={"pz"+(paused?" on":"")} aria-live="polite">Pausa · Atentos</div>
+      <div className="al">
+        {albumOpen&&<div className="box">
+          <div className="hd"><span>Especies descubiertas: {SPECIES.filter(sp=>found[sp.id]).length}/{SPECIES.length}</span><button className="x" onClick={()=>setAlbumOpen(false)} aria-label="Cerrar álbum">Cerrar</button></div>
+          <Album found={found}/>
         </div>}
-        <button className="tg" onClick={()=>setOpen(o=>!o)} aria-expanded={open}>Prueba de ruido</button>
+        <button className="tg" onClick={()=>{setAlbumOpen(o=>!o);setFresh(false);}} aria-expanded={albumOpen}>
+          <svg className="ic" viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M3 3.5 C3 2.7 3.6 2.2 4.4 2.2 H15 C15.8 2.2 16.3 2.7 16.3 3.5 V16.5 C16.3 17.3 15.8 17.8 15 17.8 H4.4 C3.6 17.8 3 17.3 3 16.5Z" fill="#86bb6c" stroke="#4f8a45" strokeWidth="1" strokeLinejoin="round"/>
+            <path d="M3 3.5 C3 2.7 3.6 2.2 4.4 2.2 H6.2 V17.8 H4.4 C3.6 17.8 3 17.3 3 16.5Z" fill="#5f9c53"/>
+            <path d="M11.2 5.6 L12.3 8.2 L15 8.5 L13 10.3 L13.6 13 L11.2 11.6 L8.8 13 L9.4 10.3 L7.4 8.5 L10.1 8.2Z" fill="#ffe08a" stroke="#d9b043" strokeWidth=".7" strokeLinejoin="round"/>
+          </svg>Álbum{fresh&&!albumOpen&&<span className="dot"/>}</button>
       </div>
+      <div className="hud" ref={pvRef} data-modo={juego} role="group" aria-label="Indicadores">
+        <span className="rw">Ruido</span><div className="trk rw"><i className="lv" ref={lvRef}/><b className="mk" ref={mkRef}/></div>
+        <span>Próximo visitante</span><div className="trk"><i className="fill" ref={fillRef}/></div>
+      </div>
+      <div className="bar">
       <button className="pp" onClick={()=>setPaused(p=>!p)} aria-label={paused?"Reanudar":"Pausar"} title={paused?"Reanudar":"Pausar"}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           {paused?<path d="M4 2.5 C4 1.8 4.7 1.4 5.3 1.8 L13 6.8 C13.6 7.2 13.6 8.8 13 9.2 L5.3 14.2 C4.7 14.6 4 14.2 4 13.5Z"/>
                  :<><path d="M3.5 2.6 C3.5 2 4 1.6 4.6 1.6 L5.6 1.6 C6.2 1.6 6.7 2 6.7 2.6 L6.7 13.4 C6.7 14 6.2 14.4 5.6 14.4 L4.6 14.4 C4 14.4 3.5 14 3.5 13.4Z"/><path d="M9.3 2.6 C9.3 2 9.8 1.6 10.4 1.6 L11.4 1.6 C12 1.6 12.5 2 12.5 2.6 L12.5 13.4 C12.5 14 12 14.4 11.4 14.4 L10.4 14.4 C9.8 14.4 9.3 14 9.3 13.4Z"/></>}
         </svg>
       </button>
+      {fsOk&&<button className="pp fs" onClick={toggleFs} aria-label={isFs?"Salir de pantalla completa":"Pantalla completa"} title={isFs?"Salir de pantalla completa":"Pantalla completa"}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d={isFs?"M6 2 V6 H2 M10 2 V6 H14 M14 10 H10 V14 M2 10 H6 V14":"M2 6 V2 H6 M10 2 H14 V6 M14 10 V14 H10 M6 14 H2 V10"}/>
+        </svg>
+      </button>}
+        <button className="pp" onClick={()=>{setOpen(o=>!o);setAskReset(false);}} aria-expanded={open} aria-label="Ajustes" title="Ajustes">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6.9 1.5h2.2l.4 1.7 1.2.5 1.5-.9 1.6 1.6-.9 1.5.5 1.2 1.7.4v2.2l-1.7.4-.5 1.2.9 1.5-1.6 1.6-1.5-.9-1.2.5-.4 1.7H6.9l-.4-1.7-1.2-.5-1.5.9-1.6-1.6.9-1.5-.5-1.2-1.7-.4V6.9l1.7-.4.5-1.2-.9-1.5 1.6-1.6 1.5.9 1.2-.5z"/>
+            <circle cx="8" cy="8" r="2.1"/>
+          </svg>
+        </button>
+      </div>
+      {open&&<div className="np"><div className="box">
+        <div className="hd2">Ajustes</div>
+        <div className="lbl">Modo de juego</div>
+        <div className="modes"><button className={juego==="calma"?"on":""} onClick={()=>chooseJuego("calma")}>Pradera en calma</button><button className={juego==="viva"?"on":""} onClick={()=>chooseJuego("viva")}>Pradera viva</button></div>
+        {juego==="calma"&&<>
+        <div className="modes"><button className={mode==="sim"?"on":""} onClick={()=>chooseMode("sim")}>Simulación</button><button className={mode==="mic"?"on":""} onClick={()=>chooseMode("mic")}>Micrófono</button></div>
+        {mode==="sim"&&<label>Volumen simulado<b>{vol}</b>
+          <input type="range" min="0" max="100" value={vol} onChange={e=>{const v=+e.target.value;setVol(v);levelRef.current=v;simVolRef.current=v;}}/></label>}
+        {mode==="mic"&&<label>Sensibilidad del micrófono<b>{sens}</b>
+          <input type="range" min="0" max="100" value={sens} onChange={e=>{const v=+e.target.value;setSens(v);sensRef.current=v;store.set("sensibilidad",v);}}/></label>}
+        <label>Límite de ruido permitido<b>{lim}</b>
+          <input type="range" min="0" max="100" value={lim} onChange={e=>{const v=+e.target.value;setLim(v);limitRef.current=v;store.set("limite",v);}}/></label>
+        </>}
+        <div className="lbl">Duración de «Próximo visitante»</div>
+        <div className="chips">{[["rapido","Rápido · 15 s"],["normal","Normal · 35 s"],["lento","Lento · 60 s"],["personalizado","Personalizado"]].map(([m,t])=>
+          <button key={m} className={ritmo.m===m?"on":""} onClick={()=>chooseRitmo({...ritmo,m})}>{t}</button>)}</div>
+        {ritmo.m==="personalizado"&&<label>Segundos<b>{ritmo.s} s</b>
+          <input type="range" min="10" max="120" value={ritmo.s} onChange={e=>chooseRitmo({m:"personalizado",s:+e.target.value})}/></label>}
+        <div className="lbl">Ciclo día y noche</div>
+        <div className="modes"><button className={!ciclo.on?"on":""} onClick={()=>chooseCiclo({...ciclo,on:false})}>Desactivado</button><button className={ciclo.on?"on":""} onClick={()=>chooseCiclo({...ciclo,on:true})}>Activado</button></div>
+        {ciclo.on&&<div className="chips">{CICLO_D.map(([d,t])=><button key={d} className={ciclo.d===d?"on":""} onClick={()=>chooseCiclo({...ciclo,d})}>{t}</button>)}</div>}
+        {juego==="calma"&&<>
+        <div className={"st"+(vol>lim?" over":"")}>{vol>lim?"Demasiado ruido":"Tranquilo"}{mode==="mic"&&<span> · nivel {vol}</span>}{ui.ph==="episode"&&<span> · {ui.cd} s</span>}</div>
+        {(mode==="mic"||msg)&&<div className="msg">{msg||(micSt==="activo"?"Micrófono activo · el audio no se graba":"Solicitando permiso…")}</div>}
+        </>}
+        <div className="sep">{askReset
+          ?<div className="ask"><div>¿Reiniciar la pradera? Se borrarán los descubrimientos del álbum y los animales actuales desaparecerán para empezar de nuevo. Los ajustes de ruido se conservan.</div>
+            <div className="row"><button className="rs danger" onClick={doReset}>Sí, reiniciar</button><button className="rs" onClick={()=>setAskReset(false)}>Cancelar</button></div></div>
+          :<button className="rs" onClick={()=>setAskReset(true)}>Reiniciar pradera</button>}</div>
+      </div></div>}
     </div>
   );
 }
