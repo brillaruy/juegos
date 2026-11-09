@@ -70,6 +70,10 @@ button.pp:focus-visible{outline:2px solid var(--btn-ink);outline-offset:2px}
 .np .chips button.on{background:var(--btn-ink);color:#fff}
 @keyframes tw{0%,100%{opacity:.55}50%{opacity:1}}
 .tw{animation:tw 3.2s ease-in-out infinite}
+@keyframes brisa{from{transform:rotate(-1.4deg)}to{transform:rotate(1.4deg)}}
+.brisa{animation:brisa 8s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+.np select{width:100%;height:28px;margin-bottom:6px;padding:0 6px;border-radius:8px;border:1px solid rgba(47,93,58,.3);background:#fff;color:inherit;font:inherit}
+.np .note{font-size:11px;line-height:1.35;opacity:.8;margin:6px 0 2px}
 </style>
 </head>
 <body>
@@ -270,9 +274,9 @@ const Carancho=({R,u})=>(
       <path d="M12 54 C12 58 14 62 18 64 C23 64.5 27 64 29 63 C26 58 26 54 28 51 C22 51 16 52 12 54Z" fill="#3b2c24"/>
     </g>
     <g id={`carancho-cuerpo-${u}`}>
-      <path d="M126 42 C112 37 92 37 74 43 C64 46 56 50 52 54 L52 60 C62 65 76 69 94 69 C110 69 122 63 129 55Z" fill="#7b5b40"/>
-      <path d="M129 55 C126 63 114 68 100 69 C104 62 106 52 106 44 C114 41 122 41 127 42Z" fill="#eadfc6"/>
-      <path d="M108 50 C112 52 118 52 124 50 M104 57 C110 60 118 60 126 57 M104 64 C110 66 116 66 122 64" stroke="#6b4f38" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <path d="M126 44 C112 40 92 40 74 45 C64 48 56 51 52 54 L52 59 C62 63 76 66 94 66 C110 66 122 62 129 55Z" fill="#7b5b40"/>
+      <path d="M129 55 C126 62 114 66 100 66 C104 60 106 52 106 46 C114 43 122 43 127 44Z" fill="#eadfc6"/>
+      <path d="M108 51 C112 53 118 53 124 51 M104 57 C110 60 118 60 126 57 M104 62 C110 64 116 64 122 62" stroke="#6b4f38" strokeWidth="2" fill="none" strokeLinecap="round"/>
       <g id={`carancho-cabeza-${u}`}>
         <path d="M122 40 C126 33 133 31 139 34 L141 55 C135 59 128 58 124 56Z" fill="#eadfc6"/>
         <path d="M132 32 C127 29 123 29 119 31 C124 33 128 36 132 38Z" fill="#2a2523"/>
@@ -286,9 +290,845 @@ const Carancho=({R,u})=>(
   </g>
 );
 
+// ---- Alambrado: tres postes y tres líneas de alambre a la misma altura, desde el primer poste hasta fuera de la pantalla.
+const FENCE_POSTS=[0,125,250];
+const Fence=()=>(
+  <g transform="translate(1330 690)">
+    <path d={[-66,-48,-30].map(y=>`M0 ${y} C40 ${y+4} 85 ${y+4} 125 ${y} C165 ${y+4} 210 ${y+4} 250 ${y} L430 ${y}`).join(" ")} stroke="#6f675c" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+    {FENCE_POSTS.map(x=>(
+      <g key={x} transform={`translate(${x} 0)`}>
+        <ellipse cx="1" cy="2" rx="13" ry="3" fill="#2f6b32" opacity=".25"/>
+        <path d="M-8 2 L-7 -90 C-7 -97 -3 -100 0 -99 C4 -100 8 -97 8 -90 L9 2Z" fill="#8b6b49"/>
+        <path d="M1 -99 C4 -100 8 -97 8 -90 L9 2 L2 2Z" fill="#a4825c"/>
+        <path d="M-3 -80 C-1 -60 -3 -30 -2 -4" stroke="#6e5238" strokeWidth="1.2" fill="none" opacity=".5" strokeLinecap="round"/>
+      </g>))}
+  </g>
+);
+
+// ---- Lechuza de campanario (de frente): alas plegadas al posarse, extendidas al volar.
+const OIN="M42 50 C32 44 24 42 14 41 L-6 41 L-6 73 C10 72 30 70 44 77Z";
+const OOUT="M14 41 C2 39 -22 38 -42 50 C-50 52 -54 56 -50 60 C-44 60 -42 63 -44 67 C-36 67 -34 71 -36 75 C-24 75 -10 73 14 72Z";
+// Cada ala tiene dos partes que se mueven por separado: brazo (hombro) y mano (puntas), con un pequeño desfase.
+const OWing=({id,r,r2,mirror})=>(
+  <g transform={mirror?"translate(120 0) scale(-1 1)":undefined}>
+    <g id={id} ref={r} style={{transformOrigin:"42px 58px"}}>
+      <path d={OIN} fill="#c9a77a" stroke="#c9a77a" strokeWidth="1.4" strokeLinejoin="round"/>
+      <path d="M40 52 C30 46 20 44 14 44 L-6 44 L-6 58 C14 58 30 59 40 62Z" fill="#b48f63"/>
+      <circle cx="6" cy="58" r="1.5" fill="#f3e6c8"/>
+      <g ref={r2} style={{transformOrigin:"6px 58px"}}>
+        <path d={OOUT} fill="#c9a77a" stroke="#c9a77a" strokeWidth="1.4" strokeLinejoin="round"/>
+        <path d="M14 44 C0 42 -20 45 -34 54 C-14 56 0 57 14 58Z" fill="#b48f63"/>
+        <path d="M-22 62 C-30 64 -38 66 -44 67 M-8 64 C-20 67 -30 71 -36 75" stroke="#f3e6c8" strokeWidth="2" fill="none" strokeLinecap="round" opacity=".8"/>
+        <circle cx="-8" cy="57" r="1.6" fill="#f3e6c8"/><circle cx="-20" cy="55" r="1.4" fill="#f3e6c8"/>
+      </g>
+    </g>
+  </g>
+);
+const Owl=({R,u})=>(
+  <g>
+    <g ref={e=>R.ofeet=e}>
+      <path d="M44 101 C44 105 49 106 55 106 L56 101Z" fill="#d9c3a0"/><path d="M76 101 C76 105 71 106 65 106 L64 101Z" fill="#d9c3a0"/>
+    </g>
+    <g id={`lechuza-cuerpo-${u}`} ref={e=>R.obody=e}>
+      <path d="M60 38 C42 40 33 62 36 84 C38 96 48 102 60 102 C72 102 82 96 84 84 C87 62 78 40 60 38Z" fill="#f4e9d2"/>
+      <path d="M50 66 h3 M62 62 h3 M70 70 h3 M54 78 h3 M66 82 h3 M46 86 h3 M74 84 h3" stroke="#b99a73" strokeWidth="2" strokeLinecap="round"/>
+    </g>
+    <OWing id={`lechuza-ala-izquierda-${u}`} r={e=>R.owl=e} r2={e=>R.owl2=e}/>
+    <OWing id={`lechuza-ala-derecha-${u}`} r={e=>R.owr=e} r2={e=>R.owr2=e} mirror/>
+    <g id={`lechuza-cabeza-${u}`} ref={e=>R.ohead=e} style={{transformOrigin:"60px 50px"}}>
+      <path d="M34 26 C38 8 82 8 86 26 C72 16 48 16 34 26Z" fill="#c9a77a"/>
+      <path d="M60 22 C56 10 36 8 31 24 C28 38 42 52 60 56 C78 52 92 38 89 24 C84 8 64 10 60 22Z" fill="#fffaf0" stroke="#d9bf92" strokeWidth="2.4" strokeLinejoin="round"/>
+      <ellipse cx="46" cy="33" rx="9" ry="8" fill="#f0e2c8"/><ellipse cx="74" cy="33" rx="9" ry="8" fill="#f0e2c8"/>
+      <g ref={e=>R.oeye=e} style={{transformOrigin:"60px 33px"}}>
+        <circle cx="46" cy="33" r="5.2" fill="#2a2320"/><circle cx="74" cy="33" r="5.2" fill="#2a2320"/>
+        <circle cx="47.6" cy="31.2" r="1.6" fill="#fff"/><circle cx="75.6" cy="31.2" r="1.6" fill="#fff"/>
+      </g>
+      <path d="M60 37 C57 41 57 47 60 50 C63 47 63 41 60 37Z" fill="#e2c48e"/>
+    </g>
+  </g>
+);
+
+// ---- Comadreja mora (de perfil): cuerpo bajo, pelaje canoso, hocico fino, orejas rosadas y cola larga rosada.
+const pleg=c=>`M${c-5} 54 C${c-5} 64 ${c-4} 70 ${c-4} 74 L${c-5} 78 L${c+5.5} 78 L${c+4} 74 C${c+4} 70 ${c+5} 64 ${c+5} 54Z`;
+const pfoot=c=>`M${c-5.5} 75 L${c+6.5} 75 L${c+8} 78 L${c-6.5} 78Z`;
+const PLeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 56px`}}><path d={pleg(c)} fill={fill}/><path d={pfoot(c)} fill="#e8b4a8"/></g>
+);
+const Opossum=({R,u})=>(
+  <g>
+    <ellipse cx="85" cy="78.5" rx="68" ry="4.5" fill="#2f6b32" opacity=".28"/>
+    <g id={`comadreja-cola-${u}`} ref={e=>R.ptail=e} style={{transformOrigin:"34px 50px"}}>
+      <path d="M34 52 C16 48 2 54 1 66 C0 76 8 80 15 75" stroke="#e7b7ad" strokeWidth="5" fill="none" strokeLinecap="round"/>
+    </g>
+    <PLeg id={`comadreja-pata-trasera-lejana-${u}`} c={66} fill="#5f5a54" r={e=>R.pbf=e}/>
+    <PLeg id={`comadreja-pata-delantera-lejana-${u}`} c={90} fill="#5f5a54" r={e=>R.pff=e}/>
+    <PLeg id={`comadreja-pata-trasera-cercana-${u}`} c={50} fill="#76716a" r={e=>R.pbn=e}/>
+    <PLeg id={`comadreja-pata-delantera-cercana-${u}`} c={104} fill="#76716a" r={e=>R.pfn=e}/>
+    <g id={`comadreja-cabeza-${u}`} ref={e=>R.phead=e} style={{transformOrigin:"112px 48px"}}>
+      <path d="M112 34 C108 22 120 16 126 24 C130 30 126 36 120 38Z" fill="#e8a99f" stroke="#8c877f" strokeWidth="1.3"/>
+      <path d="M108 36 C120 30 134 34 146 42 C156 46 164 50 168 54 C168 58 164 60 158 59 C148 58 136 58 126 62 C116 62 108 58 106 50Z" fill="#ece7dd"/>
+      <path d="M126 36 C132 33 140 36 142 42 C138 46 130 44 126 40Z" fill="#7a756d"/>
+      <circle cx="134" cy="40" r="2.1" fill="#1f1d1a"/><circle cx="134.7" cy="39.3" r=".7" fill="#fff"/>
+      <circle cx="167.5" cy="55" r="2.8" fill="#e9908f"/>
+      <path d="M150 54 C156 52 162 50 168 50 M152 58 C158 58 163 57 166 56" stroke="#6b665f" strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+    </g>
+    <g id={`comadreja-cuerpo-${u}`}>
+      <path d="M30 52 C28 36 46 26 68 26 C92 24 112 30 120 44 C126 56 118 68 100 70 C80 72 52 72 38 66 C32 62 30 58 30 52Z" fill="#a8a39b"/>
+      <path d="M34 44 C40 32 56 28 72 28 C94 27 112 32 118 44 C100 38 66 36 34 46Z" fill="#8a857d"/>
+      <path d="M40 64 C60 70 100 70 118 62 C112 70 100 72 84 72 C64 72 48 70 40 64Z" fill="#cfcac0"/>
+      <path d="M60 40 l3 3 M78 38 l3 3 M96 44 l3 3 M50 52 l3 3" stroke="#c9c4ba" strokeWidth="1.5" strokeLinecap="round"/>
+    </g>
+  </g>
+);
+
+// ---- Oveja (de perfil): lana crema en nubecitas, cara y patas oscuras.
+const sleg=c=>`M${c-4} 66 C${c-4} 80 ${c-3} 90 ${c-3} 96 L${c-3.5} 100 L${c+4} 100 L${c+3} 96 C${c+3} 90 ${c+4} 80 ${c+4} 66Z`;
+const SLeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 66px`}}><path d={sleg(c)} fill={fill}/><path d={`M${c-3.8} 95 L${c+4.2} 95 L${c+4} 100 L${c-3.5} 100Z`} fill="#2f2b28"/></g>
+);
+const Sheep=({R,u})=>(
+  <g>
+    <ellipse cx="82" cy="100.5" rx="64" ry="4.5" fill="#2f6b32" opacity=".28"/>
+    <g id={`oveja-cola-${u}`} ref={e=>R.stail=e} style={{transformOrigin:"26px 54px"}}>
+      <path d="M24 50 C16 48 12 54 16 60 C20 62 26 60 28 56Z" fill="#f2ecdc"/>
+    </g>
+    <SLeg id={`oveja-pata-trasera-lejana-${u}`} c={54} fill="#3f3a36" r={e=>R.sbf=e}/>
+    <SLeg id={`oveja-pata-delantera-lejana-${u}`} c={86} fill="#3f3a36" r={e=>R.sff=e}/>
+    <SLeg id={`oveja-pata-trasera-cercana-${u}`} c={38} fill="#4a4540" r={e=>R.sbn=e}/>
+    <SLeg id={`oveja-pata-delantera-cercana-${u}`} c={100} fill="#4a4540" r={e=>R.sfn=e}/>
+    <g id={`oveja-cabeza-${u}`} ref={e=>R.shead=e} style={{transformOrigin:"110px 52px"}}>
+      <path d="M110 46 C102 42 94 46 92 52 C98 56 106 54 112 50Z" fill="#4a443e"/>
+      <path d="M108 40 C118 34 132 38 140 48 C148 58 154 68 153 76 C151 82 144 82 138 78 C128 72 116 66 110 58Z" fill="#5a524b"/>
+      <path d="M108 40 C106 32 116 28 122 33 C126 36 124 40 118 42 C114 44 110 44 108 40Z" fill="#f2ecdc"/>
+      <circle cx="132" cy="52" r="2.6" fill="#e9e0cc"/><circle cx="132.4" cy="52" r="1.3" fill="#1f1d1a"/>
+      <ellipse cx="150" cy="76" rx="3.2" ry="2.6" fill="#8a7a70"/>
+      <path d="M140 78 C145 80 149 79 151 77" stroke="#3a342f" strokeWidth="1.1" fill="none" strokeLinecap="round"/>
+    </g>
+    <g id={`oveja-cuerpo-${u}`}>
+      <path d="M26 56 C18 48 22 36 34 36 C36 26 50 24 58 30 C64 22 80 22 86 30 C96 26 108 32 108 42 C118 44 122 56 114 64 C116 74 104 80 94 76 C86 84 70 84 62 78 C52 84 38 80 34 74 C24 76 18 66 26 56Z" fill="#f7f3e8"/>
+      <path d="M44 48 C48 44 54 46 54 52 M70 44 C74 40 80 42 80 48 M90 56 C94 52 100 54 100 60 M52 66 C56 62 62 64 62 70" stroke="#ddd3bd" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    </g>
+  </g>
+);
+
+// ---- Zorrillo (de perfil): pelaje negro con franja dorsal blanca, hocico ancho y cola espesa levantada.
+const kleg=c=>`M${c-5} 50 C${c-5} 60 ${c-4} 64 ${c-4} 66 L${c-5} 68 L${c+5} 68 L${c+4} 66 C${c+4} 64 ${c+5} 60 ${c+5} 50Z`;
+const KLeg=({id,c,fill,r})=>(<g id={id} ref={r} style={{transformOrigin:`${c}px 52px`}}><path d={kleg(c)} fill={fill}/></g>);
+const Skunk=({R,u})=>(
+  <g>
+    <ellipse cx="66" cy="68.5" rx="58" ry="4" fill="#2f6b32" opacity=".28"/>
+    <g id={`zorrillo-cola-${u}`} ref={e=>R.ktail=e} style={{transformOrigin:"30px 38px"}}>
+      <path d="M26 38 C8 40 -4 26 2 10 C6 -2 20 -6 28 4 C24 12 30 22 38 28Z" fill="#f4f1ea"/>
+      <path d="M10 30 C4 20 6 8 14 2 C14 12 16 22 22 30Z" fill="#2b2826" opacity=".85"/>
+    </g>
+    <KLeg id={`zorrillo-pata-trasera-lejana-${u}`} c={58} fill="#1f1d1b" r={e=>R.kbf=e}/>
+    <KLeg id={`zorrillo-pata-delantera-lejana-${u}`} c={84} fill="#1f1d1b" r={e=>R.kff=e}/>
+    <KLeg id={`zorrillo-pata-trasera-cercana-${u}`} c={44} fill="#2b2826" r={e=>R.kbn=e}/>
+    <KLeg id={`zorrillo-pata-delantera-cercana-${u}`} c={94} fill="#2b2826" r={e=>R.kfn=e}/>
+    <g id={`zorrillo-cabeza-${u}`} ref={e=>R.khead=e} style={{transformOrigin:"104px 36px"}}>
+      <path d="M104 27 C102 20 108 18 110 24Z" fill="#2b2826"/>
+      <path d="M100 28 C110 24 122 28 130 36 C134 40 134 46 130 48 C122 50 110 50 102 46Z" fill="#2b2826"/>
+      <path d="M104 27 C112 24 120 27 126 32 C118 30 110 30 104 33Z" fill="#f4f1ea"/>
+      <ellipse cx="131" cy="41" rx="4" ry="5" fill="#b98a86"/>
+      <circle cx="118" cy="38" r="1.7" fill="#e9e4d8"/>
+    </g>
+    <g id={`zorrillo-cuerpo-${u}`}>
+      <path d="M24 40 C22 28 34 22 54 22 C78 20 98 24 106 34 C112 44 106 54 92 56 C74 58 44 58 32 52 C26 48 24 44 24 40Z" fill="#2b2826"/>
+      <path d="M30 30 C46 22 78 20 100 28 C104 30 106 34 104 36 C84 28 56 28 30 36Z" fill="#f4f1ea"/>
+    </g>
+  </g>
+);
+
+// Cuello del ñandú: una única forma continua. Se dibuja cada cuadro a partir de una línea central de largo constante cuya
+// curvatura va de "erguido" (e=0) a "agachado" (e=1); el ancho se afina desde la base (dentro del pecho) hasta la cabeza.
+const nandNeck=(e,sw=0)=>{
+  const N=18, L=86, ds=L/N, P=[[100,74]], T=[];
+  // La flexión empieza por la parte alta del cuello (es) y avanza hacia la base: la cabeza baja en arco, cerca del pecho.
+  const hd=s=>{const es=Math.min(1,Math.max(0,e*2.6-1.6*(1-s)));return ((-86+18*s)*(1-es)+(-35+160*Math.pow(s,.8))*es+sw*(.4+.6*s))*Math.PI/180;};
+  for(let i=0;i<N;i++){const h=hd((i+.5)/N);T.push([Math.cos(h),Math.sin(h)]);const q=P[i];P.push([q[0]+ds*T[i][0],q[1]+ds*T[i][1]]);}
+  const f=n=>Math.round(n*10)/10, w=s=>5.6+8.4*Math.pow(1-s,2), side=[], back=[], strip=[];
+  for(let i=0;i<=N;i++){
+    const t=T[Math.min(i,N-1)], nx=-t[1], ny=t[0], q=P[i], ww=w(i/N);
+    side.push([q[0]-nx*ww,q[1]-ny*ww,q[0]+nx*ww,q[1]+ny*ww]);
+    if(i<N) strip.push([q[0]-nx*.35*ww,q[1]-ny*.35*ww,q[0]-nx*.8*ww,q[1]-ny*.8*ww]);
+  }
+  const t=T[N-1], nx=-t[1], ny=t[0], q=P[N], ww=w(1), cap=[];
+  for(let k=1;k<4;k++){const a=Math.PI*(1-k/4);cap.push([q[0]+nx*ww*Math.cos(a)+t[0]*ww*Math.sin(a),q[1]+ny*ww*Math.cos(a)+t[1]*ww*Math.sin(a)]);}
+  let d="M"+side.map(v=>f(v[0])+" "+f(v[1])).join(" L")+" L"+cap.map(v=>f(v[0])+" "+f(v[1])).join(" L");
+  d+=" L"+side.slice().reverse().map(v=>f(v[2])+" "+f(v[3])).join(" L")+"Z";
+  const dsx="M"+strip.map(v=>f(v[2])+" "+f(v[3])).join(" L")+" L"+strip.slice().reverse().map(v=>f(v[0])+" "+f(v[1])).join(" L")+"Z";
+  return {d,ds:dsx,E:P[N]};
+};
+const NK0=nandNeck(0);
+
+// ---- Ñandú (de perfil): ave grande, plumaje gris parduzco, cuello largo y fino, cabeza pequeña, patas fuertes.
+const nleg=c=>`M${c-5} 90 C${c-5} 110 ${c-3} 124 ${c-3} 140 L${c-4} 152 L${c-4} 160 L${c+16} 160 C${c+12} 156 ${c+6} 154 ${c+4} 150 L${c+4} 138 C${c+4} 124 ${c+5} 110 ${c+5} 90Z`;
+const NLeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 92px`}}><path d={nleg(c)} fill={fill}/><path d={`M${c+10} 157 L${c+17} 160 L${c+8} 160Z`} fill="#4a3f37"/></g>
+);
+const Nandu=({R,u})=>{
+  const nk=NK0;
+  return(
+  <g>
+    <ellipse cx="86" cy="160.5" rx="62" ry="5" fill="#2f6b32" opacity=".28"/>
+    <NLeg id={`nandu-pata-lejana-${u}`} c={64} fill="#a99a85" r={e=>R.nf=e}/>
+    <NLeg id={`nandu-pata-cercana-${u}`} c={84} fill="#bfae95" r={e=>R.nn=e}/>
+    <g id={`nandu-cuello-${u}`}>
+      <path ref={e=>R.nkp=e} d={nk.d} fill="#a69a8c"/>
+      <path ref={e=>R.nks=e} d={nk.ds} fill="#8d8174" opacity=".7"/>
+      <g id={`nandu-cabeza-${u}`} ref={e=>R.nhead=e}>
+          <path d="M112 -14 C114 -24 126 -28 136 -24 C142 -22 148 -20 150 -16 C148 -12 142 -12 136 -12 C128 -10 118 -8 112 -14Z" fill="#8d8174"/>
+          <path d="M142 -21 C148 -20 154 -18 156 -15 C150 -13 144 -13 140 -14Z" fill="#b8a998"/>
+          <circle cx="126" cy="-20" r="2.2" fill="#1f1d1a"/><circle cx="126.6" cy="-20.6" r=".7" fill="#fff"/>
+      </g>
+    </g>
+    <g id={`nandu-cuerpo-${u}`}>
+      <path d="M24 84 C20 64 40 50 66 50 C92 48 112 56 118 72 C122 84 112 98 96 102 C78 106 52 104 38 98 C28 94 24 90 24 84Z" fill="#9a8e82"/>
+      <path d="M30 66 C44 52 80 48 108 60 C86 56 56 58 30 74Z" fill="#7f7468"/>
+      <path d="M44 98 C60 104 90 102 104 92 C98 104 76 108 58 106Z" fill="#cfc4b4"/>
+      <path d="M40 72 C60 64 90 66 108 78 C96 90 66 94 44 88Z" fill="#b3a798"/>
+      <path d="M52 78 C66 74 84 76 98 82 M50 84 C64 82 80 84 92 88" stroke="#9a8e82" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+      <path d="M24 84 C14 82 10 90 16 96 C12 98 14 104 22 102 C30 104 36 100 38 98Z" fill="#8a7e72"/>
+    </g>
+  </g>
+  );
+};
+
+// ---- Tucu-tucu (de perfil): roedor subterráneo compacto, pelaje pardo, incisivos anaranjados y garras para excavar.
+// Se asoma por una madriguera: todo lo que queda por debajo de la línea del suelo se recorta.
+const Tucu=({R,u})=>(
+  <g>
+    <clipPath id={`ct-${u}`}><rect ref={e=>R.gtclip=e} x="-1000" y="-80" width="3000" height="220"/></clipPath>
+    <g clipPath={`url(#ct-${u})`}>
+      <g id={`tucutucu-${u}`}>
+        <g ref={e=>R.gtf1=e} style={{transformOrigin:"32px 56px"}}><path d="M24 56 C24 62 36 64 40 62 L38 56Z" fill="#7a6449"/></g>
+        <g ref={e=>R.gtf2=e} style={{transformOrigin:"60px 56px"}}><path d="M52 56 C52 62 64 64 68 62 L66 56Z" fill="#6f5a40"/></g>
+        <g id={`tucutucu-cuerpo-${u}`}>
+          <path d="M8 50 C6 54 8 58 14 56 C16 54 16 52 16 50Z" fill="#7a6449"/>
+          <path d="M16 50 C14 34 28 24 48 24 C64 22 78 30 80 42 C82 54 70 60 52 60 C34 60 18 58 16 50Z" fill="#9c8467"/>
+          <path d="M20 38 C28 28 48 24 66 28 C50 28 30 32 20 42Z" fill="#85704f"/>
+          <path d="M30 56 C44 60 62 60 74 54 C68 62 50 64 34 60Z" fill="#c4b295"/>
+        </g>
+        <g id={`tucutucu-cabeza-${u}`} ref={e=>R.gthead=e} style={{transformOrigin:"80px 36px"}}>
+          <path d="M80 24 C80 20 86 19 87 24Z" fill="#7a6449"/>
+          <path d="M74 26 C82 20 96 22 102 32 C106 38 106 46 100 50 C94 54 82 52 76 46 C72 40 70 32 74 26Z" fill="#8d7658"/>
+          <path d="M88 44 C96 46 102 44 104 40 C100 50 92 52 86 48Z" fill="#b5a384"/>
+          <path d="M102 41 C106 40 109 41 109 43 L109 46 C106 47 103 46 102 45Z" fill="#e8a43a"/>
+          <circle cx="104" cy="37" r="2" fill="#6d4f3f"/>
+          <circle cx="92" cy="33" r="2" fill="#1f1d1a"/><circle cx="92.6" cy="32.4" r=".7" fill="#fff"/>
+        </g>
+        <g id={`tucutucu-patas-${u}`} ref={e=>R.gtpaw=e} style={{transformOrigin:"70px 50px"}}>
+          <path d="M66 46 C72 46 80 50 84 56 C84 60 78 62 72 58 C68 56 64 52 66 46Z" fill="#8d7658"/>
+          <path d="M84 56 L88 57.5 M82 59 L85.5 61.5 M79 61 L82 63.5" stroke="#e3d6bb" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+        </g>
+        <g ref={e=>R.gtdirt=e} style={{opacity:0}}>
+          <circle cx="94" cy="60" r="2.4" fill="#8a6a4a"/><circle cx="99" cy="57" r="1.8" fill="#9a7a56"/><circle cx="90" cy="56" r="1.5" fill="#8a6a4a"/>
+        </g>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Churrinche (macho, de perfil): cabeza y pecho rojos, dorso y alas oscuros, pico fino.
+const Churri=({R,u})=>(
+  <g>
+    <g id={`churrinche-ala-lejana-${u}`} ref={e=>R.chwf=e} style={{transformOrigin:"34px 10px"}}><path d="M36 8 C30 3 22 3 14 6 L14 17 C22 17 30 16 36 14Z" fill="#3b2f2a" stroke="#3b2f2a" strokeWidth=".8" strokeLinejoin="round"/><g ref={e=>R.chwf2=e} style={{transformOrigin:"15px 12px"}}><path d="M16 6 C8 3 -2 5 -10 10 L-6 12 L-12 15 L-4 16 L-9 19 C0 19 8 18 16 17Z" fill="#3b2f2a" stroke="#3b2f2a" strokeWidth=".8" strokeLinejoin="round"/></g></g>
+    <g id={`churrinche-cola-${u}`} ref={e=>R.chtail=e} style={{transformOrigin:"12px 24px"}}>
+      <path d="M10 23 L-12 31 C-14 33 -12 35 -10 34 L12 29Z" fill="#3b2f2a"/>
+    </g>
+    <g id={`churrinche-cuerpo-${u}`}>
+      <path d="M6 22 C8 13 18 8 30 8 C42 7 53 12 55 20 C56 28 46 33 34 33 C22 34 10 31 6 22Z" fill="#5a4640"/>
+      <path d="M32 33 C20 32 11 29 6 23 C18 27 40 25 55 21 C53 29 46 33 32 33Z" fill="#d8281c"/>
+    </g>
+    <g id={`churrinche-cabeza-${u}`} ref={e=>R.chhead=e} style={{transformOrigin:"46px 14px"}}>
+      <path d="M42 6 C46 1 54 1 58 6 C61 10 60 17 55 20 C50 22 44 20 42 15Z" fill="#d8281c"/>
+      <path d="M44 3 C47 -3 52 -3 54 1 C51 1 47 2 44 3Z" fill="#d8281c"/>
+      <path d="M46 10 C52 9 58 11 62 13 L62 15 C56 14 50 14 46 14Z" fill="#2b1f1c"/>
+      <circle cx="53" cy="12.6" r=".9" fill="#f4efe6"/>
+      <path d="M60 11 L72 12.5 L60 15Z" fill="#2b2220"/>
+    </g>
+    <g ref={e=>R.chfeet=e}><path d="M26 32 L26 46 M32 32 L32 46" stroke="#2b2220" strokeWidth="1.8" fill="none" strokeLinecap="round"/></g>
+    <g id={`churrinche-ala-cercana-${u}`} ref={e=>R.chwn=e} style={{transformOrigin:"34px 10px"}}><path d="M36 8 C30 3 22 3 14 6 L14 17 C22 17 30 16 36 14Z" fill="#4a3a33" stroke="#4a3a33" strokeWidth=".8" strokeLinejoin="round"/><g ref={e=>R.chwn2=e} style={{transformOrigin:"15px 12px"}}><path d="M16 6 C8 3 -2 5 -10 10 L-6 12 L-12 15 L-4 16 L-9 19 C0 19 8 18 16 17Z" fill="#4a3a33" stroke="#4a3a33" strokeWidth=".8" strokeLinejoin="round"/><path d="M12 8 C4 6 -4 8 -8 11" stroke="#7a665a" strokeWidth="1.1" fill="none" strokeLinecap="round"/></g></g>
+  </g>
+);
+
+// Cuello flexible genérico (usado por el caballo): una sola forma continua cuya línea central conserva el largo y se curva
+// de "erguido" (e=0) a "agachado" (e=1). rest/peck: rumbo en grados según la posición s (0 base, 1 cabeza). band: crin.
+const bendNeck=(cfg,e,sw=0)=>{
+  const {B,L,N,rest,peck,w,band}=cfg, ds=L/N, P=[B], T=[], f=n=>Math.round(n*10)/10;
+  for(let i=0;i<N;i++){
+    const s=(i+.5)/N, es=Math.min(1,Math.max(0,e*2.6-1.6*(1-s))), h=(rest(s)*(1-es)+peck(s)*es+sw*(.4+.6*s))*Math.PI/180;
+    T.push([Math.cos(h),Math.sin(h)]); const q=P[i]; P.push([q[0]+ds*T[i][0],q[1]+ds*T[i][1]]);
+  }
+  const Lp=[], Rp=[], Mn=[], Mo=[];
+  for(let i=0;i<=N;i++){
+    const t=T[Math.min(i,N-1)], nx=-t[1], ny=t[0], q=P[i], ww=w(i/N), bo=ww+band*(i%2?1:.5);
+    Lp.push([q[0]-nx*ww,q[1]-ny*ww]); Rp.push([q[0]+nx*ww,q[1]+ny*ww]);
+    Mn.push([q[0]-nx*(ww-1),q[1]-ny*(ww-1)]); Mo.push([q[0]-nx*bo,q[1]-ny*bo]);
+  }
+  const poly=(a,b)=>"M"+a.map(v=>f(v[0])+" "+f(v[1])).join(" L")+" L"+b.slice().reverse().map(v=>f(v[0])+" "+f(v[1])).join(" L")+"Z";
+  return {d:poly(Lp,Rp),band:poly(Mo,Mn),E:P[N]};
+};
+const HCFG={B:[126,86],L:60,N:18,rest:s=>-62+22*s,peck:s=>-25+130*s,w:s=>8+8*Math.pow(1-s,1.5),band:6};
+const HN=bendNeck(HCFG,0);
+
+// ---- Caballo (de perfil): esbelto, cuello largo, patas largas, crin y cola oscuras.
+const hleg=c=>`M${c-6} 104 C${c-6} 126 ${c-4} 140 ${c-4} 152 L${c-5} 160 L${c+5} 160 L${c+4} 152 C${c+4} 140 ${c+6} 126 ${c+6} 104Z`;
+const HLeg=({id,c,fill,sock,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 100px`}}>
+    <path d={hleg(c)} fill={fill}/><path d={`M${c-4.2} 138 L${c+4.2} 138 L${c+4.6} 152 L${c+5} 160 L${c-5} 160 L${c-4.6} 152Z`} fill={sock}/>
+    <path d={`M${c-5} 156 L${c+5} 156 L${c+5.5} 160 L${c-5.5} 160Z`} fill="#2f2420"/>
+  </g>
+);
+const Horse=({R,u})=>(
+  <g>
+    <ellipse cx="96" cy="160.5" rx="84" ry="5" fill="#2f6b32" opacity=".28"/>
+    <g id={`caballo-cola-${u}`} ref={e=>R.htail=e} style={{transformOrigin:"34px 84px"}}>
+      <path d="M34 82 C14 80 2 96 6 126 C8 138 14 144 18 140 C14 120 18 100 36 94Z" fill="#3a2a22"/>
+    </g>
+    <HLeg id={`caballo-pata-trasera-lejana-${u}`} c={68} fill="#85502a" sock="#5e3a1f" r={e=>R.hbf=e}/>
+    <HLeg id={`caballo-pata-delantera-lejana-${u}`} c={108} fill="#85502a" sock="#5e3a1f" r={e=>R.hff=e}/>
+    <HLeg id={`caballo-pata-trasera-cercana-${u}`} c={50} fill="#9a5a2e" sock="#6e3f20" r={e=>R.hbn=e}/>
+    <HLeg id={`caballo-pata-delantera-cercana-${u}`} c={124} fill="#9a5a2e" sock="#6e3f20" r={e=>R.hfn=e}/>
+    <g id={`caballo-cuello-${u}`}>
+      <path ref={e=>R.hkp=e} d={HN.d} fill="#9a5a2e"/>
+      <path ref={e=>R.hkm=e} d={HN.band} fill="#3a2a22"/>
+    </g>
+    <g id={`caballo-cuerpo-${u}`}>
+      <path d="M30 84 C30 72 44 68 66 68 C90 66 118 68 134 74 C146 80 148 98 140 108 C128 116 98 116 74 114 C50 114 32 106 30 94Z" fill="#9a5a2e"/>
+      <path d="M36 78 C52 68 100 66 132 74 C100 72 60 74 36 86Z" fill="#85502a"/>
+    </g>
+    <g id={`caballo-cabeza-${u}`} ref={e=>R.hhead=e} transform={`translate(${HN.E[0]} ${HN.E[1]})`}>
+      <path d="M-4 -12 L-2 -24 L7 -14Z" fill="#85502a"/>
+      <path d="M-6 -10 C2 -16 12 -12 22 -2 C32 6 44 14 48 22 C48 28 42 30 36 28 C30 26 22 22 14 18 C8 16 2 14 -6 10Z" fill="#9a5a2e"/>
+      <path d="M38 18 C44 18 49 22 48 27 C44 30 38 28 34 24Z" fill="#6e4a35"/>
+      <path d="M0 -12 C4 -22 12 -18 14 -10 C10 -12 4 -10 0 -12Z" fill="#3a2a22"/>
+      <circle cx="15" cy="0" r="2.2" fill="#1f1510"/><circle cx="15.6" cy="-.6" r=".7" fill="#fff"/>
+      <circle cx="44" cy="24" r="1.1" fill="#3a2a22"/>
+    </g>
+  </g>
+);
+
+// ---- Lagarto overo (de perfil): cuerpo alargado oscuro con bandas claras, patas cortas y cola larga que ondula.
+const lleg=c=>`M${c-4} 30 C${c-6} 36 ${c-9} 40 ${c-10} 44 L${c+6} 44 C${c+2} 40 ${c+2} 36 ${c+4} 30Z`;
+const LLeg=({id,c,fill,r})=>(<g id={id} ref={r} style={{transformOrigin:`${c}px 32px`}}><path d={lleg(c)} fill={fill}/></g>);
+const lizTail=(m,ph,c)=>{
+  const N=14, L=62, f=n=>Math.round(n*10)/10, P=[], W=[], Lp=[], Rp=[];
+  for(let i=0;i<=N;i++){const s=i/N; P.push([36-L*s,31+3*s+(1.5+4*m)*s*Math.sin(Math.PI*2.2*s-ph+c*.9)]); W.push(5.2*Math.pow(1-s,.85)+.6);}
+  for(let i=0;i<=N;i++){const a=P[Math.max(0,i-1)], b=P[Math.min(N,i+1)], dx=b[0]-a[0], dy=b[1]-a[1], n=Math.hypot(dx,dy)||1, nx=-dy/n, ny=dx/n;
+    Lp.push([P[i][0]-nx*W[i],P[i][1]-ny*W[i]]); Rp.push([P[i][0]+nx*W[i],P[i][1]+ny*W[i]]);}
+  const q=(...v)=>v.map(p=>f(p[0])+" "+f(p[1])).join(" L");
+  let bands="";
+  for(let i=0;i<N;i++) if(Math.floor(i/2)%2===1) bands+="M"+q(Lp[i],Lp[i+1],Rp[i+1],Rp[i])+"Z";
+  return {d:"M"+q(...Lp)+" L"+q(...Rp.slice().reverse())+"Z",b:bands};
+};
+const LT0=lizTail(0,0,0);
+const Lizard=({R,u})=>(
+  <g>
+    <ellipse cx="62" cy="44.5" rx="62" ry="3.6" fill="#2f6b32" opacity=".28"/>
+    <clipPath id={`cl-${u}`}><path d="M34 30 C36 20 50 16 66 17 C82 16 96 20 102 28 C104 34 98 40 86 41 C66 42 46 42 36 38 C33 35 33 32 34 30Z"/></clipPath>
+    <path ref={e=>R.ltp=e} d={LT0.d} fill="#5f574a"/><path ref={e=>R.ltb=e} d={LT0.b} fill="#c4b697"/>
+    <LLeg id={`lagarto-pata-trasera-lejana-${u}`} c={56} fill="#4b4439" r={e=>R.lbf=e}/>
+    <LLeg id={`lagarto-pata-delantera-lejana-${u}`} c={84} fill="#4b4439" r={e=>R.lff=e}/>
+    <LLeg id={`lagarto-pata-trasera-cercana-${u}`} c={44} fill="#554d40" r={e=>R.lbn=e}/>
+    <LLeg id={`lagarto-pata-delantera-cercana-${u}`} c={94} fill="#554d40" r={e=>R.lfn=e}/>
+    <g id={`lagarto-cuerpo-${u}`} ref={e=>R.lbody=e} style={{transformOrigin:"66px 30px"}}>
+      <path d="M34 30 C36 20 50 16 66 17 C82 16 96 20 102 28 C104 34 98 40 86 41 C66 42 46 42 36 38 C33 35 33 32 34 30Z" fill="#5f574a"/>
+      <g clipPath={`url(#cl-${u})`}>
+        <path d="M44 14 L52 44 M60 14 L66 44 M76 14 L80 44 M92 16 L94 44" stroke="#c4b697" strokeWidth="5" fill="none"/>
+        <path d="M30 38 C56 43 82 43 104 37 L104 46 L30 46Z" fill="#cdc2a6"/>
+      </g>
+      <g id={`lagarto-cabeza-${u}`} ref={e=>R.lhead=e} style={{transformOrigin:"98px 28px"}}>
+        <path d="M96 22 C104 18 118 20 126 26 C130 29 130 33 126 35 C118 38 106 38 98 36Z" fill="#5f574a"/>
+        <path d="M100 34 C110 37 122 36 128 33 L127 36 C120 39 106 40 100 36Z" fill="#cdc2a6"/>
+        <circle cx="113" cy="26" r="1.9" fill="#1f1d1a"/><circle cx="113.6" cy="25.4" r=".6" fill="#e8c36a"/>
+        <circle cx="125" cy="28" r=".9" fill="#1f1d1a"/>
+        <g ref={e=>R.ltg=e} style={{opacity:0}}><path d="M129 31 L136 31 M136 31 L139 29 M136 31 L139 33" stroke="#d96a7a" strokeWidth="1" fill="none" strokeLinecap="round"/></g>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Parejera (serpiente): cuerpo continuo que ondula; sin patas. La forma se recalcula en cada cuadro.
+const snakeGeom=(m,e,ph,c)=>{
+  const N=24, L=110, X0=8, G=66, f=n=>Math.round(n*10)/10, sm=t=>t*t*(3-2*t), A=3+7*m, P=[], W=[];
+  for(let i=0;i<=N;i++){
+    const s=i/N, w=s<.35?1.6+3.8*Math.sin(s/.35*Math.PI/2):(s<.9?5.4:5.4-1.4*(s-.9)/.1);
+    const lift=16*e*sm(Math.min(1,Math.max(0,(s-.62)/.38)));
+    P.push([X0+L*s,G-w-.5-A*(.5+.5*Math.sin(Math.PI*3*s+ph+c*.8))*(.35+.65*(1-s))-lift]); W.push(w);   // solo se arquea hacia arriba: nunca se hunde en el suelo
+  }
+  const Lp=[], Rp=[], Bp=[]; let bl="";
+  for(let i=0;i<=N;i++){
+    const a=P[Math.max(0,i-1)], b=P[Math.min(N,i+1)], dx=b[0]-a[0], dy=b[1]-a[1], n=Math.hypot(dx,dy)||1, nx=-dy/n, ny=dx/n, w=W[i];
+    Lp.push([P[i][0]-nx*w,P[i][1]-ny*w]); Rp.push([P[i][0]+nx*w,P[i][1]+ny*w]); Bp.push([P[i][0]+nx*w*.35,P[i][1]+ny*w*.35]);
+    if(i>=3&&i%3===0&&i<N-1){const r=w*.5, cx=P[i][0]-nx*w*.25, cy=P[i][1]-ny*w*.25; bl+=`M${f(cx-r)} ${f(cy)} a${f(r)} ${f(r*.8)} 0 1 0 ${f(2*r)} 0 a${f(r)} ${f(r*.8)} 0 1 0 ${-f(2*r)} 0Z`;}
+  }
+  const poly=(a,b)=>"M"+a.map(v=>f(v[0])+" "+f(v[1])).join(" L")+" L"+b.slice().reverse().map(v=>f(v[0])+" "+f(v[1])).join(" L")+"Z";
+  const E=P[N], t0=P[N-1];
+  return {d:poly(Lp,Rp),belly:poly(Bp,Rp),blot:bl,hx:E[0],hy:E[1],ha:Math.atan2(E[1]-t0[1],E[0]-t0[0])*180/Math.PI};
+};
+const SG0=snakeGeom(0,0,0,0);
+const Snake=({R,u})=>(
+  <g>
+    <ellipse cx="62" cy="66.5" rx="54" ry="3.2" fill="#2f6b32" opacity=".28"/>
+    <path id={`parejera-cuerpo-${u}`} ref={e=>R.vb=e} d={SG0.d} fill="#8a7a4f"/>
+    <path ref={e=>R.vbl=e} d={SG0.belly} fill="#d9cfa6"/>
+    <path ref={e=>R.vbt=e} d={SG0.blot} fill="#5e5236" opacity=".85"/>
+    <g id={`parejera-cabeza-${u}`} ref={e=>R.vh=e} transform={`translate(${SG0.hx} ${SG0.hy}) rotate(${SG0.ha*.7})`}>
+      <path d="M-2 -4.6 C6 -5.8 12 -3.6 15 0 C12 3.8 6 5.4 -2 4.8Z" fill="#7d6f47"/>
+      <path d="M2 2 C7 4.2 12 3.4 15 .4 C12 4.4 6 5.6 -1 4.8Z" fill="#d9cfa6"/>
+      <circle cx="9" cy="-1.4" r="2" fill="#1f1d1a"/><circle cx="9.6" cy="-2" r=".7" fill="#fff"/>
+      <g ref={e=>R.vt=e} style={{opacity:0}}><path d="M15 0 L21 0 M21 0 L24 -2.2 M21 0 L24 2.2" stroke="#d96a7a" strokeWidth="1" fill="none" strokeLinecap="round"/></g>
+    </g>
+  </g>
+);
+
+// Puntos de posado en el alambrado (sobre el alambre y en los postes de las puntas). El poste del medio es de la lechuza.
+const PERCH_SPOTS=[[1392,627],[1517,627],[1330,591],[1580,591]];
+// Ala de ave pequeña en dos partes (brazo y mano), que apunta hacia la cola; aletea subiendo y bajando desde el hombro.
+const BWing=({id,r,r2,o,ho,arm,hand,fill})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${o[0]}px ${o[1]}px`}}>
+    <path d={arm} fill={fill} stroke={fill} strokeWidth=".8" strokeLinejoin="round"/>
+    <g ref={r2} style={{transformOrigin:`${ho[0]}px ${ho[1]}px`}}><path d={hand} fill={fill} stroke={fill} strokeWidth=".8" strokeLinejoin="round"/></g>
+  </g>
+);
+
+// ---- Hornero (de perfil): marrón rojizo, vientre claro, cola corta levantada, pico fino algo curvo.
+const HO_ARM="M34 24 C30 20 24 20 20 23 L20 33 C26 33 30 31 34 30Z", HO_HAND="M22 23 C16 21 10 23 6 27 L9 29 L5 32 L12 32 L9 35 C14 35 19 33 22 32Z";
+const Hornero=({R,u})=>(
+  <g>
+    {!R.pm&&<ellipse cx="34" cy="60.5" rx="30" ry="3.2" fill="#2f6b32" opacity=".28"/>}
+    <g ref={e=>R.chfeet=e}>
+      <g id={`hornero-pata-lejana-${u}`} ref={e=>R.xl2=e} style={{transformOrigin:"36px 46px"}}><path d="M36 46 L36 58 M32 59 L41 59" stroke="#6f6058" strokeWidth="1.6" fill="none" strokeLinecap="round"/></g>
+      <g id={`hornero-pata-cercana-${u}`} ref={e=>R.xl1=e} style={{transformOrigin:"28px 46px"}}><path d="M28 46 L28 58 M24 59 L33 59" stroke="#8c7a70" strokeWidth="1.8" fill="none" strokeLinecap="round"/></g>
+    </g>
+    <g id={`hornero-cuerpo-${u}`} ref={e=>R.xtor=e} style={{transformOrigin:"30px 46px"}}>
+      <BWing id={`hornero-ala-lejana-${u}`} r={e=>R.chwf=e} r2={e=>R.chwf2=e} o={[34,26]} ho={[21,28]} arm={HO_ARM} hand={HO_HAND} fill="#6a3b20"/>
+      <g id={`hornero-cola-${u}`} ref={e=>R.chtail=e} style={{transformOrigin:"14px 32px"}}><path d="M10 33 C4 31 -2 25 -6 17 C-4 15 0 15 2 17 C6 21 12 25 18 27Z" fill="#7a4526"/></g>
+      <path d="M6 36 C7 27 18 21 32 21 C46 21 56 27 56 35 C56 43 44 48 31 48 C17 48 6 44 6 36Z" fill="#9a5f33"/>
+      <path d="M31 48 C18 48 7 43 6 37 C20 42 40 40 56 33 C56 42 44 48 31 48Z" fill="#d9bf94"/>
+      <BWing id={`hornero-ala-cercana-${u}`} r={e=>R.chwn=e} r2={e=>R.chwn2=e} o={[34,26]} ho={[21,28]} arm={HO_ARM} hand={HO_HAND} fill="#7a4526"/>
+      <g id={`hornero-cabeza-${u}`} ref={e=>R.chhead=e} style={{transformOrigin:"48px 24px"}}>
+        <path d="M46 18 C50 13 58 13 62 18 C65 22 64 27 60 29 C54 31 47 29 46 24Z" fill="#9a5f33"/>
+        <path d="M51 17 C56 16 61 18 63 21" stroke="#e8d8bd" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
+        <path d="M63 21 C68 21 72 23 74 26 C70 25 66 24 63 24Z" fill="#3b3530"/>
+        <circle cx="58" cy="22" r="1.7" fill="#1f1d1a"/><circle cx="58.5" cy="21.4" r=".6" fill="#fff"/>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Tijereta (de perfil): gris y blanquecina, gorro oscuro, cola larga muy bifurcada.
+const TJ_ARM="M32 14 C26 9 18 9 10 12 L10 22 C18 23 26 21 32 20Z", TJ_HAND="M12 12 C4 9 -6 11 -14 16 L-9 18 L-16 22 L-6 22 L-11 26 C-4 26 4 24 12 21Z";
+const Tijereta=({R,u})=>(
+  <g>
+    <BWing id={`tijereta-ala-lejana-${u}`} r={e=>R.chwf=e} r2={e=>R.chwf2=e} o={[30,16]} ho={[11,17]} arm={TJ_ARM} hand={TJ_HAND} fill="#4f5459"/>
+    <g id={`tijereta-cola-${u}`} ref={e=>R.chtail=e} style={{transformOrigin:"14px 27px"}}>
+      <path d="M14 25 C0 21 -24 15 -58 6 L-58 10 C-30 21 -6 29 14 29Z" fill="#2e3236"/>
+      <path d="M14 29 C0 33 -24 41 -56 48 L-56 44 C-28 36 -6 29 14 25Z" fill="#3a3f43"/>
+    </g>
+    <g id={`tijereta-cuerpo-${u}`}>
+      <path d="M8 24 C8 15 18 10 30 10 C42 9 52 13 52 21 C52 30 42 34 30 34 C18 34 9 31 8 24Z" fill="#8c9097"/>
+      <path d="M30 34 C20 34 11 30 8 25 C20 29 40 27 52 22 C51 30 42 34 30 34Z" fill="#e9ebeb"/>
+    </g>
+    <g ref={e=>R.chfeet=e}><path d="M26 33 L26 46 M33 33 L33 46" stroke="#2b2e30" strokeWidth="1.8" fill="none" strokeLinecap="round"/></g>
+    <g id={`tijereta-cabeza-${u}`} ref={e=>R.chhead=e} style={{transformOrigin:"46px 14px"}}>
+      <path d="M42 7 C46 2 54 2 58 7 C61 11 59 18 54 20 C49 22 44 20 42 15Z" fill="#3d4247"/>
+      <path d="M45 13 C50 12 56 13 58 16 C56 19 51 21 47 19Z" fill="#a9adb2"/>
+      <path d="M59 12 L68 13.5 L59 16Z" fill="#26292b"/>
+      <circle cx="52" cy="10.4" r="1.7" fill="#101214"/><circle cx="52.5" cy="9.8" r=".6" fill="#fff"/>
+    </g>
+    <BWing id={`tijereta-ala-cercana-${u}`} r={e=>R.chwn=e} r2={e=>R.chwn2=e} o={[30,16]} ho={[11,17]} arm={TJ_ARM} hand={TJ_HAND} fill="#5d6268"/>
+  </g>
+);
+
+// ---- Venado de campo (de perfil): esbelto, color arena, patas largas y finas, cuello elegante, astas simples.
+const DCFG={B:[100,62],L:44,N:14,rest:s=>-58+16*s,peck:s=>-45+140*Math.pow(s,.8),w:s=>5+6*Math.pow(1-s,1.4),band:0};
+const DN=bendNeck(DCFG,0);
+const dleg=c=>`M${c-4} 82 C${c-4} 100 ${c-3} 114 ${c-3} 124 L${c-4} 130 L${c+4} 130 L${c+3} 124 C${c+3} 114 ${c+4} 100 ${c+4} 82Z`;
+const DLeg=({id,c,fill,sock,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 84px`}}>
+    <path d={dleg(c)} fill={fill}/><path d={`M${c-3.4} 116 L${c+3.4} 116 L${c+3.8} 124 L${c+4} 130 L${c-4} 130 L${c-3.8} 124Z`} fill={sock}/>
+    <path d={`M${c-4} 126 L${c+4} 126 L${c+4.4} 130 L${c-4.4} 130Z`} fill="#2f2420"/>
+  </g>
+);
+const Deer=({R,u})=>(
+  <g>
+    <ellipse cx="78" cy="130.5" rx="66" ry="4.5" fill="#2f6b32" opacity=".28"/>
+    <g id={`venado-cola-${u}`} ref={e=>R.dtail=e} style={{transformOrigin:"32px 58px"}}>
+      <path d="M32 56 C24 52 22 58 26 64 C28 66 32 64 34 60Z" fill="#c49a62"/><path d="M26 64 C28 66 32 64 34 60 C30 62 28 62 26 64Z" fill="#f4eee0"/>
+    </g>
+    <DLeg id={`venado-pata-trasera-lejana-${u}`} c={58} fill="#b08650" sock="#8a6a45" r={e=>R.dbf=e}/>
+    <DLeg id={`venado-pata-delantera-lejana-${u}`} c={82} fill="#b08650" sock="#8a6a45" r={e=>R.dff=e}/>
+    <DLeg id={`venado-pata-trasera-cercana-${u}`} c={44} fill="#c49a62" sock="#9a7a4f" r={e=>R.dbn=e}/>
+    <DLeg id={`venado-pata-delantera-cercana-${u}`} c={96} fill="#c49a62" sock="#9a7a4f" r={e=>R.dfn=e}/>
+    <g id={`venado-cuello-${u}`}><path ref={e=>R.dkp=e} d={DN.d} fill="#c49a62"/></g>
+    <g id={`venado-cuerpo-${u}`}>
+      <path d="M30 64 C30 54 42 50 58 50 C76 48 96 52 104 58 C112 64 110 78 102 84 C92 90 66 90 50 88 C38 86 30 76 30 64Z" fill="#c49a62"/>
+      <path d="M44 84 C60 90 88 90 104 82 C100 90 70 94 50 90Z" fill="#e8d9b8"/>
+      <path d="M30 64 C30 56 34 52 40 52 C36 58 34 64 36 72 C32 72 30 68 30 64Z" fill="#f0e6d0"/>
+    </g>
+    <g id={`venado-cabeza-${u}`} ref={e=>R.dhead=e} transform={`translate(${DN.E[0]} ${DN.E[1]})`}>
+      <path d="M2 -10 C0 -22 2 -30 -2 -38 M0 -24 C-4 -26 -8 -28 -11 -28 M1 -19 C5 -23 8 -26 10 -31" stroke="#7a5a38" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <path d="M-2 -8 L2 -19 L9 -9Z" fill="#b08650"/><path d="M0 -9 L3 -16 L6 -9Z" fill="#e6b7a8"/>
+      <path d="M-4 -7 C2 -10 10 -7 18 0 C24 5 30 10 32 15 C31 19 27 20 23 18 C17 15 10 12 4 9 C-1 7 -4 4 -4 -7Z" fill="#c49a62"/>
+      <path d="M8 6 C14 9 22 14 28 18 C22 19 14 14 8 10Z" fill="#e8d9b8"/>
+      <path d="M27 13 C31 13 33 16 32 19 C29 20 26 18 25 16Z" fill="#3a2a22"/>
+      <circle cx="10" cy="-2" r="2.1" fill="#1f1510"/><circle cx="10.6" cy="-2.6" r=".7" fill="#fff"/>
+    </g>
+  </g>
+);
+
+// ---- Lagartija verde (de perfil): pequeña, alargada y verde, cola larga y fina que ondula, patas finas.
+const gleg=c=>`M${c-2.5} 14 C${c-3.5} 18 ${c-5} 22 ${c-6} 24 L${c+4} 24 C${c+1} 22 ${c+1} 18 ${c+2} 14Z`;
+const GLeg=({id,c,fill,r})=>(<g id={id} ref={r} style={{transformOrigin:`${c}px 15px`}}><path d={gleg(c)} fill={fill}/></g>);
+const grnTail=(m,ph,c)=>{
+  const N=14, L=60, f=n=>Math.round(n*10)/10, P=[], W=[], Lp=[], Rp=[];
+  for(let i=0;i<=N;i++){const s=i/N; P.push([26-L*s,11+2*s+(1+3*m)*s*Math.sin(Math.PI*2.4*s-ph+c*.9)]); W.push(2.8*Math.pow(1-s,.9)+.5);}
+  for(let i=0;i<=N;i++){const a=P[Math.max(0,i-1)], b=P[Math.min(N,i+1)], dx=b[0]-a[0], dy=b[1]-a[1], n=Math.hypot(dx,dy)||1, nx=-dy/n, ny=dx/n;
+    Lp.push([P[i][0]-nx*W[i],P[i][1]-ny*W[i]]); Rp.push([P[i][0]+nx*W[i],P[i][1]+ny*W[i]]);}
+  const q=a=>a.map(p=>f(p[0])+" "+f(p[1])).join(" L");
+  return "M"+q(Lp)+" L"+q(Rp.slice().reverse())+"Z";
+};
+const GT0=grnTail(0,0,0);
+const Lagartija=({R,u})=>(
+  <g>
+    <ellipse cx="40" cy="24.5" rx="38" ry="2.6" fill="#2f6b32" opacity=".28"/>
+    <path ref={e=>R.qtp=e} d={GT0} fill="#7fa34f"/>
+    <GLeg id={`lagartija-pata-trasera-lejana-${u}`} c={40} fill="#5f7f3a" r={e=>R.qbf=e}/>
+    <GLeg id={`lagartija-pata-delantera-lejana-${u}`} c={52} fill="#5f7f3a" r={e=>R.qff=e}/>
+    <GLeg id={`lagartija-pata-trasera-cercana-${u}`} c={32} fill="#6f9344" r={e=>R.qbn=e}/>
+    <GLeg id={`lagartija-pata-delantera-cercana-${u}`} c={58} fill="#6f9344" r={e=>R.qfn=e}/>
+    <g id={`lagartija-cuerpo-${u}`} ref={e=>R.qbody=e} style={{transformOrigin:"46px 11px"}}>
+      <path d="M24 10 C26 5 36 3 46 4 C56 4 64 7 68 11 C70 14 66 17 58 18 C46 19 34 19 27 16 C24 14 23 12 24 10Z" fill="#7fa34f"/>
+      <path d="M30 7 C40 5 56 6 66 9 C56 8 40 8 30 10Z" fill="#5f7f3a"/>
+      <path d="M30 16 C42 19 58 19 66 15 C60 19 44 20 30 17Z" fill="#d6d89a"/>
+      <path d="M34 12 l3 0 M44 12 l3 0 M54 12 l3 0" stroke="#c3d98a" strokeWidth="1.6" strokeLinecap="round"/>
+      <g id={`lagartija-cabeza-${u}`} ref={e=>R.qhead=e} style={{transformOrigin:"64px 11px"}}>
+        <path d="M64 5 C70 4 78 6 82 10 C84 12 83 14 80 15 C74 17 68 16 65 14Z" fill="#7fa34f"/>
+        <circle cx="74" cy="8.6" r="1.4" fill="#1f1d1a"/><circle cx="74.4" cy="8.2" r=".5" fill="#fff"/>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Gato de pajonal (de perfil): cuerpo alargado y bajo, patas proporcionadas, cuello definido, cabeza fina y cola larga anillada.
+const cleg=c=>`M${c-4} 44 C${c-4} 54 ${c-3.4} 62 ${c-3.4} 66 L${c-4.4} 70 L${c+5.4} 70 L${c+4.4} 66 C${c+3.4} 62 ${c+4} 54 ${c+4} 44Z`;
+const CLeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 46px`}}><path d={cleg(c)} fill={fill}/><path d={`M${c-4.4} 64 L${c+4.4} 64 L${c+5.4} 70 L${c-4.4} 70Z`} fill="#6a5f4e"/></g>
+);
+const CAT_TAIL="M22 34 C6 32 -6 42 -6 56 C-6 66 0 70 4 66 C4 56 10 46 24 44Z";
+const Cat=({R,u})=>(
+  <g>
+    <ellipse cx="58" cy="70.5" rx="56" ry="4" fill="#2f6b32" opacity=".28"/>
+    <clipPath id={`gt-${u}`}><path d={CAT_TAIL}/></clipPath>
+    <g id={`gato-cola-${u}`} ref={e=>R.cttail=e} style={{transformOrigin:"22px 36px"}}>
+      <path d={CAT_TAIL} fill="#9a8f7e"/>
+      <g clipPath={`url(#gt-${u})`}><path d="M17 30 L21 46 M9 32 L13 48 M2 40 L8 54 M-3 50 L3 62" stroke="#4f463a" strokeWidth="3.4" fill="none"/></g>
+    </g>
+    <CLeg id={`gato-pata-trasera-lejana-${u}`} c={48} fill="#85796a" r={e=>R.ctbf=e}/>
+    <CLeg id={`gato-pata-delantera-lejana-${u}`} c={78} fill="#85796a" r={e=>R.ctff=e}/>
+    <CLeg id={`gato-pata-trasera-cercana-${u}`} c={36} fill="#9a8f7e" r={e=>R.ctbn=e}/>
+    <CLeg id={`gato-pata-delantera-cercana-${u}`} c={90} fill="#9a8f7e" r={e=>R.ctfn=e}/>
+    <g id={`gato-cuerpo-${u}`} ref={e=>R.ctbody=e}>
+      <path d="M20 38 C20 28 34 24 52 24 C74 22 96 26 106 34 C112 40 108 48 98 51 C80 54 46 54 32 50 C24 46 20 42 20 38Z" fill="#9a8f7e"/>
+      <path d="M26 30 C42 24 82 22 102 30 C82 27 46 28 26 36Z" fill="#7c725f"/>
+      <path d="M30 50 C46 54 80 54 98 50 C92 56 66 58 42 56Z" fill="#cfc6b0"/>
+      <path d="M44 36 l4 3 M58 34 l4 3 M72 36 l4 3 M52 44 l4 3 M66 44 l4 3" stroke="#6a5f4e" strokeWidth="2.2" strokeLinecap="round" opacity=".6"/>
+      <g id={`gato-cabeza-${u}`} ref={e=>R.cthead=e} style={{transformOrigin:"98px 32px"}}>
+        <path d="M88 28 C94 24 102 24 106 28 L110 40 C104 46 94 46 88 40Z" fill="#9a8f7e"/>
+        <path d="M96 25 C95 19 100 18 103 23Z M105 22 C107 17 112 18 112 23Z" fill="#7c725f"/>
+        <path d="M94 24 C100 19 110 21 115 28 C118 33 116 40 111 42 C104 45 96 42 94 36Z" fill="#9a8f7e"/>
+        <path d="M107 36 C112 36 116 39 114 42 C110 44 105 43 103 40Z" fill="#cfc6b0"/>
+        <path d="M100 37 L107 38 M100 40 L107 41" stroke="#6a5f4e" strokeWidth="1.3" strokeLinecap="round"/>
+        <circle cx="114" cy="38" r="1.5" fill="#c98a86"/>
+        <circle cx="106" cy="30" r="2.3" fill="#d3a84a"/><ellipse cx="106" cy="30" rx=".8" ry="1.9" fill="#1f1510"/>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Aguará guazú (de perfil): patas larguísimas y finas, cuerpo esbelto y alargado, cuello largo, hocico fino, orejas grandes.
+// Todo lo que va sobre las patas se levanta 14 unidades para que el animal se vea más alto.
+const AGCFG={B:[104,60],L:48,N:16,rest:s=>-28+8*s,peck:s=>-75+10*s,w:s=>4.5+4*Math.pow(1-s,1.3),band:4.5};
+const AGN=bendNeck(AGCFG,0);
+const aleg=c=>`M${c-3.2} 62 C${c-3.2} 100 ${c-2.4} 138 ${c-2.4} 160 L${c-3.2} 170 L${c+3.2} 170 L${c+2.4} 160 C${c+2.4} 138 ${c+3.2} 100 ${c+3.2} 62Z`;
+const ALeg=({id,c,fill,r})=>(
+  <g id={id} ref={r} style={{transformOrigin:`${c}px 64px`}}><path d={aleg(c)} fill={fill}/><path d={`M${c-3} 100 L${c+3} 100 L${c+2.4} 160 L${c+3.2} 170 L${c-3.2} 170 L${c-2.4} 160Z`} fill="#2f2420"/></g>
+);
+const Maned=({R,u})=>(
+  <g>
+    <ellipse cx="82" cy="170.5" rx="66" ry="5" fill="#2f6b32" opacity=".28"/>
+    <ALeg id={`aguara-pata-trasera-lejana-${u}`} c={64} fill="#9a4624" r={e=>R.abf=e}/>
+    <ALeg id={`aguara-pata-delantera-lejana-${u}`} c={90} fill="#9a4624" r={e=>R.aff=e}/>
+    <ALeg id={`aguara-pata-trasera-cercana-${u}`} c={50} fill="#b5532a" r={e=>R.abn=e}/>
+    <ALeg id={`aguara-pata-delantera-cercana-${u}`} c={102} fill="#b5532a" r={e=>R.afn=e}/>
+    <g transform="translate(0 -14)">
+      <g id={`aguara-cola-${u}`} ref={e=>R.atail=e} style={{transformOrigin:"34px 62px"}}>
+        <path d="M32 56 C18 56 10 68 12 84 C14 92 20 92 22 86 C22 76 28 66 36 62Z" fill="#b5532a"/>
+        <path d="M12 84 C14 92 20 92 22 86 C20 88 16 88 12 84Z" fill="#2f2420"/>
+      </g>
+      <g id={`aguara-cuello-${u}`}>
+        <path ref={e=>R.akp=e} d={AGN.d} fill="#b5532a"/>
+        <path ref={e=>R.akm=e} d={AGN.band} fill="#2f2420"/>
+      </g>
+      <g id={`aguara-cuerpo-${u}`}>
+        <path d="M28 62 C28 54 40 50 60 50 C82 48 104 52 114 58 C120 64 116 76 106 80 C92 84 66 84 50 82 C38 80 28 72 28 62Z" fill="#b5532a"/>
+        <path d="M34 58 C50 51 88 48 110 55 C90 53 54 56 34 64Z" fill="#2f2420"/>
+        <path d="M50 82 C68 84 92 84 106 80 C98 86 70 88 52 86Z" fill="#d9a07a"/>
+      </g>
+      <g id={`aguara-cabeza-${u}`} ref={e=>R.ahead=e} transform={`translate(${AGN.E[0]} ${AGN.E[1]})`}>
+        <path d="M0 -5 L-4 -34 L11 -9Z M8 -7 L12 -36 L22 -5Z" fill="#b5532a"/>
+        <path d="M1 -9 L-1 -27 L7 -10Z M10 -9 L12 -29 L17 -7Z" fill="#2f2420"/>
+        <path d="M-5 -7 C2 -10 12 -7 24 0 C34 5 46 9 50 12 C48 15 42 15 36 14 C24 11 12 10 0 7 C-4 5 -5 -1 -5 -7Z" fill="#b5532a"/>
+        <path d="M22 10 C32 12 42 13 48 13 C44 16 34 16 24 13Z" fill="#f2e6d6"/>
+        <circle cx="50" cy="12.5" r="1.8" fill="#1f1510"/><circle cx="13" cy="-1" r="1.7" fill="#1f1510"/><circle cx="13.5" cy="-1.5" r=".6" fill="#fff"/>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Laucha de campo (de perfil): diminuta, pardo grisácea, vientre claro, orejas redondas y cola fina.
+// Se esconde detrás de piedras o montículos: un recorte vertical oculta lo que queda "detrás" del objeto (que se dibuja encima).
+const MO=[[0,60],[1.2,-34],[4,-34],[5,-6],[7,-6],[8.2,60],[12.2,60]];   // [segundo, distancia al borde del escondite]: corre hacia él, se oculta, asoma, sale y olfatea
+const mouseO=u=>{for(let i=0;i<MO.length-1;i++){const [t0,x0]=MO[i],[t1,x1]=MO[i+1];if(u<=t1){const f=(u-t0)/(t1-t0);return x0+(x1-x0)*f*f*(3-2*f);}}return 60;};
+const SLg=({id,c,fill,r})=>(<g id={id} ref={r} style={{transformOrigin:`${c}px 17px`}}><path d={`M${c-1.6} 17 L${c-2.4} 22 L${c+2.4} 22 L${c+1.2} 17Z`} fill={fill}/></g>);
+const Mouse=({R,u})=>(
+  <g>
+    <clipPath id={`cm-${u}`}><rect ref={e=>R.lsclip=e} x="-1000" y="-80" width="3000" height="220"/></clipPath>
+    <g clipPath={`url(#cm-${u})`}>
+      <g id={`laucha-cola-${u}`} ref={e=>R.lstail=e} style={{transformOrigin:"9px 15px"}}><path d="M9 15 C3 17 -3 12 -10 14 C-14 15 -16 18 -20 18" stroke="#b9a89a" strokeWidth="1.3" fill="none" strokeLinecap="round"/></g>
+      <SLg id={`laucha-pata-trasera-lejana-${u}`} c={14} fill="#6e6256" r={e=>R.lsbf=e}/>
+      <SLg id={`laucha-pata-delantera-lejana-${u}`} c={31} fill="#6e6256" r={e=>R.lsff=e}/>
+      <SLg id={`laucha-pata-trasera-cercana-${u}`} c={20} fill="#8a7d6e" r={e=>R.lsbn=e}/>
+      <SLg id={`laucha-pata-delantera-cercana-${u}`} c={36} fill="#8a7d6e" r={e=>R.lsfn=e}/>
+      <g id={`laucha-cuerpo-${u}`}>
+        <path d="M8 14 C8 8 14 5 22 5 C30 5 36 9 36 14 C36 19 30 21 22 21 C14 21 8 19 8 14Z" fill="#8a7d6e"/>
+        <path d="M12 19 C18 22 30 22 35 17 C34 21 28 23 22 23 C16 23 12 21 12 19Z" fill="#d9d0c0"/>
+        <g id={`laucha-cabeza-${u}`} ref={e=>R.lshead=e} style={{transformOrigin:"34px 13px"}}>
+          <path d="M34 9 C38 7 44 9 46 13 C47 16 45 19 41 19 C37 19 34 16 34 12Z" fill="#8a7d6e"/>
+          <path d="M36 8 C34 3 40 2 41 7Z" fill="#8a7d6e"/><path d="M37 7 C36 4 39 4 40 7Z" fill="#d8a9a0"/>
+          <circle cx="46" cy="14" r="1.2" fill="#c98a86"/><circle cx="41" cy="12.4" r="1.2" fill="#1f1510"/>
+        </g>
+      </g>
+    </g>
+  </g>
+);
+
+// ---- Sapo común (de perfil): cuerpo bajo, ancho y compacto; patas delanteras cortas pegadas al pecho y patas traseras robustas y plegadas.
+// Las patas traseras son una sola pieza con el muslo, que se apoya sobre el cuerpo: no hay articulaciones sueltas.
+const Toad=({R,u})=>(
+  <g>
+    <ellipse cx="42" cy="40.5" rx="34" ry="3" fill="#2f6b32" opacity=".28"/>
+    <g id={`sapo-${u}`} ref={e=>R.pbody2=e} style={{transformOrigin:"40px 40px"}}>
+      <g id={`sapo-pata-trasera-lejana-${u}`} ref={e=>R.pbf2=e} style={{transformOrigin:"30px 30px"}}><path d="M19 31 C19 22 30 19 39 24 C43 28 42 34 37 37 L42 40 L14 40 C14 37 17 35 20 35Z" fill="#5f5236"/></g>
+      <g id={`sapo-pata-delantera-lejana-${u}`} ref={e=>R.pff2=e} style={{transformOrigin:"62px 30px"}}><path d="M58 30 C58 36 60 39 60 40 L67 40 C66 37 66 34 65 30Z" fill="#5f5236"/></g>
+      <g id={`sapo-cuerpo-${u}`}>
+        <path d="M10 28 C10 16 24 12 40 12 C56 12 70 16 72 28 C73 36 62 40 42 40 C22 40 10 36 10 28Z" fill="#7b6a45"/>
+        <path d="M16 36 C28 41 56 41 68 36 C60 41 24 41 16 36Z" fill="#cdbf96"/>
+        <g fill="#5a4c32"><circle cx="26" cy="20" r="2.3"/><circle cx="36" cy="17" r="2"/><circle cx="46" cy="19" r="2.5"/><circle cx="32" cy="26" r="2.1"/><circle cx="42" cy="28" r="2.3"/><circle cx="22" cy="29" r="1.9"/><circle cx="52" cy="26" r="1.8"/></g>
+        <g id={`sapo-cabeza-${u}`} ref={e=>R.phead2=e} style={{transformOrigin:"58px 26px"}}>
+          <path d="M58 16 C66 12 76 16 78 24 C79 30 74 35 66 35 C60 35 56 30 56 24Z" fill="#7b6a45"/>
+          <path d="M54 15 C58 11 63 11 65 15 C63 20 57 20 54 15Z" fill="#5a4c32"/>
+          <circle cx="68" cy="15" r="4.6" fill="#7b6a45"/><circle cx="68" cy="15" r="3.5" fill="#c9b25c"/><ellipse cx="68" cy="15" rx="2.8" ry="1.4" fill="#1f1510"/>
+          <path d="M62 32 C68 33 74 31 77 28" stroke="#4a3d28" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+        </g>
+      </g>
+      <g id={`sapo-pata-trasera-cercana-${u}`} ref={e=>R.pbn2=e} style={{transformOrigin:"24px 30px"}}><path d="M13 31 C13 22 24 19 33 24 C37 28 36 34 31 37 L36 40 L8 40 C8 37 11 35 14 35Z" fill="#6f5f3e"/><path d="M18 27 C22 24 28 24 31 28" stroke="#5a4c32" strokeWidth="1.1" fill="none" strokeLinecap="round"/></g>
+      <g id={`sapo-pata-delantera-cercana-${u}`} ref={e=>R.pfn2=e} style={{transformOrigin:"58px 30px"}}><path d="M54 30 C54 36 56 39 56 40 L63 40 C62 37 62 34 61 30Z" fill="#6f5f3e"/></g>
+    </g>
+  </g>
+);
+
+// ---- Murciélago escarchado (de perfil): pequeño y compacto, gris parduzco, orejas cortas; alas de membrana oscura con borde anguloso.
+// Cada ala es un brazo (con la membrana que llega al cuerpo) y una mano con "dedos" que se pliega y se extiende al aletear.
+const BAT_ARM="M26 9 C22 5 16 4 10 6 L10 13 C16 13 22 12 26 12Z";
+const BAT_MEM="M26 12 L10 13 L14 20 L24 22Z";
+const BAT_HAND="M11 5 C6 3 -2 4 -8 8 L-3 9 L-10 13 L-4 13 L-9 18 L-2 17 L-5 21 C2 21 8 17 11 13Z";
+const BatWing=({id,r,r2,fill,rib})=>(
+  <g id={id} ref={r} style={{transformOrigin:"24px 10px"}}>
+    <path d={BAT_MEM} fill={fill}/>
+    <path d={BAT_ARM} fill={fill} stroke={fill} strokeWidth=".8" strokeLinejoin="round"/>
+    <g ref={r2} style={{transformOrigin:"11px 10px"}}>
+      <path d={BAT_HAND} fill={fill} stroke={fill} strokeWidth=".8" strokeLinejoin="round"/>
+      <path d="M11 7 L-8 8 M11 10 L-10 13 M11 13 L-9 18 M11 16 L-5 21" stroke={rib} strokeWidth=".9" fill="none" strokeLinecap="round"/>
+    </g>
+  </g>
+);
+const Bat=({R,u})=>(
+  <g>
+    <BatWing id={`murcielago-ala-lejana-${u}`} r={e=>R.chwf=e} r2={e=>R.chwf2=e} fill="#2f2924" rib="#4a4038"/>
+    <path d="M15 19 L8 25 L18 24Z" fill="#4a4038"/>
+    <g id={`murcielago-cuerpo-${u}`}>
+      <path d="M14 16 C14 11 19 8 25 8 C31 8 36 11 36 16 C36 21 31 24 25 24 C19 24 14 21 14 16Z" fill="#7a6e62"/>
+      <path d="M17 13 C21 8 30 8 34 12 C29 10 21 10 17 15Z" fill="#a79c8c"/>
+    </g>
+    <g id={`murcielago-cabeza-${u}`}>
+      <path d="M36 9 L36 4 L39 8Z M40 8 L42 4 L43 10Z" fill="#6a5f54"/>
+      <path d="M34 9 C37 7 42 8 44 12 C45 15 43 18 40 19 C37 19 34 17 34 14Z" fill="#7a6e62"/>
+      <path d="M41 15 C43 15 45 16 44 18 C42 19 40 18 39 17Z" fill="#a79c8c"/>
+      <circle cx="40.6" cy="12.2" r="1.4" fill="#1a1512"/><circle cx="41" cy="11.7" r=".5" fill="#fff"/>
+    </g>
+    <BatWing id={`murcielago-ala-cercana-${u}`} r={e=>R.chwn=e} r2={e=>R.chwn2=e} fill="#3f3730" rib="#5a4f45"/>
+  </g>
+);
+
+// ---- Urutaú (de frente): ave nocturna posada y erguida, de silueta estrecha y vertical que imita la punta de un tronco.
+// Plumaje gris parduzco con "corteza", cabeza grande, pico corto y ancho poco visible, ojos grandes amarillos.
+const Potoo=({R,u})=>(
+  <g>
+    <g id={`urutau-${u}`} ref={e=>R.ubody=e} style={{transformOrigin:"24px 100px"}}>
+      <path d="M24 8 C14 8 10 18 10 28 C10 40 12 56 14 74 C15 88 18 98 24 100 C30 98 33 88 34 74 C36 56 38 40 38 28 C38 18 34 8 24 8Z" fill="#8c7e6a"/>
+      <path d="M18 44 C20 60 22 80 24 98 C26 80 28 60 30 44Z" fill="#b3a487"/>
+      <path d="M10 34 C12 56 16 82 22 99 C16 96 12 82 10 68 C8 56 8 44 10 34Z M38 34 C36 56 32 82 26 99 C32 96 36 82 38 68 C40 56 40 44 38 34Z" fill="#6f634f"/>
+      <path d="M15 46 C17 56 15 66 18 78 M23 52 C25 64 22 76 25 90 M31 48 C33 58 30 70 33 82" stroke="#5f5342" strokeWidth="2.2" fill="none" strokeLinecap="round"/>
+      <g fill="#d6c9a8"><ellipse cx="20" cy="54" rx="2.2" ry="1.4"/><ellipse cx="29" cy="62" rx="2.4" ry="1.5"/><ellipse cx="19" cy="72" rx="2" ry="1.3"/><ellipse cx="28" cy="82" rx="2.2" ry="1.4"/><ellipse cx="23" cy="92" rx="1.8" ry="1.2"/></g>
+      <path d="M17 99 C19 102 23 102 24 100 C25 102 29 102 31 99" stroke="#4a4034" strokeWidth="2" fill="none" strokeLinecap="round"/>
+      <g id={`urutau-cabeza-${u}`} ref={e=>R.uhead=e} style={{transformOrigin:"24px 34px"}}>
+        <path d="M8 22 C8 10 16 4 24 4 C32 4 40 10 40 22 C40 30 34 34 24 34 C14 34 8 30 8 22Z" fill="#8c7e6a"/>
+        <path d="M9 15 C14 11 20 12 22 15 M26 15 C28 12 34 11 39 15" stroke="#3f352a" strokeWidth="2" fill="none" strokeLinecap="round"/>
+        <g ref={e=>R.uglow=e} style={{opacity:.2}}><circle cx="17" cy="20" r="9" fill="#f5dc7a"/><circle cx="31" cy="20" r="9" fill="#f5dc7a"/></g>
+        <g ref={e=>R.ueyes=e} style={{transformOrigin:"24px 20px"}}>
+          <circle cx="17" cy="20" r="6" fill="#e8c24a" stroke="#b8942c" strokeWidth="1"/><circle cx="31" cy="20" r="6" fill="#e8c24a" stroke="#b8942c" strokeWidth="1"/>
+          <circle cx="17" cy="20" r="2.7" fill="#1f1810"/><circle cx="31" cy="20" r="2.7" fill="#1f1810"/>
+          <circle cx="18" cy="18.8" r=".9" fill="#fff"/><circle cx="32" cy="18.8" r=".9" fill="#fff"/>
+        </g>
+        <path d="M20 28 L24 33 L28 28Z" fill="#4a4034"/>
+      </g>
+    </g>
+  </g>
+);
+
 let PZ=0; // mezcla hacia la pose de pausa del animal que se está dibujando (0 = normal, 1 = atento)
 const rot=(e,d)=>{e.style.transform=`rotate(${d*(1-PZ)}deg)`};
 const SP={
+  urutau:{ex:[24,-12],still:true,C:Potoo,s:.65,cx:24,gy:100,half:20,v:0},
+  laucha:{ex:[40,-4],mouse:true,C:Mouse,s:.7,cx:27,gy:22,half:0,v:0},
+  sapo:{ex:[68,2],rs:[6,14],C:Toad,s:.8,cx:42,gy:40,half:40,v:20,c0:.28,rt:3,
+    tg:a=>{const u=a.t%6;return u>1&&u<4?1:0},   // se queda quieto, respirando
+    hs:ph=>{const q=((ph/6.2832)%1+1)%1;return q>.15&&q<.75?1.55:.17;},   // avanza casi solo mientras está en el aire
+    pose(r,m,e,c,sn,ph){
+      const q=((ph/6.2832)%1+1)%1, k=Math.min(1,m*1.6), big=Math.sin(c*.45)>.7?1.6:1;
+      const air=q>.15&&q<.75?Math.sin(Math.PI*(q-.15)/.6):0, crouch=q<.15?1-q/.15:q>.75?(q-.75)/.25:0;   // aire: 0 en el suelo, 1 arriba; agachado al impulsarse y al caer
+      r.pbody2.style.transform=`translate(0px, ${-8*k*air*big*(1-PZ)}px) rotate(${-6*k*air*(1-PZ)}deg)`;
+      rot(r.pbn2,-42*k*air+6*k*crouch); rot(r.pbf2,-42*k*air+6*k*crouch);   // patas traseras: se extienden en el salto y se pliegan al caer
+      rot(r.pfn2,-22*k*air); rot(r.pff2,-22*k*air);   // las delanteras se adelantan en el aire
+      rot(r.phead2,Math.sin(c*1.1)*3+6*e-4*k*air);}},
+  murcielago:{ex:[40,-8],fly:true,bob:9,C:Bat,s:1,cx:24,gy:16,half:40,v:95,
+    pose(r,m,e,c){const w=c*15, f=1-PZ, sn=Math.sin(w)*f;   // aleteo rápido: el brazo sube y baja y la mano se pliega y se extiende
+      const arm=10+38*sn, hand=34*Math.sin(w-1.1)*f, sx=1-.28*(.5+.5*Math.cos(w-.4)*f);
+      r.chwn.style.transform=`rotate(${arm}deg)`; r.chwn2.style.transform=`rotate(${hand}deg) scale(${sx}, 1)`;
+      r.chwf.style.transform=`rotate(${arm+6}deg)`; r.chwf2.style.transform=`rotate(${hand}deg) scale(${sx}, 1)`;}},
+  lagartija:{ex:[78,-4],rs:[4,9],C:Lagartija,s:.75,cx:46,gy:24,half:45,v:95,c0:.45,rt:3,
+    tg:a=>{const u=a.t%8;return u>1&&u<7?1:0},    // se queda quieta tomando sol, con la cabeza apenas levantada
+    pose(r,m,e,c,sn,ph){const A=30*m;
+      rot(r.qfn,A*sn);rot(r.qbf,A*sn);rot(r.qff,-A*sn);rot(r.qbn,-A*sn);
+      rot(r.qbody,Math.sin(ph)*3*m);
+      rot(r.qhead,-12*e+Math.sin(c*2.4)*4*(1-e));
+      r.qtp.setAttribute("d",grnTail(m,ph,c));}},
+  gato:{ex:[108,8],rs:[8,16],C:Cat,s:1.1,cx:62,gy:70,half:62,v:40,c0:.33,rt:2,
+    tg:a=>{const u=a.t%10;return u>3&&u<7?1:0},    // se agacha a acechar entre los pastos
+    pose(r,m,e,c,sn,ph){const A=20*m;
+      rot(r.ctfn,A*sn);rot(r.ctbf,A*sn);rot(r.ctff,-A*sn);rot(r.ctbn,-A*sn);
+      r.ctbody.style.transform=`translate(0px, ${12*e+1.5*m}px)`;
+      rot(r.cthead,8*e+Math.sin(c*1.3)*5*(1-e)+Math.sin(ph*2)*2*m);
+      rot(r.cttail,Math.sin(c*1.1)*4+(e>.5?Math.sin(c*3)*6:0)+m*3*sn);}},
+  aguara:{ex:[138,-48],rs:[8,16],C:Maned,s:.95,cx:81,gy:170,half:70,v:48,c0:.06,rt:1.5,
+    tg:a=>{const u=a.t%9;return u>1.5&&u<6?1:0},   // levanta la cabeza para observar
+    pose(r,m,e,c,sn,ph){const A=18*m;
+      rot(r.afn,A*sn);rot(r.abf,A*sn);rot(r.aff,-A*sn);rot(r.abn,-A*sn);
+      const sw=(Math.sin(c*.7)*2*(1-e)+Math.sin(ph*2)*2*m)*(1-PZ), ak=bendNeck(AGCFG,e,sw);
+      r.akp.setAttribute("d",ak.d); r.akm.setAttribute("d",ak.band);
+      r.ahead.setAttribute("transform",`translate(${ak.E[0]} ${ak.E[1]}) rotate(${-10*e+Math.sin(c*1.1)*4*(1-e)*(1-PZ)})`);
+      rot(r.atail,Math.sin(c*1.2)*4+m*3*sn);}},
+  hornero:{ex:[60,4],side:true,rs:[5,12],C:Hornero,s:1.3,cx:34,gy:60,half:40,v:50,c0:.27,rt:5,
+    tg:a=>{const u=a.t%7;return (u>1&&u<1.6)||(u>2.4&&u<3)||(u>3.8&&u<4.4)?1:0},   // picotea tres veces y mira alrededor
+    pose(r,m,e,c,sn,ph){
+      if(r.pm) return SP.churrinche.pose(r,m,e,c);                              // posado o en vuelo: mismas alas que el churrinche
+      const A=25*m; rot(r.xl1,A*sn); rot(r.xl2,-A*sn);
+      rot(r.xtor,40*e+Math.sin(ph*2)*1.5*m);                                     // al picotear inclina el cuerpo hacia el suelo
+      rot(r.chhead,(Math.sin(c*1.3)*8+Math.sin(c*.45)*5)*(1-e)+Math.sin(ph*2)*4*m);
+      rot(r.chtail,Math.sin(c*2.6)*4*(1-e)+m*3*sn);}},
+  tijereta:{ex:[56,-4],fly:true,side:true,C:Tijereta,s:1.2,cx:30,gy:46,half:60,v:70,pose:(...a)=>SP.churrinche.pose(...a)},
+  venado:{ex:[128,-16],rs:[8,18],C:Deer,s:.85,cx:80,gy:130,half:70,v:70,c0:.09,rt:1.5,
+    tg:a=>{const u=a.t%9;return u>2.5&&u<6.5?1:0},    // mira alrededor y baja la cabeza a pastar
+    pose(r,m,e,c,sn,ph){const A=22*m;
+      rot(r.dfn,A*sn);rot(r.dbf,A*sn);rot(r.dff,-A*sn);rot(r.dbn,-A*sn);
+      const sw=(Math.sin(c*.7)*2.5*(1-e)+Math.sin(ph*2)*2*m)*(1-PZ), dk=bendNeck(DCFG,e,sw);
+      r.dkp.setAttribute("d",dk.d);
+      r.dhead.setAttribute("transform",`translate(${dk.E[0]} ${dk.E[1]}) rotate(${50*e+Math.sin(c*1.1)*4*(1-e)*(1-PZ)})`);
+      rot(r.dtail,Math.sin(c*2)*4);}},
+  caballo:{ex:[196,12],rs:[10,24],C:Horse,s:1.45,cx:103,gy:160,half:100,v:62,c0:.077,rt:1.2,
+    tg:a=>{const u=a.t%11;return u>1&&u<7?1:0},    // pasta unos segundos y levanta la cabeza
+    pose(r,m,e,c,sn,ph){const A=20*m;
+      rot(r.hfn,A*sn);rot(r.hbf,A*sn);rot(r.hff,-A*sn);rot(r.hbn,-A*sn);
+      const sw=(Math.sin(c*.8)*2*(1-e)+Math.sin(ph*2)*2.5*m)*(1-PZ), hk=bendNeck(HCFG,e,sw);
+      r.hkp.setAttribute("d",hk.d); r.hkm.setAttribute("d",hk.band);
+      r.hhead.setAttribute("transform",`translate(${hk.E[0]} ${hk.E[1]}) rotate(${30*e+Math.sin(c*1.2)*3*(1-e)*(1-PZ)})`);
+      rot(r.htail,Math.sin(c*1.1)*5+m*4*sn+(Math.sin(c*.37)>.8?10*Math.sin(c*5):0));}},   // la cola se mueve de vez en cuando
+  lagarto:{ex:[118,10],rs:[5,12],C:Lizard,s:1,cx:60,gy:44,half:75,v:40,c0:.27,rt:2.5,
+    tg:a=>{const u=a.t%10;return u>1&&u<8?1:0},    // se queda quieto "tomando sol"
+    pose(r,m,e,c,sn,ph){const A=25*m;
+      rot(r.lfn,A*sn);rot(r.lbf,A*sn);rot(r.lff,-A*sn);rot(r.lbn,-A*sn);
+      rot(r.lbody,Math.sin(ph)*2*m);
+      rot(r.lhead,-14*e+Math.sin(c*.9)*2*e-Math.sin(ph)*2*m);
+      const t=lizTail(m,ph,c); r.ltp.setAttribute("d",t.d); r.ltb.setAttribute("d",t.b);
+      r.ltg.style.opacity=e>.4&&Math.sin(c*5)>.75?1:0;}},
+  parejera:{ex:[124,36],rs:[4,10],C:Snake,s:.9,cx:62,gy:66,half:64,v:34,c0:.09,rt:2,
+    tg:a=>{const u=a.t%8;return u>1.2&&u<5?1:0},   // levanta apenas la cabeza
+    pose(r,m,e,c,sn,ph){const g=snakeGeom(m,e,ph,c);
+      r.vb.setAttribute("d",g.d); r.vbl.setAttribute("d",g.belly); r.vbt.setAttribute("d",g.blot);
+      r.vh.setAttribute("transform",`translate(${g.hx} ${g.hy}) rotate(${g.ha*.7-6*e})`);
+      r.vt.style.opacity=e>.5&&Math.sin(c*6)>.6?1:0;}},
+  nandu:{ex:[140,-34],rs:[8,18],C:Nandu,s:1.1,cx:83,gy:160,half:75,v:70,c0:.055,rt:4,
+    tg:a=>{const u=a.t%9;return (u>1&&u<1.9)||(u>3&&u<3.9)||(u>5.2&&u<6.1)?1:0},   // picotea tres veces y vuelve a mirar
+    pose(r,m,e,c,sn,ph){const A=24*m;
+      rot(r.nn,A*sn);rot(r.nf,-A*sn);
+      const sw=(Math.sin(c*.9)*3*(1-e)+Math.sin(ph*2)*3*m)*(1-PZ), nk=nandNeck(e,sw);   // el cuello se recalcula curvado, siempre continuo
+      r.nkp.setAttribute("d",nk.d); r.nks.setAttribute("d",nk.ds);
+      r.nhead.setAttribute("transform",`translate(${nk.E[0]-NK0.E[0]} ${nk.E[1]-NK0.E[1]}) rotate(${80*e+Math.sin(c*1.3)*5*(1-e)*(1-PZ)} ${NK0.E[0]} ${NK0.E[1]})`);}},
+  tucutucu:{ex:[100,10],burrow:true,C:Tucu,s:.9,cx:58,gy:62,half:50,v:0},
+  churrinche:{ex:[56,-6],fly:true,side:true,C:Churri,s:1.3,cx:29,gy:46,half:50,v:75,
+    pose(r,m,e,c){
+      const f=e, w=c*8, fl=(1-PZ)*(1-f);                           // f: 0 volando … 1 posado con las alas plegadas
+      const sn=Math.sin(w)*(1-PZ);                                       // sube y baja la punta del ala respecto del cuerpo
+      const arm=(1-f)*(12+38*sn), hand=(1-f)*26*Math.sin(w-1.1)*(1-PZ)-4*f; // posada: ala cerrada, pegada al cuerpo y hacia la cola
+      r.chwn.style.transform=`rotate(${arm}deg)`; r.chwn2.style.transform=`rotate(${hand}deg)`;
+      if(r.chwf){r.chwf.style.transform=`rotate(${arm+8*(1-f)}deg)`; r.chwf2.style.transform=`rotate(${hand}deg)`;}
+      r.chhead.style.transform=`rotate(${(f*(Math.sin(c*1.3)*7+Math.sin(c*.45)*5)+(1-f)*Math.sin(c*2)*2)*(1-PZ)}deg)`;
+      r.chtail.style.transform=`rotate(${(f*Math.sin(c*2.6)*5+(1-f)*Math.sin(w)*3)*(1-PZ)}deg)`;
+      r.chfeet.style.opacity=f;}},
+  oveja:{ex:[130,20],rs:[8,20],C:Sheep,s:1.5,cx:82,gy:100,half:76,v:55,c0:.21,rt:1.2,
+    tg:a=>{const u=a.t%8;return u>1&&u<6?1:0},
+    pose(r,m,e,c,sn,ph){const A=20*m;
+      rot(r.sfn,A*sn);rot(r.sbf,A*sn);rot(r.sff,-A*sn);rot(r.sbn,-A*sn);
+      rot(r.shead,-3*(1-e)+50*e+e*Math.sin(c*2.2)*3+Math.sin(ph*2)*1.2*m);
+      rot(r.stail,Math.sin(c*1.6)*5+m*4*sn);}},
+  zorrillo:{ex:[104,16],rs:[6,14],C:Skunk,s:1,cx:66,gy:68,half:70,v:38,c0:.24,rt:1.8,
+    tg:a=>{const u=a.t%7;return u>.6&&u<5.2?1:0},
+    pose(r,m,e,c,sn,ph){const A=24*m;
+      rot(r.kfn,A*sn);rot(r.kbf,A*sn);rot(r.kff,-A*sn);rot(r.kbn,-A*sn);
+      rot(r.khead,-3*(1-e)+45*e+e*Math.sin(c*3)*3+Math.sin(ph*2)*1.5*m);
+      rot(r.ktail,Math.sin(c*1.1)*3+m*3*sn);}},
+  comadreja:{ex:[128,12],night:true,rs:[5,12],C:Opossum,s:1,cx:85,gy:78,half:88,v:42,c0:.2,rt:1.8,
+    tg:a=>{const u=a.t%7;return u>.6&&u<5.2?1:0},
+    pose(r,m,e,c,sn,ph){const A=24*m;
+      rot(r.pfn,A*sn);rot(r.pbf,A*sn);rot(r.pff,-A*sn);rot(r.pbn,-A*sn);
+      rot(r.phead,-3*(1-e)+20*e+e*Math.sin(c*2.7)*3+Math.sin(ph*2)*1.5*m);
+      rot(r.ptail,Math.sin(c*1.3)*5+m*6*sn);}},
+  lechuza:{ex:[60,4],fly:true,night:true,C:Owl,s:.6,cx:60,gy:104,half:90,v:60,
+    pose(r,m,e,c){
+      const f=e, w=c*2.6, fl=(1-PZ)*(1-f);                       // f: 0 volando … 1 posada con las alas plegadas
+      const ia=24*Math.sin(w)*fl-84*f, oa=20*Math.sin(w-.9)*fl+170*f;   // brazo y mano del ala, con desfase
+      r.owl.style.transform=r.owr.style.transform=`rotate(${ia}deg)`;
+      r.owl2.style.transform=r.owr2.style.transform=`rotate(${oa}deg)`;
+      const b=2.4*Math.sin(w)*fl;                                 // el cuerpo sube y baja muy poco al aletear
+      const L=(f*(Math.sin(c*.6)*11+Math.sin(c*.23)*8)+(1-f)*Math.sin(c*1.1)*2)*(1-PZ);
+      r.obody.style.transform=`translate(0px, ${b}px)`;
+      r.ohead.style.transform=`translate(${L*.35}px, ${b}px) rotate(${L*.45}deg)`;
+      const u=c%4.3, bl=f>.5&&u<.16?Math.max(.1,1-Math.sin(Math.PI*u/.16)):1;   // parpadeo al estar posada
+      r.oeye.style.transform=`scaleY(${bl})`;
+      r.ofeet.style.opacity=f;}},
   carancho:{ex:[142,16],C:Carancho,fly:true,s:1,cx:90,gy:54,half:100,v:100,
     pose(r,m,e,c){const u=c%8,f=u<2.2?Math.pow(Math.sin(Math.PI*u/1.1),2):0,
       k=1-(.24*f+.03*(.5+.5*Math.sin(c*.6)))*(1-PZ),w=`scaleY(${k}) rotate(${(1-k)*-10}deg)`;
@@ -318,20 +1158,77 @@ const SP={
       rot(r.zhead,-3*(1-e)+42*e+e*Math.sin(c*3)*3+Math.sin(ph*2)*1.5*m);
       rot(r.ztail,Math.sin(c*1.4)*4+m*5*sn+e*9*Math.sin(c*2.6));}}
 };
+// Hábitos de actividad por especie. base = rareza general (peso relativo de aparición, sin cambios);
+// act = multiplicador según el momento del ciclo: [día, atardecer, noche, amanecer].
+// Para sumar una especie nueva basta una línea aquí (y su dibujo y comportamiento en SP).
+const HABITOS={
+  vaca:     {base:1,   act:[1,1,1,1]},
+  oveja:    {base:1,   act:[1,1,1,1]},
+  mulita:   {base:1,   act:[1,.5,.25,.5]},
+  zorro:    {base:1,   act:[.15,1,1,1]},
+  comadreja:{base:2.4, act:[.05,.8,1,.8]},
+  tero:     {base:1,   act:[1,.8,.1,.8]},
+  carancho: {base:.6,  act:[1,0,0,0]},
+  lechuza:  {base:1.6, act:[0,.5,1,.5]},
+  zorrillo: {base:1.2, act:[.05,.7,1,.7]},
+  nandu:    {base:.9,  act:[1,.5,.1,.5]},
+  tucutucu: {base:.9,  act:[1,.9,.1,.7]},
+  churrinche:{base:1,  act:[1,.3,0,.3]},
+  caballo:  {base:1,   act:[1,1,1,1]},
+  lagarto:  {base:1,   act:[1,.7,.03,.15]},
+  parejera: {base:1,   act:[1,.7,.02,.25]},
+  hornero:  {base:1,   act:[1,.7,.03,.7]},
+  tijereta: {base:1,   act:[1,.2,0,.1]},
+  venado:   {base:.35, act:[1,1,.05,1]},   // rara
+  lagartija:{base:.5,  act:[1,.5,.02,.1]},   // poco frecuente
+  gato:     {base:.12, act:[.05,.8,1,.8]},   // muy rara
+  aguara:   {base:.06, act:[.05,.8,1,.8]},   // extremadamente rara
+  laucha:   {base:1.2, act:[.05,.8,1,.8]},   // provisional: nocturna y crepuscular
+  sapo:     {base:1,   act:[.05,.8,1,.7]},   // provisional: nocturno y crepuscular
+  murcielago:{base:.8, act:[0,0,1,0]},       // provisional: solo de noche
+  urutau:   {base:.05, act:[0,.1,1,.1]}      // extremadamente rara; casi solo de noche, nunca de día
+};
+const momentoDe=t=>t>=.94||t<.40?0:t<.58?1:t<.80?2:3;   // 0 día, 1 atardecer, 2 noche, 3 amanecer (según la hora del ciclo)
+const pickType=(m,excl)=>{
+  const W=Object.keys(HABITOS).filter(k=>!excl.has(k)).map(k=>[k,HABITOS[k].base*HABITOS[k].act[m]]);
+  let x=Math.random()*W.reduce((t,w)=>t+w[1],0);
+  for(const [k,w] of W){x-=w;if(x<=0) return k;}
+  return "vaca";
+};
+const BIG=["vaca","nandu","caballo"];   // animales grandes (limitan su presencia al frente)
 const KEYS=Object.keys(SP).filter(k=>!SP[k].fly);
-const LN=[[0,692],[0,716],[0,704],[1,768],[1,800],[1,784],[2,846],[2,868]], DK=[.5,1,1.3], DIRS=[1,-1,1];
+const LN=[[0,692],[0,716],[0,704],[0,698],[0,710],[1,768],[1,800],[1,784],[1,776],[1,792],[2,846],[2,868],[2,857],[0,701],[0,695],[1,772],[1,788],[2,852],[2,862]], DK=[.5,1,1.3], DIRS=[1,-1,1];
 const Layered=({list})=>{
   const it=[];
-  TUFTS.forEach(([x,y,s],i)=>{const f=y>=790;it.push([y,<g key={"t"+i} transform={`translate(${x} ${y}) scale(${s})`}><use href="#tuft" className="sway" fill={f?(i%2?"#4a9640":"#3a8438"):(i%2?"#4f9a45":"#3f8c3d")} style={{animationDelay:`${-i*(f?.9:.7)}s`}}/></g>]);});
-  FLOWERS.forEach(([x,y,s,c],i)=>it.push([y,<use key={"f"+i} href="#flor" fill={c} transform={`translate(${x} ${y}) scale(${s})`}/>]));
-  list.forEach(a=>{const Sp=SP[a.type].C;it.push([a.y+.5,<g key={"a"+a.id} ref={e=>a.root=e} transform="translate(-4000 0)"><Sp R={a.r} u={a.id}/><Bang a={a}/></g>]);});
+  DECOR.forEach(([k,x,y,sc,f,sw],i)=>it.push([k==="trunk"?689.2:k==="charco"?1:y,<g key={"d"+i} transform={`translate(${x} ${y}) scale(${sc})`}><use href={"#"+k} className={sw?"brisa":undefined} fill={f} color={f} style={sw?{animationDelay:`${-i*1.7}s`}:undefined}/></g>]));
+  it.push([689,<Fence key="fence"/>]);
+  list.forEach(a=>{const Sp=SP[a.type].C;it.push([(a.sy??a.y)+.5,<g key={"a"+a.id} ref={e=>a.root=e} transform="translate(-4000 0)"><Sp R={a.r} u={a.id}/><Bang a={a}/></g>]);});
   return it.sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
 };
 
-const TUFTS=[[90,720,.8],[300,700,.6],[470,760,1],[640,672,.45],[900,690,.55],[1010,760,1.05],[1210,720,.8],[1450,700,.7],[1540,760,1],[760,652,.4],[1330,650,.4],[200,655,.4],
- [60,904,1],[360,908,1.1],[640,903,.9],[900,908,1.1],[1180,905,1],[1500,910,1.1]];
-const FLOWERS=[[150,740,.9,"#fff7e6"],[400,720,.7,"#ffd84d"],[560,775,1,"#fff7e6"],[830,700,.6,"#d9c2f0"],[1090,735,.9,"#ffd84d"],[1300,765,1,"#fff7e6"],[1420,712,.7,"#d9c2f0"],[250,900,1,"#ffd84d"],[800,905,1,"#fff7e6"],[1360,900,1,"#d9c2f0"]];
-const BUSHES=[[170,652,.8],[560,640,.5],[1000,636,.45],[1390,662,.95]];
+// Vegetación y relieve: [tipo, x, y, escala, color, brisa]. Fondo casi despejado; zona media con matas y arbustos
+// pequeños; primer plano con pocas gramíneas altas en el borde inferior. "brisa" = se balancea muy despacio.
+const PUDDLE={x:780,y:716,rx:38};   // charco pequeño: el sapo se acerca a veces
+const BURROW={x:290,y:826,s:1};   // madriguera del tucu-tucu: la abertura queda a su derecha
+const G1="#4f9a45",G2="#3f8c3d",G3="#5aa04e",G5="#4a8f45";
+const DECOR=[
+  // fondo
+  ["mata",170,652,.8],["mata",1390,662,.95],["tuft",200,655,.4,G2],["tuft",760,652,.4,G1],["tuft",1330,650,.4,G2],["carq",560,650,.5],["flech",985,662,.5,"#7aa55a"],
+  ["trunk",118,688,.85],
+  // zona media
+  ["charco",PUDDLE.x,PUDDLE.y,.8],["tuft",PUDDLE.x-42,PUDDLE.y+3,.4,G2],["tuft",PUDDLE.x+40,PUDDLE.y+4,.35,G1],["tuft",PUDDLE.x-8,PUDDLE.y-6,.3,G3],
+  ["tuft",90,722,.8,G1],["gram",300,708,.55,G3,1],["mata",420,744,.55],["mont",560,748,1],["tuft",470,762,1,G2],["marc",690,740,.9],["carq",770,752,.75],
+  ["flech",905,702,.6,"#6f9a52",1],["mata",1000,700,.5],["rock",1060,745,.9],["tuft",1010,762,1.05,G1],["verb",1135,752,.9],["gram",1215,724,.75,G5,1],
+  ["tuft",1450,702,.7,G2],["tuft",1540,762,1,G1],["marc",360,772,.85],["verb",215,770,.8],
+  ["flor",150,740,.9,"#fff7e6"],["flor",400,720,.7,"#ffd84d"],["flor",830,700,.6,"#d9c2f0"],["flor",1090,735,.9,"#ffd84d"],["flor",1420,712,.7,"#d9c2f0"],
+  // entre la zona media y el primer plano (montículo y piedra, libres de patas)
+  ["burrow",BURROW.x,BURROW.y,BURROW.s],["mont",1245,828,1.1],["rock",640,828,.8],
+  // primer plano, en el borde inferior
+  ["gram",40,906,.85,G3,1],["flech",135,908,.7,"#6a9650",1],["tuft",360,908,1.1,G1],["marc",640,904,.9],["tuft",900,908,1.1,G2],["verb",1180,905,.9],["tuft",1500,910,1.1,G1],["flech",1565,908,.8,"#6a9650",1]
+];
+const HIDES=DECOR.filter(d=>d[0]==="rock"||d[0]==="mont").map(d=>({x:d[1],y:d[2],hw:(d[0]==="rock"?20:34)*d[3]}));   // escondites de la laucha
+const TRUNK=DECOR.find(d=>d[0]==="trunk"), URU={x:TRUNK[1]+TRUNK[3]*3,y:TRUNK[2]-TRUNK[3]*104};   // punta del tronco seco: posadero del urutaú
+const ROCKS=DECOR.filter(d=>d[0]==="rock").map(d=>({x:d[1],y:d[2],h:18*d[3]}));   // piedras del paisaje: la lagartija toma sol sobre una
 const CLOUDS=[[90,.9,0],[170,1.2,-55],[60,.7,-110],[230,.8,-135]];
 
 const Scene=memo(({R,list})=>(
@@ -346,10 +1243,51 @@ const Scene=memo(({R,list})=>(
         <circle cx="0" cy="-34.5" r="2.8" fill="#f2a93b"/></g>
       <g id="mata"><path d="M-40 0 C-44 -22 -24 -36 -4 -32 C8 -44 38 -40 42 -18 C54 -14 52 0 40 0Z" fill="#4d9a47"/>
         <path d="M-20 -20 C-10 -30 8 -30 14 -24 C4 -22 -8 -18 -20 -20Z" fill="#68b55c"/></g>
+          <path id="gram" d="M-12 0 C-12 -20 -18 -38 -26 -52 C-14 -42 -8 -30 -6 -14 C-6 -34 -2 -52 0 -68 C4 -50 6 -32 6 -14 C10 -32 16 -46 26 -58 C18 -40 14 -22 12 0Z"/>
+      <g id="flech" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <path d="M-2 0 C-2 -26 -6 -50 -18 -72"/><path d="M1 0 C2 -30 4 -56 2 -84"/><path d="M4 0 C6 -24 12 -46 24 -66"/>
+        <g stroke="none" fill="#e0d6a4"><path d="M-18 -72 C-23 -77 -26 -83 -27 -90 C-21 -84 -17 -79 -16 -72Z"/><path d="M2 -84 C-2 -91 -3 -98 -2 -104 C3 -98 5 -91 4 -84Z"/><path d="M24 -66 C25 -73 29 -79 35 -83 C33 -76 30 -70 27 -66Z"/></g>
+      </g>
+      <path id="cq" d="M0 0 C-3 -8 3 -12 0 -20 C-3 -28 3 -32 0 -44 L2.4 -44 C5.4 -32 -.6 -28 2.4 -20 C5.4 -12 -.6 -8 2.4 0Z"/>
+      <g id="carq" fill="#7fa476"><use href="#cq" transform="rotate(-16) translate(-6 0)"/><use href="#cq"/><use href="#cq" transform="rotate(14) translate(6 0)"/><use href="#cq" transform="rotate(-32) translate(-11 0) scale(.7)"/></g>
+      <g id="marc">
+        <path d="M0 0 C-1 -14 -3 -24 -8 -34 M0 0 C1 -16 2 -28 7 -40 M0 0 C0 -12 0 -22 1 -30" stroke="#8fa56e" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+        <path d="M-10 0 C-8 -8 -4 -10 0 -10 C4 -10 8 -8 10 0Z" fill="#8fa56e"/>
+        <g fill="#ecd870"><circle cx="-8" cy="-36" r="2.6"/><circle cx="-5" cy="-33" r="2.2"/><circle cx="-11" cy="-33" r="2.2"/><circle cx="7" cy="-42" r="2.6"/><circle cx="10" cy="-39" r="2.2"/><circle cx="4" cy="-39" r="2.2"/><circle cx="1" cy="-32" r="2.4"/><circle cx="3" cy="-29" r="2"/></g>
+      </g>
+      <g id="verb">
+        <path d="M0 0 C-1 -20 1 -34 0 -50" stroke="#5f9b4f" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+        <path d="M-9 0 C-6 -9 -2 -10 0 -10 C2 -10 6 -9 9 0Z" fill="#5f9b4f"/>
+        <g fill="#b79ad6"><circle cx="0" cy="-52" r="2.4"/><circle cx="-3.5" cy="-49" r="2.2"/><circle cx="3.5" cy="-49" r="2.2"/><circle cx="0" cy="-46" r="2.2"/></g>
+      </g>
+      <g id="burrow">
+        <ellipse cx="0" cy="1" rx="66" ry="5" fill="#3a7a34" opacity=".25"/>
+        <path d="M-62 0 C-60 -12 -48 -18 -40 -26 C-34 -36 -18 -42 -6 -38 C4 -44 20 -40 26 -32 C36 -30 46 -22 48 -12 C54 -10 60 -6 62 0Z" fill="#9a7a56"/>
+        <path d="M-30 -26 C-24 -34 -12 -36 -6 -32 C-16 -30 -22 -28 -30 -26Z M8 -34 C14 -38 22 -36 24 -31 C18 -32 12 -32 8 -34Z" fill="#b3936b"/>
+        <path d="M-50 -8 C-44 -12 -36 -12 -32 -8Z M-14 -14 C-8 -18 0 -17 2 -13Z" fill="#85673f"/>
+        <ellipse cx="34" cy="-17" rx="24" ry="23" fill="#8c6d4a"/>
+        <path d="M10 2 C18 -6 52 -6 62 2 C52 6 20 6 10 2Z" fill="#8c6d4a"/>
+        <ellipse cx="34" cy="-17" rx="18" ry="20" fill="#7a5b3b"/>
+        <ellipse cx="34" cy="-17" rx="12.5" ry="16.5" fill="#2a1d14"/>
+        <ellipse cx="32" cy="-15" rx="7" ry="11" fill="#150e09"/>
+        <circle cx="58" cy="-2" r="2" fill="#8a6a4a"/><circle cx="64" cy="1" r="1.6" fill="#9a7a56"/><circle cx="53" cy="1" r="1.4" fill="#85673f"/><circle cx="-56" cy="-1" r="1.6" fill="#85673f"/>
+      </g>
+      <g id="charco">
+        <path d="M-46 0 C-44 -7 -28 -11 -10 -10 C6 -12 26 -10 40 -6 C50 -3 50 4 40 7 C24 11 -6 12 -26 9 C-40 7 -48 4 -46 0Z" fill="#7a6a4e"/>
+        <path d="M-40 0 C-38 -5 -26 -8 -10 -7 C6 -9 24 -7 35 -4 C42 -2 42 3 34 5 C20 8 -6 9 -24 7 C-35 5 -42 3 -40 0Z" fill="#a9c4d2"/>
+        <path d="M-26 -3 C-14 -6 6 -6 18 -4 C6 -2 -12 -1 -26 -3Z" fill="#cfe1ea" opacity=".8"/>
+      </g>
+      <g id="mont"><ellipse cx="0" cy="1" rx="38" ry="4" fill="#3a7a34" opacity=".25"/><path d="M-34 0 C-30 -12 -14 -21 0 -21 C14 -21 30 -12 34 0Z" fill="#9a7a56"/><path d="M-20 -8 C-12 -16 0 -18 8 -17 C-2 -14 -12 -11 -20 -8Z" fill="#b3936b"/></g>
+      <g id="rock"><ellipse cx="1" cy="1" rx="22" ry="3.5" fill="#2f6b32" opacity=".25"/><path d="M-19 0 C-21 -10 -10 -19 2 -18 C15 -19 23 -8 21 0Z" fill="#9b9a93"/><path d="M-9 -10 C-5 -15 3 -16 8 -14 C0 -13 -5 -11 -9 -10Z" fill="#b5b4ac"/></g>
+      <g id="trunk"><ellipse cx="1" cy="2" rx="16" ry="3.5" fill="#2f6b32" opacity=".25"/>
+        <path d="M-10 2 L-7 -70 C-7 -88 -6 -100 -3 -110 L1 -105 L5 -113 L8 -100 C9 -90 9 -80 9 -66 L11 2Z" fill="#7e6a55"/>
+        <path d="M3 -112 L5 -113 L8 -100 C9 -90 9 -80 9 -66 L11 2 L3 2Z" fill="#96816a"/>
+        <path d="M7 -58 L22 -72 L24 -68 L10 -50Z" fill="#7e6a55"/>
+        <path d="M-4 -80 C-3 -58 -5 -30 -4 -6 M2 -64 C3 -44 2 -24 3 -8" stroke="#5f4e3e" strokeWidth="1.3" fill="none" opacity=".55" strokeLinecap="round"/></g>
     </defs>
     <rect width="1600" height="900" fill="url(#sky)"/>
     <ellipse id="glow" cx="800" cy="548" rx="780" ry="210" fill="url(#glw)" opacity="0"/>
-    <g id="stars" opacity="0">{STARS.map(([x,y,r],i)=><circle key={i} className="tw" cx={x} cy={y} r={r} fill="#fffbe6" style={{animationDelay:`${-(i%7)*.6}s`}}/>)}</g>
+    <g id="stars" opacity="0">{STARS.map(([x,y,r,o],i)=><circle key={i} className="tw" cx={x} cy={y} r={r} fill="#fffbe6" fillOpacity={o} style={{animationDelay:`${-(i%7)*.6}s`,animationDuration:`${2.6+(i%5)*.5}s`}}/>)}</g>
     <g id="moon" opacity="0" transform="translate(1250 300)">
       <circle r="40" fill="#fff4cf" opacity=".14"/><circle r="24" fill="#fff4cf"/>
       <circle cx="-7" cy="-5" r="4" fill="#efe1ae"/><circle cx="8" cy="6" r="5.5" fill="#efe1ae"/><circle cx="5" cy="-11" r="2.6" fill="#efe1ae"/>
@@ -369,7 +1307,6 @@ const Scene=memo(({R,list})=>(
     <path d="M1204 480 C1216 462 1244 460 1262 468 C1244 472 1224 480 1204 480Z" fill="#69b25e"/>
     <path d="M0 644 C300 612 600 630 900 624 C1200 618 1400 634 1600 626 L1600 900 L0 900Z" fill="url(#gr)"/>
     <path d="M0 700 C400 678 800 700 1200 686 C1400 680 1500 690 1600 688 L1600 760 C1200 770 600 740 0 760Z" fill="#7bbf57" opacity=".55"/>
-    {BUSHES.map(([x,y,s],i)=><use key={i} href="#mata" transform={`translate(${x} ${y}) scale(${s})`}/>)}
     <Layered list={list}/>
     </g>
   </svg>
@@ -379,7 +1316,7 @@ const Scene=memo(({R,list})=>(
 // Hoy lo escribe el panel de prueba; luego se reemplazará por el volumen de Web Audio API.
 const NC={loudSec:5,calmSec:5,countSec:20,warnAt:10};
 const makeGate=()=>({phase:"calm",loudT:0,calmT:0,cd:0,target:null});
-const eligible=a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&a.x>80&&a.x<1520;
+const eligible=a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&a.x>80&&a.x<1520&&!((a.burrow||a.mouse)&&a.yo>34)&&!(a.still&&a.op<.5);
 function noiseStep(g,dt,level,limit,A,flee,onDone){
   const loud=level>limit;
   if(g.phase==="calm"){
@@ -427,7 +1364,27 @@ const SPECIES=[
   {id:"mulita",name:"Mulita",C:Mulita,vb:"-2 6 164 64"},
   {id:"tero",name:"Tero",C:Tero,vb:"-2 -4 118 116"},
   {id:"zorro",name:"Zorro de campo",C:Fox,vb:"0 6 200 98"},
-  {id:"carancho",name:"Carancho",C:Carancho,vb:"4 -58 172 222"}
+  {id:"carancho",name:"Carancho",C:Carancho,vb:"4 -58 172 222"},
+  {id:"lechuza",name:"Lechuza de campanario",C:Owl,vb:"-58 4 236 106"},
+  {id:"comadreja",name:"Comadreja mora",C:Opossum,vb:"-4 14 176 70"},
+  {id:"oveja",name:"Oveja",C:Sheep,vb:"8 18 152 90"},
+  {id:"zorrillo",name:"Zorrillo",C:Skunk,vb:"-6 -8 144 80"},
+  {id:"nandu",name:"Ñandú",C:Nandu,vb:"4 -34 160 200"},
+  {id:"tucutucu",name:"Tucu-tucu",C:Tucu,vb:"4 16 110 50"},
+  {id:"churrinche",name:"Churrinche",C:Churri,vb:"-16 -8 92 60"},
+  {id:"caballo",name:"Caballo",C:Horse,vb:"0 8 206 158"},
+  {id:"lagarto",name:"Lagarto overo",C:Lizard,vb:"-30 12 166 36"},
+  {id:"parejera",name:"Parejera",C:Snake,vb:"0 40 134 30"},
+  {id:"hornero",name:"Hornero",C:Hornero,vb:"-8 4 86 60"},
+  {id:"tijereta",name:"Tijereta",C:Tijereta,vb:"-62 -2 134 52"},
+  {id:"venado",name:"Venado de campo",C:Deer,vb:"10 -16 140 150"},
+  {id:"lagartija",name:"Lagartija verde",C:Lagartija,vb:"-36 0 124 28"},
+  {id:"gato",name:"Gato de pajonal",C:Cat,vb:"0 20 126 56"},
+  {id:"aguara",name:"Aguará guazú",C:Maned,vb:"8 -12 148 186"},
+  {id:"laucha",name:"Laucha de campo",C:Mouse,vb:"-22 -2 74 28"},
+  {id:"sapo",name:"Sapo común",C:Toad,vb:"2 6 82 38"},
+  {id:"murcielago",name:"Murciélago escarchado",C:Bat,vb:"-14 -4 62 32"},
+  {id:"urutau",name:"Urutaú",C:Potoo,vb:"0 -2 48 106"}
 ];
 const loadAlbum=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.album")||"{}"),r={};SPECIES.forEach(sp=>{if(o&&o[sp.id])r[sp.id]=true;});return r;}catch(e){return {};}};
 const saveAlbum=o=>{try{localStorage.setItem("pradera.album",JSON.stringify(o));}catch(e){}};
@@ -441,9 +1398,10 @@ const Album=({found})=>(
   </div>);
 
 // Duración de la barra «Próximo visitante»: Rápido 15 s, Normal 35 s, Lento 60 s o Personalizado (10-120 s).
-const loadRitmo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ritmo")||"null")||{};
-  return {m:["rapido","normal","lento","personalizado"].includes(o.m)?o.m:"normal",s:Math.min(120,Math.max(10,Math.round(+o.s)||35))};}catch(e){return {m:"normal",s:35};}};
-const ritmoSecs=r=>r.m==="rapido"?15:r.m==="lento"?60:r.m==="personalizado"?r.s:35;
+const RITMOS=[["animado","Animado · cada 2 min"],["normal","Normal · cada 5 min"],["tranquilo","Tranquilo · cada 8 min"],["personalizado","Personalizado"]];
+const loadRitmo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ritmo2")||"null")||{};
+  return {m:RITMOS.some(x=>x[0]===o.m)?o.m:"normal",s:Math.min(60,Math.max(.5,+o.s||5))};}catch(e){return {m:"normal",s:5};}};   // s: minutos (personalizado)
+const ritmoSecs=r=>(r.m==="animado"?2:r.m==="tranquilo"?8:r.m==="personalizado"?r.s:5)*60;
 
 // Modo de juego: "calma" (control de ruido) o "viva" (solo la barra de visitantes, sin ruido ni sustos).
 const loadJuego=()=>{try{return localStorage.getItem("pradera.modo")==="viva"?"viva":"calma";}catch(e){return "calma";}};
@@ -451,10 +1409,10 @@ const loadJuego=()=>{try{return localStorage.getItem("pradera.modo")==="viva"?"v
 // Ciclo día/noche: se interpola entre puntos de luz (cielo, brillo del paisaje, estrellas, luna, resplandor del horizonte).
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const LP={
-  day:{top:hex("#7cc9f2"),bot:hex("#d4f0fb"),b:1,s:1,sp:0,h:0,st:0,mo:0,gl:0},
-  dusk:{top:hex("#5b6fb8"),bot:hex("#f6a66a"),b:.94,s:1.1,sp:.22,h:0,st:.05,mo:0,gl:.7},
-  night:{top:hex("#0f1c48"),bot:hex("#33447f"),b:.72,s:.9,sp:0,h:12,st:1,mo:1,gl:0},
-  dawn:{top:hex("#7f9bd2"),bot:hex("#f7c9a0"),b:.93,s:1.05,sp:.15,h:-5,st:.15,mo:.25,gl:.55}
+  day:{top:hex("#7cc9f2"),bot:hex("#d4f0fb"),b:1,s:1,sp:0,h:0,st:0,mo:0,gl:0,nt:0},
+  dusk:{top:hex("#5b6fb8"),bot:hex("#f6a66a"),b:.94,s:1.1,sp:.22,h:0,st:.05,mo:0,gl:.7,nt:.5},
+  night:{top:hex("#0f1c48"),bot:hex("#33447f"),b:.72,s:.9,sp:0,h:12,st:1,mo:1,gl:0,nt:1},
+  dawn:{top:hex("#7f9bd2"),bot:hex("#f7c9a0"),b:.93,s:1.05,sp:.15,h:-5,st:.15,mo:.25,gl:.55,nt:.3}
 };
 const WP=[[0,"day"],[.38,"day"],[.52,"dusk"],[.62,"night"],[.78,"night"],[.88,"dawn"],[1,"day"]];
 const mix=(a,b,f)=>Array.isArray(a)?a.map((v,i)=>v+(b[i]-v)*f):a+(b-a)*f;
@@ -464,9 +1422,21 @@ const lightAt=u=>{
   for(const k in A) o[k]=mix(A[k],B[k],e);
   return o;
 };
-const STARS=Array.from({length:34},(_,i)=>[50+(i*397)%1500,225+(i*181)%240,i%5===0?2:1.3]);
+// Estrellas: reparto aleatorio (semilla fija, siempre igual) con distancia mínima, algunas aisladas y algunos grupitos.
+// Se evita la zona de los indicadores superiores y los bordes. Cada una: [x, y, radio, opacidad].
+const STARS=(()=>{
+  let a=20241; const r=()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};
+  const out=[], ok=(x,y,d)=>x>70&&x<1530&&y>235&&y<455&&!(x>540&&x<1060&&y<335)&&!(x>1300&&y<315)&&out.every(q=>Math.hypot(q[0]-x,q[1]-y)>d);
+  const add=(x,y,d)=>{if(!ok(x,y,d)) return false; out.push([x,y,r()<.18?2.1:1+r()*.9,.5+r()*.5]); return true;};
+  for(let n=0,g=0;n<16&&g<800;g++){ if(add(70+r()*1460,235+r()*220,80)) n++; }                    // aisladas
+  for(let c=0,g=0;c<5&&g<600;g++){                                                              // grupitos sueltos
+    const x=70+r()*1460,y=235+r()*220;
+    if(add(x,y,90)){ const k=1+(r()*2|0); for(let j=0,h=0;j<k&&h<30;h++){ if(add(x+(r()-.5)*70,y+(r()-.5)*50,14)) j++; } c++; }
+  }
+  return out;
+})();
 const CICLO_D=[[60,"Prueba · 1 min"],[300,"5 min"],[900,"15 min"],[1800,"30 min"]];
-const loadCiclo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ciclo")||"null")||{};return {on:o.on===true,d:CICLO_D.some(x=>x[0]===+o.d)?+o.d:300};}catch(e){return {on:false,d:300};}};
+const loadCiclo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ciclo")||"null")||{};return {on:true,d:CICLO_D.some(x=>x[0]===+o.d)?+o.d:300};}catch(e){return {on:true,d:300};}};
 
 // Almacenamiento local de los ajustes (límite y sensibilidad), tolerante a fallos.
 const store={
@@ -483,16 +1453,18 @@ function App(){
   const levelRef=useRef(15), limitRef=useRef(store.get("limite",60));
   const sensRef=useRef(store.get("sensibilidad",50)), modeRef=useRef("sim"), simVolRef=useRef(15), micRef=useRef(null), resetRef=useRef(()=>{});
   const foundRef=useRef(loadAlbum()), discoverRef=useRef(()=>{}), restartRef=useRef(()=>{});
-  const [askReset,setAskReset]=useState(false);
+  const [askReset,setAskReset]=useState(false), [pruebas,setPruebas]=useState(false);
   const juegoRef=useRef(loadJuego()), [juego,setJuego]=useState(()=>juegoRef.current);
+  const spawnTestRef=useRef(()=>""), spawnNotifyRef=useRef(()=>{}), [testSp,setTestSp]=useState("vaca"), [testSide,setTestSide]=useState(0), [testMsg,setTestMsg]=useState("");
+  spawnNotifyRef.current=setTestMsg;
   const pvRef=useRef(null), fillRef=useRef(null), lvRef=useRef(null), mkRef=useRef(null);
   const ritmoRef=useRef(loadRitmo()), durRef=useRef(ritmoSecs(ritmoRef.current));
   const [ritmo,setRitmo]=useState(()=>ritmoRef.current);
-  const cicloRef=useRef(loadCiclo()), [ciclo,setCiclo]=useState(()=>cicloRef.current);
+  const cicloRef=useRef(loadCiclo()), [ciclo,setCiclo]=useState(()=>cicloRef.current), cycSetRef=useRef(()=>{});
   const chooseCiclo=c=>{setCiclo(c);cicloRef.current=c;try{localStorage.setItem("pradera.ciclo",JSON.stringify(c));}catch(e){}};
   const chooseRitmo=r=>{      // al cambiarlo se conserva el porcentaje de progreso: la barra guarda una fracción, no segundos
     setRitmo(r); ritmoRef.current=r; durRef.current=ritmoSecs(r);
-    try{localStorage.setItem("pradera.ritmo",JSON.stringify(r));}catch(e){}
+    try{localStorage.setItem("pradera.ritmo2",JSON.stringify(r));}catch(e){}
   };
   const [found,setFound]=useState(()=>foundRef.current), [albumOpen,setAlbumOpen]=useState(false), [fresh,setFresh]=useState(false);
   discoverRef.current=id=>{
@@ -579,34 +1551,239 @@ function App(){
     const A=[]; let nid=0, last=performance.now(), raf, uiT=0, uiK=""; const gate=makeGate();
     resetRef.current=()=>{if(gate.target)gate.target.alert=false;Object.assign(gate,makeGate());};
     // Barra «Próximo visitante»: única responsable de las apariciones.
-    const prog={v:0,fixed:2.5,jit:1,retry:0};   // fixed: primer visitante rápido; luego duración = ajuste ±10 %
+    const LIM=15;   // límite orientativo de animales simultáneos (no bloquea apariciones)
+    const pend=[]; let pendT=0;   // apariciones de prueba en espera de espacio
+    const prog={v:0,fixed:rnd(20,40),jit:1,retry:0};   // fixed: el primer animal llega entre 20 y 40 s; luego la duración es el ajuste ±10 %
     const active=()=>A.filter(a=>!a.done&&a.st!=="out"&&a.st!=="bye").length;
     // Salidas naturales escalonadas de los animales más antiguos (distintas de las salidas por ruido).
-    const retire=n=>{
+    const softRetire=(b,delay)=>{b.retiring=true;b.life=Math.min(b.life,b.age+delay);};
+    const retire=(n,d0=6)=>{
       A.filter(a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&!a.alert&&!a.retiring&&a!==gate.target)
-       .sort((p,q)=>q.age-p.age).slice(0,n).forEach((a,i)=>{a.retiring=true;a.life=Math.min(a.life,a.age+6+i*12);});
+       .sort((p,q)=>q.age-p.age).slice(0,n).forEach((a,i)=>{a.retiring=true;a.life=Math.min(a.life,a.age+d0+i*12);});
     };
-    restartRef.current=()=>{A.length=0;prog.v=0;prog.fixed=2.5;prog.jit=1;prog.retry=0;resetRef.current();setList([]);};   // pradera vacía; vuelve a poblarse desde cero
+    restartRef.current=()=>{A.length=0;prog.v=0;prog.fixed=rnd(20,40);prog.jit=1;prog.retry=0;resetRef.current();setList([]);};   // pradera vacía; vuelve a poblarse desde cero
     const flee=a=>{a.alert=false;a.st="out";a.V*=1.5;if(SP[a.type].fly)a.dir=a.x<800?-1:1;};
+    const momento=()=>momentoDe(cyc.t);   // el selector Día/Noche cambia cyc.t, así que también cambia la selección de especies
+    const PX=1455, PY=592;                      // copete del poste central del alambrado
+    // Aves que se posan en el alambrado o en un poste (churrinche, tijereta, hornero): llegan volando, se posan y se van.
+    // pPerch: probabilidad de posarse; si no, la tijereta/el churrinche sobrevuelan la escena (patrullan) y el hornero camina por el suelo.
+    const spawnBird=(type,force,pPerch)=>{
+      const T=SP[type], dir=(force&&force.side)||(Math.random()<.5?-1:1);
+      const taken=A.filter(b=>b.perch&&!b.done).map(b=>b.px), spots=PERCH_SPOTS.filter(sp=>!taken.some(x=>Math.abs(x-sp[0])<45));
+      const base={id:++nid,type,lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{pm:true},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(360,720),seen:!!force,fold:0,foldT:0};
+      if(spots.length&&Math.random()<pPerch){
+        const sp=spots[Math.random()*spots.length|0], sx=dir>0?vis()[0]-50:vis()[1]+50;
+        A.push({...base,perch:true,st:"land",dir,fl:dir,s:T.s,y:sp[1],sy:690.6,V:T.v,x:sx,stay:rnd(300,600),yy:sp[1]-100,rise:0,px:sp[0],py:sp[1],hA:100,nr:200,fr:20});
+      }else if(T.fly){
+        const d=Math.random();
+        A.push({...base,st:"fly",dir,fl:dir,s:T.s*(.7+.4*d),y:400-110*d,V:T.v*(.7+.3*d),x:dir>0?vis()[0]-T.half-30:vis()[1]+T.half+30});
+      }else return false;
+      A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
+    };
+    // Tucu-tucu: vive en la madriguera del paisaje. Sale en horizontal por la abertura (a su derecha): primero el hocico, luego la
+    // cabeza y el cuerpo; camina unos pasos, olfatea, se da vuelta, regresa caminando y entra en el agujero. Un recorte vertical en
+    // la boca de la cueva (plano X0) oculta la parte que está adentro; el recorte sigue al animal, así vale para cualquier escala.
+    const BX=BURROW.x, BY=BURROW.y, X0=BX+34*BURROW.s;
+    const TXW=[[0,-70],[3,-70],[5,-34],[8,-8],[11,20],[13,52],[17,105],[20.5,105],[21.7,105],[24.5,52],[28.5,-70],[30,-70]];   // [segundo, posición respecto de X0]
+    const txAt=u=>{for(let i=0;i<TXW.length-1;i++){const [t0,x0]=TXW[i],[t1,x1]=TXW[i+1];if(u<=t1){const f=(u-t0)/(t1-t0);return X0+(x0+(x1-x0)*f*f*(3-2*f))*BURROW.s;}}return X0-70*BURROW.s;};
+    const spawnTucu=force=>{
+      if(A.some(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&(Math.abs(b.x-(BX+50))<b.half+150||Math.abs(b.stop-(BX+50))<b.half+150))) return false;   // sitio ocupado
+      const T=SP.tucutucu;
+      A.push({id:++nid,type:"tucutucu",lane:-1,half:110,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(600,1200),seen:!!force,
+        burrow:true,st:"wait",dir:1,fl:1,s:T.s*BURROW.s,x:BX+50,y:BY,sy:BY+.5,tx:X0-70*BURROW.s,yo:50,dg:0,sn:0,bph:0,mv:0,V:1});
+      A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
+    };
+    const burrowPose=a=>{
+      const r=a.r, k=a.clk, m=Math.min(1,a.mv/18), sn=Math.sin(a.bph);
+      rot(r.gtf1,16*sn*m); rot(r.gtf2,-16*sn*m);
+      rot(r.gthead,a.yo<40?Math.sin(k*1.1)*6*(1-a.sn)+a.sn*(18+Math.sin(k*3)*4):0);
+      rot(r.gtpaw,m*Math.sin(a.bph+1.5)*12+a.dg*(Math.sin(k*6)*20-8));
+      r.gtdirt.style.opacity=a.dg*(.6+.4*Math.sin(k*6));
+      r.gtdirt.style.transform=`translate(${Math.sin(k*6)*2}px, ${-Math.abs(Math.sin(k*6))*4}px)`;
+    };
+    const burrowStep=(a,dt)=>{
+      const T=SP[a.type], prev=a.tx;
+      if(a.st==="wait"){ if(!a.alert){a.age+=dt;a.t+=dt;} if(a.age>a.life&&!a.alert) a.st="bye"; }
+      const u=a.t%30;
+      let flT=1;
+      if(a.st==="wait"){ a.tx=txAt(u); flT=(u>=20.5&&u<28.5)?-1:1; }
+      else{   // se retira: si está afuera se da vuelta y vuelve caminando; si está en la boca, entra de espaldas
+        if(a.tx<X0-8*BURROW.s){a.done=true;return;}
+        const out=a.tx>X0+45*BURROW.s; flT=out?-1:1;
+        a.tx-=(a.st==="out"?110:60)*dt*(out?Math.max(0,1-Math.abs(a.fl+1)):1);
+        if(a.tx<X0-62*BURROW.s){a.done=true;return;}
+      }
+      a.fl+=(flT-a.fl)*Math.min(1,dt*3);
+      a.mv=Math.abs(a.tx-prev)/dt; a.bph+=Math.abs(a.tx-prev)/a.s*.6;
+      a.yo=a.tx<X0-8*BURROW.s?50:0;
+      const snT=(a.st==="wait"&&u>17&&u<20.5)?1:0, dgT=(a.st==="wait"&&u>18.2&&u<20)?1:0;
+      a.sn+=(snT-a.sn)*Math.min(1,dt*3); a.dg+=(dgT-a.dg)*Math.min(1,dt*3);
+      if(!a.seen&&a.yo<34){a.seen=true;discoverRef.current(a.type);}
+      const full=a.tx>X0+60*BURROW.s, th=58+a.fl*(X0-a.tx)/a.s, c=a.r.gtclip;
+      if(c){c.setAttribute("x",full?-1000:(a.fl>0?th:th-1000));c.setAttribute("width",full?3000:1000);}
+      a.root.setAttribute("transform",`translate(${a.tx} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(-58 -62)`);
+      PZ=a.pz; burrowPose(a); alertFx(a,dt);
+    };
+    // Laucha: corre en tramos cortos hasta un escondite (piedra o montículo del paisaje), se oculta detrás, asoma la cabeza, sale
+    // corriendo y olfatea. El escondite se dibuja encima de ella; además un recorte vertical oculta lo que queda detrás del objeto.
+    const spawnMouse=force=>{
+      const used=A.filter(b=>b.mouse&&!b.done).map(b=>b.hide), free=HIDES.map((_,i)=>i).filter(i=>!used.includes(i));
+      if(!free.length) return false;
+      const hi=free[Math.random()*free.length|0], H=HIDES[hi], T=SP.laucha, side=force&&force.side?-force.side:(Math.random()<.5?-1:1), P=H.x+side*.62*H.hw;
+      A.push({id:++nid,type:"laucha",lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(300,600),seen:!!force,
+        mouse:true,hide:hi,side,P,hw:H.hw,st:"in",dir:1,fl:-side,s:T.s,x:H.x,y:H.y-1,sy:H.y-1.2,tx:side>0?vis()[1]+40:vis()[0]-40,yo:0,sn:0,pk:0,bph:0,mv:0,V:1});
+      A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
+    };
+    const mousePose=a=>{
+      const r=a.r, k=a.clk, m=Math.min(1,a.mv/60), sn=Math.sin(a.bph);
+      rot(r.lsfn,32*m*sn); rot(r.lsbf,32*m*sn); rot(r.lsff,-32*m*sn); rot(r.lsbn,-32*m*sn);
+      rot(r.lshead,10*a.sn+Math.sin(k*10)*3*a.sn+a.pk*Math.sin(k*1.5)*8);
+      rot(r.lstail,Math.sin(k*3)*6+m*10*sn);
+    };
+    const mouseStep=(a,dt)=>{
+      const T=SP[a.type], side=a.side, P=a.P, prev=a.tx;
+      let o=(a.tx-P)*side, flT, u=0;
+      if(a.st==="in"){ o=Math.max(60,o-130*dt); flT=-side; if(o<=60){a.st="loop";a.t=0;} }
+      else if(a.st==="loop"){
+        if(!a.alert){a.t+=dt;a.age+=dt;}
+        u=a.t%12.2; o=mouseO(u); flT=(u<2.2||u>=11.5)?-side:side;
+        if(a.age>a.life&&!a.alert&&u>8.4&&u<11.2) a.st="bye";   // se va cuando está afuera, olfateando
+      }
+      else{ flT=side; o+=(a.st==="out"?170:130)*dt*Math.max(0,1-Math.abs(a.fl-side)); }   // huye alejándose del escondite
+      a.tx=P+side*o;
+      if((side>0&&a.tx>vis()[1]+60)||(side<0&&a.tx<vis()[0]-60)){ if(a.st!=="in"){a.done=true;return;} }
+      a.fl+=(flT-a.fl)*Math.min(1,dt*(a.st==="loop"?4:3));
+      a.mv=Math.abs(a.tx-prev)/dt; a.bph+=Math.abs(a.tx-prev)/a.s*.7;
+      a.yo=o<-20?50:0;
+      a.sn+=(((a.st==="loop"&&u>8.4&&u<11.4)?1:0)-a.sn)*Math.min(1,dt*4); a.pk+=(((a.st==="loop"&&u>5&&u<7)?1:0)-a.pk)*Math.min(1,dt*4);
+      if(!a.seen&&a.yo<34&&a.tx>0&&a.tx<1600){a.seen=true;discoverRef.current(a.type);}
+      const out=o>18, fs=a.fl>=0?1:-1, th=27+(P-a.tx)/(fs*a.s), c=a.r.lsclip;   // todo lo que queda del lado del objeto se oculta
+      if(c){c.setAttribute("x",out?-1000:(side*fs>0?th:th-1000));c.setAttribute("width",out?3000:1000);}
+      a.root.setAttribute("transform",`translate(${a.tx} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(-27 -22)`);
+      PZ=a.pz; mousePose(a); alertFx(a,dt);
+    };
+    // Urutaú: aparece ya posado sobre la punta del tronco seco (se desvanece suavemente al entrar y al irse), inmóvil y contemplativo.
+    const spawnStill=force=>{
+      if(A.some(b=>b.still&&!b.done)) return false;
+      const T=SP.urutau;
+      A.push({id:++nid,type:"urutau",lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(900,1800),seen:!!force,
+        still:true,st:"fadein",op:0,dir:1,fl:1,s:T.s,x:URU.x,y:URU.y,sy:689.6,V:1});
+      A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
+    };
+    const stillPose=a=>{
+      const r=a.r, c=a.clk, f=1-PZ, u=c%7.5, bl=u<1.1?Math.sin(Math.PI*u/1.1):0;   // parpadeo lento cada ~7 s
+      r.ueyes.style.transform=`scale(1, ${Math.max(.06,1-.93*bl*f-.08*(.5+.5*Math.sin(c*.6))*f)})`;
+      const ph=c*.3+1, lk=Math.max(0,Math.sin(ph)-.55)/.45, L=((Math.floor(ph/6.2832)%2)?1:-1)*lk*f;   // de vez en cuando mira hacia un lado y vuelve
+      r.uhead.style.transform=`translate(${L*3}px, 0px) rotate(${L*9}deg)`;
+      r.ubody.style.transform=`rotate(${Math.sin(c*.5)*1.2*f}deg)`;
+      r.uglow.style.opacity=.15+.15*(.5+.5*Math.sin(c*.8));
+    };
+    const stillStep=(a,dt)=>{
+      const T=SP[a.type];
+      if(a.st==="fadein"){a.op=Math.min(1,a.op+dt/4); if(a.op>=1) a.st="stay";}
+      else if(a.st==="stay"){ if(!a.alert) a.age+=dt; if(a.age>a.life&&!a.alert) a.st="bye"; }
+      else{ a.op-=dt/(a.st==="out"?1.8:4); if(a.op<=0){a.done=true;return;} }
+      if(!a.seen&&a.op>.5){a.seen=true;discoverRef.current(a.type);}
+      a.root.style.opacity=a.op;
+      a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+      PZ=a.pz; stillPose(a); alertFx(a,dt);
+    };
+    const spawnOwl=force=>{
+      const T=SP.lechuza, perch=Math.random()<.65, dir=(force&&force.side)||(Math.random()<.5?-1:1);
+      const base={id:++nid,type:"lechuza",lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(480,900),seen:!!force,fold:0,foldT:0};
+      if(perch){const sx=dir>0?vis()[0]-90:vis()[1]+90;
+        A.push({...base,perch:true,st:"land",dir,fl:1,s:T.s,y:PY,sy:690.5,V:T.v,x:sx,span:Math.abs(PX-sx),stay:rnd(480,900),yy:PY-140,rise:0});}
+      else{const d=Math.random();
+        A.push({...base,st:"fly",dir,fl:dir,s:T.s*(1+.4*d),y:410-110*d,V:T.v*(.7+.3*d),x:dir>0?vis()[0]-T.half*.9-30:vis()[1]+T.half*.9+30});}
+      A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]);
+    };
+    // Lechuza posada: llega volando al poste, se posa (alas plegadas, gira la cabeza) y luego se va volando.
+    const perchStep=(a,dt)=>{
+      const T=SP[a.type], ease=p=>p*p*(3-2*p), px=a.px??PX, py=a.py??PY, hA=a.hA??140, nr=a.nr??260, fr=a.fr??40;
+      if(a.st!=="out"&&a.st!=="bye") a.age+=dt;
+      if(a.st==="land"){
+        // El aterrizaje depende de la distancia real al poste (igual desde cualquier lado): vuela a altura constante con aleteo,
+        // baja solo en los últimos 260 px y pliega las alas cuando las patas llegan al copete (a menos de 40 px).
+        const rem=(px-a.x)*a.dir, q=Math.min(1,Math.max(0,1-rem/nr));
+        a.x+=a.dir*a.V*(.35+.65*Math.min(1,Math.max(0,rem)/nr))*dt; a.yy=py-hA*(1-ease(q)); a.foldT=rem<fr?1:0;
+        if(rem<2){a.st="perch";a.t=0;a.x=px;a.yy=py;}
+      }else if(a.st==="perch"){
+        a.t+=dt; a.foldT=1;
+        if((a.t>a.stay||a.age>a.life)&&!a.alert){a.st="bye";a.dir=Math.random()<.5?-1:1;a.foldT=0;}
+      }else{
+        a.foldT=0; if(a.fold<.4) a.rise=Math.min(120,a.rise+dt*40);
+        a.x+=a.dir*a.V*dt*Math.min(1,Math.max(0,(.35-a.fold)/.35))*(T.side?Math.max(0,1-Math.abs(a.fl-a.dir)):1); a.yy=py-a.rise;   // no avanza hasta tener las alas casi extendidas
+        if(a.x<-720||a.x>2320){a.done=true;return;}
+      }
+      a.fold+=(a.foldT-a.fold)*Math.min(1,dt*2.2);
+      if(T.side) a.fl+=(a.dir-a.fl)*Math.min(1,dt*3);   // aves de perfil: miran hacia donde van
+      a.lyy=a.yy; a.lbank=0;
+      a.root.setAttribute("transform",`translate(${a.x} ${a.yy}) scale(${(T.side?a.fl:1)*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+      PZ=a.pz; T.pose(a.r,0,a.fold,a.clk); alertFx(a,dt);
+    };
     const vis=()=>{const w=Math.min(1600,900*innerWidth/Math.max(1,innerHeight));return [800-w/2,800+w/2];};
-    const spawn=()=>{
-      if(A.length>=9) return false;
-      if(Math.random()<.12&&!A.some(a=>a.type==="carancho")){
-        const T=SP.carancho, d=Math.random(), dir=Math.random()<.5?-1:1;
-        A.push({id:++nid,type:"carancho",lane:-1,y:400-110*d,s:T.s*(.6+.5*d),half:0,dir,stop:-9999,V:T.v*(.7+.3*d),x:dir>0?vis()[0]-T.half*(.6+.5*d)-30:vis()[1]+T.half*(.6+.5*d)+30,v:0,st:"fly",fl:dir,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(55,110)});
+    const spawn=(force,relax)=>{   // force={type,side}: aparición manual de prueba (ignora rarezas y hora del ciclo); relax: entra aunque falte sitio
+      if(A.length>=LIM+4) return false;
+      const ex=new Set();   // lechuza y carancho: uno a la vez
+      if(A.some(a=>a.type==="lechuza"&&!a.done)) ex.add("lechuza");
+      if(A.some(a=>a.type==="carancho"&&!a.done)) ex.add("carancho");
+      if(A.some(a=>a.type==="churrinche"&&!a.done)) ex.add("churrinche");
+      if(A.some(a=>a.type==="tijereta"&&!a.done)) ex.add("tijereta");
+      if(A.some(a=>a.type==="tucutucu"&&!a.done)) ex.add("tucutucu");
+      if(A.some(a=>a.type==="murcielago"&&!a.done)) ex.add("murcielago");
+      if(A.some(a=>a.type==="urutau"&&!a.done)) ex.add("urutau");
+      if(!force){const cnt={}; A.forEach(a=>{if(!a.done&&a.st!=="bye"&&a.st!=="out") cnt[a.type]=(cnt[a.type]||0)+1;}); for(const k in cnt) if(cnt[k]>=2) ex.add(k);}   // nunca más de 2 de una misma especie
+      const ty=force?force.type:pickType(momento(),ex);
+      if(ty==="lechuza"){spawnOwl(force);return true;}
+      if(ty==="churrinche"||ty==="tijereta"||ty==="murcielago"){spawnBird(ty,force,ty==="churrinche"?1:ty==="tijereta"?.6:0);return true;}
+      if(ty==="laucha") return spawnMouse(force);
+      if(ty==="urutau") return spawnStill(force);
+      if(ty==="hornero"&&Math.random()<.35&&spawnBird(ty,force,1)) return true;   // a veces se posa en el alambrado; si no, camina
+      if(ty==="tucutucu") return spawnTucu(force);
+      if(ty==="carancho"){
+        const T=SP.carancho, d=Math.random(), dir=(force&&force.side)||(Math.random()<.5?-1:1);
+        A.push({id:++nid,type:"carancho",lane:-1,y:400-110*d,s:T.s*(.6+.5*d),half:0,dir,stop:-9999,V:T.v*(.7+.3*d),x:dir>0?vis()[0]-T.half*(.6+.5*d)-30:vis()[1]+T.half*(.6+.5*d)+30,v:0,st:"fly",fl:dir,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(360,720),seen:!!force});
         A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
       }
-      const free=LN.map((_,i)=>i).filter(i=>!A.some(a=>a.lane===i));
-      if(!free.length) return false;
-      const type=KEYS[Math.random()*KEYS.length|0], T=SP[type];
-      for(let n=0;n<40;n++){
-        const lane=free[Math.random()*free.length|0], [d,y]=LN[lane], k=DK[d], s=T.s*k, half=T.half*s, stop=rnd(300,1300);
-        if(type==="vaca"){const cw=A.filter(b=>b.type==="vaca"&&!b.done), nd=cw.filter(b=>b.depth===d).length;
-          if(((d===1||d===2)&&nd>=1)||(d===0&&cw.length>=3)) continue;}
-        if(stop-half<20||stop+half>1580||A.some(b=>!SP[b.type].fly&&(Math.abs(stop-b.stop)<half+b.half+40||Math.abs(stop-b.x)<half+b.half+40))) continue;
-        const dir=DIRS[d], V=T.v*(.55+.45*k);
-        A.push({id:++nid,type,lane,depth:d,y,k,s,half,dir,stop,V,fl:dir,rest:0,x:dir>0?vis()[0]-half-30:vis()[1]+half+30,v:V*.8,st:"in",t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(55,110)});
+      let free=LN.map((_,i)=>i).filter(i=>!A.some(a=>a.lane===i));
+      if(!free.length){
+        if(!relax) return false;
+        const old=A.filter(b=>b.lane>=0&&!b.done).sort((p,q)=>q.age-p.age)[0];   // sin carriles libres: comparte el del más antiguo, que se retira
+        if(!old) return false;
+        free=[old.lane]; softRetire(old,3);
+      }
+      const type=ty, T=SP[type];
+      const commit=c=>{
+        const dir=(force&&force.side)||DIRS[c.d], V=T.v*(.55+.45*c.k);
+        A.push({id:++nid,type,lane:c.lane,depth:c.d,y:c.y,k:c.k,s:c.s,half:c.half,dir,stop:c.stop,V,fl:dir,rest:0,x:dir>0?vis()[0]-c.half-30:vis()[1]+c.half+30,v:V*.8,st:"in",t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(900,1800),seen:!!force,...(c.extra||{})});
         A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
+      };
+      if(type==="lagartija"&&Math.random()<.55){   // a veces va derecho a una piedra del paisaje a tomar sol
+        const r=ROCKS[Math.random()*ROCKS.length|0], half=T.half*T.s;
+        const gap=Math.min(999,...A.filter(b=>!b.done&&!SP[b.type].fly).map(b=>Math.min(Math.abs(r.x-b.stop),Math.abs(r.x-b.x))-half-b.half));
+        if(relax||gap>=40) return commit({lane:-1,d:1,y:r.y+.5,k:1,s:T.s,half,stop:r.x,extra:{rock:true,rockH:r.h}});
+      }
+      let best=null;
+      for(let n=0;n<40;n++){
+        const lane=free[Math.random()*free.length|0], [d,y]=LN[lane], k=DK[d], s=T.s*k, half=T.half*s, stop=rnd(150,1450);
+        if(type==="vaca"){const cw=A.filter(b=>b.type==="vaca"&&!b.done), nd=cw.filter(b=>b.depth===d).length;
+          if((d===1&&nd>=1)||(d===2&&nd>=2)||(d===0&&cw.length>=3)) continue;}   // hasta 2 vacas en primer plano, 1 en la zona media
+        if(stop-half<20||stop+half>1580) continue;
+        const gap=Math.min(999,...A.filter(b=>!b.done&&!SP[b.type].fly).map(b=>{const g=Math.min(Math.abs(stop-b.stop),Math.abs(stop-b.x))-half-b.half; return (b.depth===undefined||b.depth===d)?g:g+.45*(half+b.half);}));   // a distinta profundidad se permite cierto solapamiento
+        if(!relax&&gap<40) continue;
+        if(type==="nandu"){const nn=A.filter(b=>b.type==="nandu"&&!b.done); if(d===2||nn.length>=2||nn.some(b=>b.depth===d)) continue;}   // grande: nunca en primer plano
+        if(type==="caballo"){const hs=A.filter(b=>b.type==="caballo"&&!b.done); if(hs.length>=2||(d===2&&hs.length>0)) continue;}   // pocos caballos; ninguno extra al frente
+        if(BIG.includes(type)){   // pocos animales grandes a la vez y uno solo en primer plano
+          const bg=A.filter(b=>BIG.includes(b.type)&&!b.done);
+          if(bg.length>=3||(d===2&&bg.filter(b=>b.depth===2).length>=2)) continue;
+        }
+        const c={lane,d,y,k,s,half,stop,gap};
+        if(!best||gap>best.gap) best=c;   // entre los sitios válidos elige el más despejado: evita que se junten en una zona
+      }
+      if(best){   // en modo relajado entra igual y los animales antiguos que ocupan su sitio se retiran con calma
+        commit(best);
+        if(relax) A.filter(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&b.st!=="out"&&b.st!=="bye"&&b.st!=="in"&&Math.min(Math.abs(best.stop-b.stop),Math.abs(best.stop-b.x))<best.half+b.half+40).forEach((b,i)=>softRetire(b,4+i*8));
+        return true;
       }
       return false;
     };
@@ -614,69 +1791,96 @@ function App(){
       if(A.some(b=>b.st==="walk")) return false;
       const lo=a.half+40, hi=1600-a.half-40;
       for(let n=0;n<14;n++){
-        const tx=Math.max(lo,Math.min(hi,a.x+(Math.random()<.5?-1:1)*rnd(110,300)*(.6+.4*a.k)));
+        const tx=Math.max(lo,Math.min(hi,(a.type==="sapo"&&Math.random()<.35)?PUDDLE.x+(Math.random()<.5?-1:1)*(PUDDLE.rx+26):a.x+(Math.random()<.5?-1:1)*rnd(110,300)*(.6+.4*a.k)));
         if(Math.abs(tx-a.x)<70) continue;
         const l=Math.min(a.x,tx), r=Math.max(a.x,tx);
         if(A.some(b=>{if(b===a||b.done||SP[b.type].fly||b.st==="out"||b.st==="bye") return false;
-          const pad=a.half+b.half+30; return Math.abs(tx-b.stop)<pad+10||(b.x>l-pad&&b.x<r+pad);})) continue;
+          const pad=(b.depth===undefined||b.depth===a.depth)?a.half+b.half+30:.5*(a.half+b.half); return Math.abs(tx-b.stop)<pad+10||(b.x>l-pad&&b.x<r+pad);})) continue;
         a.stop=tx;a.dir=tx>a.x?1:-1;a.st="walk";return true;
       }
       return false;
     };
+    const tryManual=f=>{
+      if(A.length>=LIM+4){retire(1);return false;}
+      const ok=spawn(f)||spawn(f,true);
+      if(ok){const n=active();if(n>LIM) retire(n>LIM+1?2:1);}
+      else if(f.type==="tucutucu") A.filter(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&b.st!=="out"&&b.st!=="bye"&&(Math.abs(b.x-(BX+50))<b.half+150||Math.abs(b.stop-(BX+50))<b.half+150)).forEach((b,i)=>softRetire(b,3+i*6));
+      else if(f.type!=="laucha"&&f.type!=="urutau"&&!A.some(a=>a.retiring&&!a.done)) retire(1);
+      return ok;
+    };
+    spawnTestRef.current=(type,side)=>{
+      const T=SP[type]; if(!T) return "Especie desconocida.";
+      const single=T.fly||T.burrow||T.still, n=A.filter(b=>b.type===type&&!b.done).length;
+      if(n>=(single?1:2)) return single?"Ya hay uno de esa especie en escena.":"Ya hay dos de esa especie en escena.";
+      if(pend.some(f=>f.type===type)) return "Esa aparición ya está en espera.";
+      const f={type,side};
+      if(tryManual(f)) return "";
+      if(pend.length<3) pend.push(f);
+      return "Sin espacio: libero animales antiguos y entra enseguida.";
+    };
     const step=(a,dt)=>{
       const T=SP[a.type]; a.clk+=dt;
       a.pz=a.pz>.004?a.pz*(1-Math.min(1,dt*3)):0;
-      if(!a.seen&&a.x>0&&a.x<1600){a.seen=true;discoverRef.current(a.type);}
+      if(!a.seen&&!a.burrow&&!a.mouse&&!a.still&&a.x>0&&a.x<1600){a.seen=true;discoverRef.current(a.type);}
+      if(a.burrow){burrowStep(a,dt);return;}
+      if(a.mouse){mouseStep(a,dt);return;}
+      if(a.still){stillStep(a,dt);return;}
+      if(a.perch){perchStep(a,dt);return;}
       if(T.fly){
         if(a.st==="fly"){a.age+=dt;if(a.age>a.life&&!a.alert){a.dir=a.x<800?-1:1;a.st="bye";}}
         if(a.st==="fly"&&((a.dir>0&&a.x>1250)||(a.dir<0&&a.x<350))) a.dir=-a.dir;
         a.fl+=(a.dir-a.fl)*Math.min(1,dt*2.2);
         a.x+=a.dir*a.V*dt*(a.st==="out"||a.st==="bye"?1:Math.max(.25,Math.abs(a.fl)));
         if(a.x<-720||a.x>2320){a.done=true;return;}
-        const yy=a.y+22*Math.sin(a.clk*.35)+9*Math.sin(a.clk*.9+1), bank=Math.sin(a.clk*.35+1.2)*2.5;
+        const yy=a.y+22*Math.sin(a.clk*.35)+9*Math.sin(a.clk*.9+1)+(T.bob||0)*Math.sin(a.clk*4.2), bank=Math.sin(a.clk*.35+1.2)*2.5;
         a.root.setAttribute("transform",`translate(${a.x} ${yy}) rotate(${bank}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
-        a.lyy=yy;a.lbank=bank;PZ=a.pz;T.pose(a.r,0,0,a.clk); alertFx(a,dt); return;
+        a.lyy=yy;a.lbank=bank;PZ=a.pz;T.pose(a.r,0,a.fold||0,a.clk); alertFx(a,dt); return;
       }
       a.fl+=(a.dir-a.fl)*Math.min(1,dt*3);
-      const turn=Math.max(0,1-Math.abs(a.fl-a.dir));
+      const turn=Math.max(0,1-Math.abs(a.fl-a.dir)), hs=T.hs?T.hs(a.ph):1;   // hs: algunos animales (sapo) avanzan a saltos
       if(a.st!=="out"&&a.st!=="bye") a.age+=dt;
       if(a.st==="in"){
         const rem=(a.stop-a.x)*a.dir, tg=rem>200?a.V:Math.max(4,a.V*rem/200);
-        a.v+=(tg-a.v)*Math.min(1,dt*1.6); a.x+=a.dir*a.v*dt;
+        a.v+=(tg-a.v)*Math.min(1,dt*1.6); a.x+=a.dir*a.v*dt*hs;
         if(rem<1.5){a.st="rest";a.t=0;a.rest=rnd(...T.rs);a.stop=a.x;}
       }else if(a.st==="rest"){
-        a.v+=(0-a.v)*Math.min(1,dt*3); a.x+=a.dir*a.v*dt*turn; a.t+=dt;
+        a.v+=(0-a.v)*Math.min(1,dt*3); a.x+=a.dir*a.v*dt*turn*hs; a.t+=dt;
         if(a.age>a.life&&!a.alert){a.dir=a.x<800?-1:1;a.st="bye";}
-        else if(a.t>a.rest&&!wander(a)) a.rest+=rnd(2,4);
+        else if(a.rock&&a.t>a.rest){a.dir=a.x<800?-1:1;a.st="bye";}   // terminó de tomar sol: se va
+        else if(a.t>a.rest&&!a.rock&&!wander(a)) a.rest+=rnd(2,4);
       }else if(a.st==="walk"){
         const rem=(a.stop-a.x)*a.dir, W=a.V*.6, tg=rem>120?W:Math.max(3,W*rem/120);
-        a.v+=(tg-a.v)*Math.min(1,dt*1.4); a.x+=a.dir*a.v*dt*turn;
+        a.v+=(tg-a.v)*Math.min(1,dt*1.4); a.x+=a.dir*a.v*dt*turn*hs;
         if(rem<1.5){a.st="rest";a.t=0;a.rest=rnd(...T.rs);a.stop=a.x;}
       }else{
-        a.v+=(a.V-a.v)*Math.min(1,dt*1.2); a.x+=a.dir*a.v*dt*turn;
+        a.v+=(a.V-a.v)*Math.min(1,dt*1.2); a.x+=a.dir*a.v*dt*turn*hs;
         if(a.x<-720||a.x>2320){a.done=true;return;}
       }
       const hT=a.st==="rest"?T.tg(a):0;
       a.h+=(hT-a.h)*Math.min(1,dt*T.rt);
       a.ph+=a.v*turn*dt*T.c0/a.s;
       const m=cl(a.v*turn/a.V*1.4,0,1), e=a.h*a.h*(3-2*a.h);
-      a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+      a.lift=(a.lift||0)+(((a.rock&&a.st==="rest")?a.rockH:0)-(a.lift||0))*Math.min(1,dt*3);   // sube a la piedra al detenerse y baja al irse
+      a.root.setAttribute("transform",`translate(${a.x} ${a.y-(a.lift||0)}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
       a.lm=m;a.le=e;PZ=a.pz;T.pose(a.r,m*(1-a.pz),e*(1-a.pz),a.clk,Math.sin(a.ph),a.ph);
       alertFx(a,dt);
     };
     // Pausa: sin avanzar tiempo ni posición, cada animal pasa suavemente a una pose neutra y atenta.
     const pauseStep=(a,dt)=>{
       if(!a.root||a.done) return;
-      if(a.pz>=1&&a.fl===a.dir) return;
+      if(a.pz>=1&&((a.perch&&!SP[a.type].side)||a.fl===a.dir||a.mouse||a.still)) return;
       const T=SP[a.type];
       a.pz+=(1-a.pz)*Math.min(1,dt*3.2); if(a.pz>.998) a.pz=1;
       a.fl+=(a.dir-a.fl)*Math.min(1,dt*3); if(Math.abs(a.fl-a.dir)<.002) a.fl=a.dir;
       PZ=a.pz;
+      if(a.burrow){burrowPose(a);return;}
+      if(a.mouse){mousePose(a);return;}
+      if(a.still){stillPose(a);return;}
       if(T.fly){
-        a.root.setAttribute("transform",`translate(${a.x} ${a.lyy||a.y}) rotate(${a.lbank||0}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
-        T.pose(a.r,0,0,a.clk);
+        a.root.setAttribute("transform",`translate(${a.x} ${a.lyy||a.y}) rotate(${a.lbank||0}) scale(${((a.perch&&!T.side)?1:a.fl)*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+        T.pose(a.r,0,a.fold||0,a.clk);
       }else{
-        a.root.setAttribute("transform",`translate(${a.x} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
+        a.root.setAttribute("transform",`translate(${a.x} ${a.y-(a.lift||0)}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
         T.pose(a.r,(a.lm||0)*(1-a.pz),(a.le||0)*(1-a.pz),a.clk,Math.sin(a.ph),a.ph);
       }
       alertFx(a,dt);
@@ -692,6 +1896,7 @@ function App(){
       const mu=Math.max(0,Math.min(1,(u-.5)/.4));
       E.moon.setAttribute("transform",`translate(${1250-900*mu} ${300-70*Math.sin(Math.PI*mu)})`);
     };
+    cycSetRef.current=t=>{cyc.t=t;cyc.k=1;cyc.acc=0;cyc.dirty=true;applyLight(t,1);};
     const tick=now=>{
       const dt=Math.min(.05,(now-last)/1000); last=now;
       {  // ciclo día/noche: avanza solo sin pausa; al desactivarlo vuelve suavemente al paisaje diurno
@@ -717,10 +1922,18 @@ function App(){
           else{
             prog.v=Math.min(1,prog.v+dt/(prog.fixed||durRef.current*prog.jit));
             if(prog.v>=1){
-              if(spawn()){prog.v=0;prog.fixed=0;prog.jit=rnd(.9,1.1);const n=active();if(n>6) retire(n>7?2:1);}
-              else{prog.retry=1.2;if(!A.some(a=>a.retiring&&!a.done)) retire(1);}   // sin sitio: libera espacio con salidas naturales
+              let ok=false;   // primero busca un sitio libre (probando otras especies); si no hay, entra igual y libera espacio
+              for(let i=0;i<8&&!ok;i++) ok=spawn();
+              for(let i=0;i<8&&!ok;i++) ok=spawn(null,true);
+              if(ok){prog.v=0;prog.fixed=0;prog.jit=rnd(.9,1.1);const n=active();if(n>LIM) retire(n>LIM+1?2:1); else if(n>=LIM-2&&Math.random()<.6) retire(1,40);}   // cerca del máximo: retirada natural ocasional
+              else prog.retry=1.2;
             }
           }
+        }
+        if(pend.length&&(pendT-=dt)<=0){   // apariciones de prueba en espera de espacio
+          pendT=.6; const f=pend[0];
+          if(tryManual(f)){pend.shift();spawnNotifyRef.current("");}
+          else if((f.w=(f.w||0)+.6)>25){pend.shift();spawnNotifyRef.current("No se pudo hacer aparecer ese animal ahora.");}
         }
         if(fillRef.current){fillRef.current.style.width=(prog.v*100)+"%";pvRef.current.classList.toggle("hold",loud||gate.phase==="episode");}
         for(const a of A) if(a.root&&!a.done) step(a,dt);
@@ -779,31 +1992,42 @@ function App(){
         <div className="hd2">Ajustes</div>
         <div className="lbl">Modo de juego</div>
         <div className="modes"><button className={juego==="calma"?"on":""} onClick={()=>chooseJuego("calma")}>Pradera en calma</button><button className={juego==="viva"?"on":""} onClick={()=>chooseJuego("viva")}>Pradera viva</button></div>
+        <div className="lbl">Frecuencia de aparición</div>
+        <div className="chips">{RITMOS.map(([m,t])=><button key={m} className={ritmo.m===m?"on":""} onClick={()=>chooseRitmo({...ritmo,m})}>{t}</button>)}</div>
+        {ritmo.m==="personalizado"&&<label>Minutos entre apariciones<b>{ritmo.s} min</b>
+          <input type="number" min="0.5" max="60" step="0.5" value={ritmo.s} onChange={e=>chooseRitmo({m:"personalizado",s:Math.min(60,Math.max(.5,+e.target.value||5))})}/></label>}
         {juego==="calma"&&<>
-        <div className="modes"><button className={mode==="sim"?"on":""} onClick={()=>chooseMode("sim")}>Simulación</button><button className={mode==="mic"?"on":""} onClick={()=>chooseMode("mic")}>Micrófono</button></div>
-        {mode==="sim"&&<label>Volumen simulado<b>{vol}</b>
-          <input type="range" min="0" max="100" value={vol} onChange={e=>{const v=+e.target.value;setVol(v);levelRef.current=v;simVolRef.current=v;}}/></label>}
-        {mode==="mic"&&<label>Sensibilidad del micrófono<b>{sens}</b>
+        <div className="lbl">Ruido</div>
+        <div className="modes"><button className={mode==="mic"?"on":""} onClick={()=>chooseMode(mode==="mic"?"sim":"mic")}>{mode==="mic"?"Micrófono activado":"Activar micrófono"}</button></div>
+        {mode==="mic"&&<label>Sensibilidad del micrófono (calibración)<b>{sens}</b>
           <input type="range" min="0" max="100" value={sens} onChange={e=>{const v=+e.target.value;setSens(v);sensRef.current=v;store.set("sensibilidad",v);}}/></label>}
         <label>Límite de ruido permitido<b>{lim}</b>
           <input type="range" min="0" max="100" value={lim} onChange={e=>{const v=+e.target.value;setLim(v);limitRef.current=v;store.set("limite",v);}}/></label>
-        </>}
-        <div className="lbl">Duración de «Próximo visitante»</div>
-        <div className="chips">{[["rapido","Rápido · 15 s"],["normal","Normal · 35 s"],["lento","Lento · 60 s"],["personalizado","Personalizado"]].map(([m,t])=>
-          <button key={m} className={ritmo.m===m?"on":""} onClick={()=>chooseRitmo({...ritmo,m})}>{t}</button>)}</div>
-        {ritmo.m==="personalizado"&&<label>Segundos<b>{ritmo.s} s</b>
-          <input type="range" min="10" max="120" value={ritmo.s} onChange={e=>chooseRitmo({m:"personalizado",s:+e.target.value})}/></label>}
-        <div className="lbl">Ciclo día y noche</div>
-        <div className="modes"><button className={!ciclo.on?"on":""} onClick={()=>chooseCiclo({...ciclo,on:false})}>Desactivado</button><button className={ciclo.on?"on":""} onClick={()=>chooseCiclo({...ciclo,on:true})}>Activado</button></div>
-        {ciclo.on&&<div className="chips">{CICLO_D.map(([d,t])=><button key={d} className={ciclo.d===d?"on":""} onClick={()=>chooseCiclo({...ciclo,d})}>{t}</button>)}</div>}
-        {juego==="calma"&&<>
         <div className={"st"+(vol>lim?" over":"")}>{vol>lim?"Demasiado ruido":"Tranquilo"}{mode==="mic"&&<span> · nivel {vol}</span>}{ui.ph==="episode"&&<span> · {ui.cd} s</span>}</div>
         {(mode==="mic"||msg)&&<div className="msg">{msg||(micSt==="activo"?"Micrófono activo · el audio no se graba":"Solicitando permiso…")}</div>}
+        <div className="note">Con ruido por encima del límite durante {NC.loudSec} s, las apariciones se detienen. A los {NC.warnAt} s de la cuenta un animal muestra «!» y a los {NC.countSec} s se retira (uno por episodio), caminando o volando. Con {NC.calmSec} s de calma se cancela.</div>
         </>}
+        <div className="sep"><button className="rs" onClick={()=>setPruebas(o=>!o)} aria-expanded={pruebas}>{pruebas?"Pruebas ▾":"Pruebas ▸"}</button></div>
+        {pruebas&&<>
+        {juego==="calma"&&<>
+        <div className="lbl">Simulación del volumen {mode==="mic"?"(solo sin micrófono)":""}</div>
+        <label>Volumen simulado<b>{vol}</b>
+          <input type="range" min="0" max="100" value={vol} disabled={mode==="mic"} onChange={e=>{const v=+e.target.value;setVol(v);levelRef.current=v;simVolRef.current=v;}}/></label>
+        </>}
+        <div className="lbl">Duración del ciclo día y noche (acelerada para pruebas)</div>
+        <div className="chips">{CICLO_D.map(([d,t])=><button key={d} className={ciclo.d===d?"on":""} onClick={()=>chooseCiclo({...ciclo,d})}>{t}</button>)}</div>
+        <div className="lbl">Día y noche</div>
+        <div className="modes"><button onClick={()=>cycSetRef.current(.02)}>☀️ Día</button><button onClick={()=>cycSetRef.current(.64)}>🌙 Noche</button></div>
+        <div className="lbl">Hacer aparecer un animal</div>
+        <select value={testSp} onChange={e=>{setTestSp(e.target.value);setTestMsg("");}}>{SPECIES.map(sp=><option key={sp.id} value={sp.id}>{sp.name}</option>)}</select>
+        <div className="modes">{[[0,"Aleatorio"],[1,"Izquierda"],[-1,"Derecha"]].map(([v,t])=><button key={v} className={testSide===v?"on":""} onClick={()=>setTestSide(v)}>{t}</button>)}</div>
+        <button className="rs" onClick={()=>setTestMsg(spawnTestRef.current(testSp,testSide))}>Hacer aparecer animal</button>
+        {testMsg&&<div className="msg">{testMsg}</div>}
         <div className="sep">{askReset
-          ?<div className="ask"><div>¿Reiniciar la pradera? Se borrarán los descubrimientos del álbum y los animales actuales desaparecerán para empezar de nuevo. Los ajustes de ruido se conservan.</div>
+          ?<div className="ask"><div>¿Reiniciar la pradera? Se borrarán los descubrimientos del álbum y los animales actuales desaparecerán para empezar de nuevo. Los ajustes se conservan.</div>
             <div className="row"><button className="rs danger" onClick={doReset}>Sí, reiniciar</button><button className="rs" onClick={()=>setAskReset(false)}>Cancelar</button></div></div>
           :<button className="rs" onClick={()=>setAskReset(true)}>Reiniciar pradera</button>}</div>
+        </>}
       </div></div>}
     </div>
   );
