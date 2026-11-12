@@ -9,8 +9,8 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--btn:rgba(255,255,255,.5);--btn-ink:#2f5d3a}}
 html,body,#root{margin:0;height:100%;overflow:hidden;background:#8fd3f4}
 svg.scene{position:fixed;inset:0;width:100%;height:100%;display:block}
-.cloud{animation:drift 170s linear infinite}
-@keyframes drift{from{transform:translateX(-420px)}to{transform:translateX(2500px)}}
+.cloud{animation:drift 240s linear infinite}
+@keyframes drift{from{transform:translateX(-1300px)}to{transform:translateX(3400px)}}
 .sway{animation:sway 5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
 @keyframes sway{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
 .paused *{animation-play-state:paused !important}
@@ -293,7 +293,7 @@ const Carancho=({R,u})=>(
 // ---- Alambrado: tres postes y tres líneas de alambre a la misma altura, desde el primer poste hasta fuera de la pantalla.
 const FENCE_POSTS=[0,125,250];
 const Fence=()=>(
-  <g transform="translate(1330 690)">
+  <g transform={`translate(${LAY.fx} 690)`}>
     <path d={[-66,-48,-30].map(y=>`M0 ${y} C40 ${y+4} 85 ${y+4} 125 ${y} C165 ${y+4} 210 ${y+4} 250 ${y} L430 ${y}`).join(" ")} stroke="#6f675c" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
     {FENCE_POSTS.map(x=>(
       <g key={x} transform={`translate(${x} 0)`}>
@@ -684,7 +684,7 @@ const Snake=({R,u})=>(
 );
 
 // Puntos de posado en el alambrado (sobre el alambre y en los postes de las puntas). El poste del medio es de la lechuza.
-const PERCH_SPOTS=[[1392,627],[1517,627],[1330,591],[1580,591]];
+const perchSpots=()=>[[LAY.fx+62,627],[LAY.fx+187,627],[LAY.fx,591],[LAY.fx+250,591]];
 // Ala de ave pequeña en dos partes (brazo y mano), que apunta hacia la cola; aletea subiendo y bajando desde el hombro.
 const BWing=({id,r,r2,o,ho,arm,hand,fill})=>(
   <g id={id} ref={r} style={{transformOrigin:`${o[0]}px ${o[1]}px`}}>
@@ -999,6 +999,18 @@ const Potoo=({R,u})=>(
   </g>
 );
 
+// ---- Mundo adaptable: el alto del dibujo (900) es fijo y el ancho visible sigue la proporción real de la ventana, así el paisaje
+// cubre siempre el 100 % sin franjas ni deformaciones. Los elementos importantes se anclan a los bordes o al centro visibles.
+const LAY={vx0:0,vx1:1600,trunk:118,burrow:290,puddle:780,fx:1330};
+const aspectOf=(w,h)=>Math.max(.4,Math.min(6,w/Math.max(1,h)));
+const visNow=()=>{const w=900*aspectOf(innerWidth,innerHeight);return [800-w/2,800+w/2];};
+const tilesFor=(v0,v1,pad)=>{const r=[];for(let t=Math.floor((v0-pad)/1600);t<=Math.floor((v1+pad)/1600);t++) r.push(t);return r;};
+const setLay=(vx0,vx1)=>{   // devuelve cuánto se movieron los puntos anclados (para reubicar a sus animales)
+  const o={trunk:LAY.trunk,burrow:LAY.burrow,fx:LAY.fx};
+  LAY.vx0=vx0;LAY.vx1=vx1;LAY.trunk=vx0+118;LAY.burrow=vx0+Math.max(170,Math.min(290,290-Math.max(0,vx0)*.35));LAY.puddle=780;LAY.fx=vx1-270;
+  return {trunk:LAY.trunk-o.trunk,burrow:LAY.burrow-o.burrow,fx:LAY.fx-o.fx};
+};
+const gone=a=>{const [v0,v1]=visNow(), m=140+(a.half||0)+((SP[a.type]&&SP[a.type].half)||0)*(a.s||1);return a.x<v0-m||a.x>v1+m;};   // ya salió de la pantalla
 let PZ=0; // mezcla hacia la pose de pausa del animal que se está dibujando (0 = normal, 1 = atento)
 const rot=(e,d)=>{e.style.transform=`rotate(${d*(1-PZ)}deg)`};
 const SP={
@@ -1198,9 +1210,16 @@ const pickType=(m,excl)=>{
 const BIG=["vaca","nandu","caballo"];   // animales grandes (limitan su presencia al frente)
 const KEYS=Object.keys(SP).filter(k=>!SP[k].fly);
 const LN=[[0,692],[0,716],[0,704],[0,698],[0,710],[1,768],[1,800],[1,784],[1,776],[1,792],[2,846],[2,868],[2,857],[0,701],[0,695],[1,772],[1,788],[2,852],[2,862]], DK=[.5,1,1.3], DIRS=[1,-1,1];
-const Layered=({list})=>{
-  const it=[];
-  DECOR.forEach(([k,x,y,sc,f,sw],i)=>it.push([k==="trunk"?689.2:k==="charco"?1:y,<g key={"d"+i} transform={`translate(${x} ${y}) scale(${sc})`}><use href={"#"+k} className={sw?"brisa":undefined} fill={f} color={f} style={sw?{animationDelay:`${-i*1.7}s`}:undefined}/></g>]));
+const Layered=({list,vx0,vx1})=>{
+  const it=[], tl=tilesFor(vx0,vx1,150);
+  DECOR.forEach(([k,x,y,sc,f,sw,an],i)=>{
+    const land=k==="trunk"||k==="burrow"||k==="charco"||an==="p";   // puntos clave: no se repiten, se anclan
+    (land?[0]:tl).forEach(t=>{
+      const xx=k==="trunk"?LAY.trunk:k==="burrow"?LAY.burrow:k==="charco"?LAY.puddle:an==="p"?x+(LAY.puddle-780):x+1600*t;
+      if(xx<vx0-150||xx>vx1+150) return;
+      it.push([k==="trunk"?689.2:k==="charco"?1:y,<g key={"d"+i+"_"+t} transform={`translate(${xx} ${y}) scale(${sc})`}><use href={"#"+k} className={sw?"brisa":undefined} fill={f} color={f} style={sw?{animationDelay:`${-i*1.7}s`}:undefined}/></g>]);
+    });
+  });
   it.push([689,<Fence key="fence"/>]);
   list.forEach(a=>{const Sp=SP[a.type].C;it.push([(a.sy??a.y)+.5,<g key={"a"+a.id} ref={e=>a.root=e} transform="translate(-4000 0)"><Sp R={a.r} u={a.id}/><Bang a={a}/></g>]);});
   return it.sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
@@ -1216,7 +1235,7 @@ const DECOR=[
   ["mata",170,652,.8],["mata",1390,662,.95],["tuft",200,655,.4,G2],["tuft",760,652,.4,G1],["tuft",1330,650,.4,G2],["carq",560,650,.5],["flech",985,662,.5,"#7aa55a"],
   ["trunk",118,688,.85],
   // zona media
-  ["charco",PUDDLE.x,PUDDLE.y,.8],["tuft",PUDDLE.x-42,PUDDLE.y+3,.4,G2],["tuft",PUDDLE.x+40,PUDDLE.y+4,.35,G1],["tuft",PUDDLE.x-8,PUDDLE.y-6,.3,G3],
+  ["charco",PUDDLE.x,PUDDLE.y,.8],["tuft",PUDDLE.x-42,PUDDLE.y+3,.4,G2,0,"p"],["tuft",PUDDLE.x+40,PUDDLE.y+4,.35,G1,0,"p"],["tuft",PUDDLE.x-8,PUDDLE.y-6,.3,G3,0,"p"],
   ["tuft",90,722,.8,G1],["gram",300,708,.55,G3,1],["mata",420,744,.55],["mont",560,748,1],["tuft",470,762,1,G2],["marc",690,740,.9],["carq",770,752,.75],
   ["flech",905,702,.6,"#6f9a52",1],["mata",1000,700,.5],["rock",1060,745,.9],["tuft",1010,762,1.05,G1],["verb",1135,752,.9],["gram",1215,724,.75,G5,1],
   ["tuft",1450,702,.7,G2],["tuft",1540,762,1,G1],["marc",360,772,.85],["verb",215,770,.8],
@@ -1226,15 +1245,15 @@ const DECOR=[
   // primer plano, en el borde inferior
   ["gram",40,906,.85,G3,1],["flech",135,908,.7,"#6a9650",1],["tuft",360,908,1.1,G1],["marc",640,904,.9],["tuft",900,908,1.1,G2],["verb",1180,905,.9],["tuft",1500,910,1.1,G1],["flech",1565,908,.8,"#6a9650",1]
 ];
-const HIDES=DECOR.filter(d=>d[0]==="rock"||d[0]==="mont").map(d=>({x:d[1],y:d[2],hw:(d[0]==="rock"?20:34)*d[3]}));   // escondites de la laucha
+const hidesNow=()=>{const [a,b]=visNow(),r=[];DECOR.forEach(d=>{if(d[0]==="rock"||d[0]==="mont") for(const t of tilesFor(a,b,0)){const x=d[1]+1600*t; if(x>a+60&&x<b-60) r.push({x,y:d[2],hw:(d[0]==="rock"?20:34)*d[3],h:18*d[3],rock:d[0]==="rock"});}});return r;};   // escondites de la laucha y piedras de sol visibles
 const TRUNK=DECOR.find(d=>d[0]==="trunk"), URU={x:TRUNK[1]+TRUNK[3]*3,y:TRUNK[2]-TRUNK[3]*104};   // punta del tronco seco: posadero del urutaú
-const ROCKS=DECOR.filter(d=>d[0]==="rock").map(d=>({x:d[1],y:d[2],h:18*d[3]}));   // piedras del paisaje: la lagartija toma sol sobre una
+
 const CLOUDS=[[90,.9,0],[170,1.2,-55],[60,.7,-110],[230,.8,-135]];
 
-const Scene=memo(({R,list})=>(
-  <svg className="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Una vaca camina y pasta en la pradera">
+const Scene=memo(({R,list,vx0,vx1})=>{const tl=tilesFor(vx0,vx1,200);return(
+  <svg className="scene" viewBox={`${vx0} 0 ${vx1-vx0} 900`} preserveAspectRatio="xMidYMax meet" role="img" aria-label="Una vaca camina y pasta en la pradera">
     <defs>
-      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop id="sky-top" offset="0" stopColor="#7cc9f2"/><stop id="sky-bot" offset="1" stopColor="#d4f0fb"/></linearGradient>
+      <linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="900"><stop id="sky-top" offset="0" stopColor="#7cc9f2"/><stop id="sky-bot" offset="1" stopColor="#d4f0fb"/></linearGradient>
       <radialGradient id="glw"><stop offset="0" stopColor="#ffb870"/><stop offset="1" stopColor="#ffb870" stopOpacity="0"/></radialGradient>
       <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#8fcb64"/><stop offset="1" stopColor="#5aa84a"/></linearGradient>
       <path id="tuft" d="M-14 0 C-14 -14 -18 -22 -24 -30 C-14 -24 -10 -18 -8 -10 C-8 -24 -6 -34 -2 -44 C0 -32 2 -22 2 -10 C6 -22 12 -30 20 -34 C14 -24 12 -14 12 0Z"/>
@@ -1285,9 +1304,9 @@ const Scene=memo(({R,list})=>(
         <path d="M7 -58 L22 -72 L24 -68 L10 -50Z" fill="#7e6a55"/>
         <path d="M-4 -80 C-3 -58 -5 -30 -4 -6 M2 -64 C3 -44 2 -24 3 -8" stroke="#5f4e3e" strokeWidth="1.3" fill="none" opacity=".55" strokeLinecap="round"/></g>
     </defs>
-    <rect width="1600" height="900" fill="url(#sky)"/>
-    <ellipse id="glow" cx="800" cy="548" rx="780" ry="210" fill="url(#glw)" opacity="0"/>
-    <g id="stars" opacity="0">{STARS.map(([x,y,r,o],i)=><circle key={i} className="tw" cx={x} cy={y} r={r} fill="#fffbe6" fillOpacity={o} style={{animationDelay:`${-(i%7)*.6}s`,animationDuration:`${2.6+(i%5)*.5}s`}}/>)}</g>
+    <rect x="-4000" y="-200" width="9600" height="1100" fill="url(#sky)"/>
+    <ellipse id="glow" cx="800" cy="548" rx={Math.max(780,(vx1-vx0)*.49)} ry="210" fill="url(#glw)" opacity="0"/>
+    <g id="stars" opacity="0">{tl.map(t=><g key={t} transform={`translate(${1600*t} 0)`}>{STARS.map(([x,y,r,o],i)=><circle key={i} className="tw" cx={x} cy={y} r={r} fill="#fffbe6" fillOpacity={o} style={{animationDelay:`${-(i%7)*.6}s`,animationDuration:`${2.6+(i%5)*.5}s`}}/>)}</g>)}</g>
     <g id="moon" opacity="0" transform="translate(1250 300)">
       <circle r="40" fill="#fff4cf" opacity=".14"/><circle r="24" fill="#fff4cf"/>
       <circle cx="-7" cy="-5" r="4" fill="#efe1ae"/><circle cx="8" cy="6" r="5.5" fill="#efe1ae"/><circle cx="5" cy="-11" r="2.6" fill="#efe1ae"/>
@@ -1300,23 +1319,27 @@ const Scene=memo(({R,list})=>(
         </g>
       </g>
     ))}
+    {tl.map(t=>(<g key={"tr"+t} transform={t%2===0?`translate(${1600*t} 0)`:`translate(${1600*(t+1)} 0) scale(-1 1)`}>
     <path d="M0 560 C200 500 380 490 560 530 C760 570 900 510 1120 500 C1320 492 1480 530 1600 520 L1600 640 L0 640Z" fill="#bfe3a8"/>
     <path d="M0 604 C220 546 420 562 640 588 C860 612 1000 552 1240 548 C1420 546 1520 570 1600 566 L1600 700 L0 700Z" fill="#a2d48a"/>
+      {t===0&&<g>
     <path d="M1228 552 C1232 530 1234 515 1230 500 L1250 500 C1246 516 1250 532 1254 552Z" fill="#8a6a4a"/>
     <path d="M1180 505 C1170 470 1210 450 1240 456 C1275 446 1316 466 1304 500 C1300 516 1200 520 1180 505Z" fill="#4f9a4b"/>
     <path d="M1204 480 C1216 462 1244 460 1262 468 C1244 472 1224 480 1204 480Z" fill="#69b25e"/>
+      </g>}
     <path d="M0 644 C300 612 600 630 900 624 C1200 618 1400 634 1600 626 L1600 900 L0 900Z" fill="url(#gr)"/>
     <path d="M0 700 C400 678 800 700 1200 686 C1400 680 1500 690 1600 688 L1600 760 C1200 770 600 740 0 760Z" fill="#7bbf57" opacity=".55"/>
-    <Layered list={list}/>
+    </g>))}
+    <Layered list={list} vx0={vx0} vx1={vx1}/>
     </g>
   </svg>
-));
+);});
 
 // ---- Control de ruido: la fuente del nivel (0-100) llega por levelRef/limitRef.
 // Hoy lo escribe el panel de prueba; luego se reemplazará por el volumen de Web Audio API.
 const NC={loudSec:5,calmSec:5,countSec:20,warnAt:10};
 const makeGate=()=>({phase:"calm",loudT:0,calmT:0,cd:0,target:null});
-const eligible=a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&a.x>80&&a.x<1520&&!((a.burrow||a.mouse)&&a.yo>34)&&!(a.still&&a.op<.5);
+const eligible=a=>!a.done&&a.st!=="out"&&a.st!=="bye"&&a.x>visNow()[0]+80&&a.x<visNow()[1]-80&&!((a.burrow||a.mouse)&&a.yo>34)&&!(a.still&&a.op<.5);
 function noiseStep(g,dt,level,limit,A,flee,onDone){
   const loud=level>limit;
   if(g.phase==="calm"){
@@ -1454,6 +1477,15 @@ function App(){
   const sensRef=useRef(store.get("sensibilidad",50)), modeRef=useRef("sim"), simVolRef=useRef(15), micRef=useRef(null), resetRef=useRef(()=>{});
   const foundRef=useRef(loadAlbum()), discoverRef=useRef(()=>{}), restartRef=useRef(()=>{});
   const [askReset,setAskReset]=useState(false), [pruebas,setPruebas]=useState(false);
+  const relayoutRef=useRef(()=>{});
+  const [vp,setVp]=useState(()=>({w:innerWidth,h:innerHeight}));
+  useEffect(()=>{   // cambio de monitor, ventana, orientación o pantalla completa
+    const f=()=>setVp({w:innerWidth,h:innerHeight});
+    addEventListener("resize",f);addEventListener("orientationchange",f);document.addEventListener("fullscreenchange",f);
+    return()=>{removeEventListener("resize",f);removeEventListener("orientationchange",f);document.removeEventListener("fullscreenchange",f);};
+  },[]);
+  const vW=900*aspectOf(vp.w,vp.h), vx0=800-vW/2, vx1=800+vW/2, lay=setLay(vx0,vx1);
+  useEffect(()=>{relayoutRef.current(lay);},[vx0,vx1]);
   const juegoRef=useRef(loadJuego()), [juego,setJuego]=useState(()=>juegoRef.current);
   const spawnTestRef=useRef(()=>""), spawnNotifyRef=useRef(()=>{}), [testSp,setTestSp]=useState("vaca"), [testSide,setTestSide]=useState(0), [testMsg,setTestMsg]=useState("");
   spawnNotifyRef.current=setTestMsg;
@@ -1564,12 +1596,12 @@ function App(){
     restartRef.current=()=>{A.length=0;prog.v=0;prog.fixed=rnd(20,40);prog.jit=1;prog.retry=0;resetRef.current();setList([]);};   // pradera vacía; vuelve a poblarse desde cero
     const flee=a=>{a.alert=false;a.st="out";a.V*=1.5;if(SP[a.type].fly)a.dir=a.x<800?-1:1;};
     const momento=()=>momentoDe(cyc.t);   // el selector Día/Noche cambia cyc.t, así que también cambia la selección de especies
-    const PX=1455, PY=592;                      // copete del poste central del alambrado
+    const PXf=()=>LAY.fx+125, PY=592;                      // copete del poste central del alambrado
     // Aves que se posan en el alambrado o en un poste (churrinche, tijereta, hornero): llegan volando, se posan y se van.
     // pPerch: probabilidad de posarse; si no, la tijereta/el churrinche sobrevuelan la escena (patrullan) y el hornero camina por el suelo.
     const spawnBird=(type,force,pPerch)=>{
       const T=SP[type], dir=(force&&force.side)||(Math.random()<.5?-1:1);
-      const taken=A.filter(b=>b.perch&&!b.done).map(b=>b.px), spots=PERCH_SPOTS.filter(sp=>!taken.some(x=>Math.abs(x-sp[0])<45));
+      const taken=A.filter(b=>b.perch&&!b.done).map(b=>b.px), spots=perchSpots().filter(sp=>!taken.some(x=>Math.abs(x-sp[0])<45));
       const base={id:++nid,type,lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{pm:true},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(360,720),seen:!!force,fold:0,foldT:0};
       if(spots.length&&Math.random()<pPerch){
         const sp=spots[Math.random()*spots.length|0], sx=dir>0?vis()[0]-50:vis()[1]+50;
@@ -1583,14 +1615,14 @@ function App(){
     // Tucu-tucu: vive en la madriguera del paisaje. Sale en horizontal por la abertura (a su derecha): primero el hocico, luego la
     // cabeza y el cuerpo; camina unos pasos, olfatea, se da vuelta, regresa caminando y entra en el agujero. Un recorte vertical en
     // la boca de la cueva (plano X0) oculta la parte que está adentro; el recorte sigue al animal, así vale para cualquier escala.
-    const BX=BURROW.x, BY=BURROW.y, X0=BX+34*BURROW.s;
-    const TXW=[[0,-70],[3,-70],[5,-34],[8,-8],[11,20],[13,52],[17,105],[20.5,105],[21.7,105],[24.5,52],[28.5,-70],[30,-70]];   // [segundo, posición respecto de X0]
-    const txAt=u=>{for(let i=0;i<TXW.length-1;i++){const [t0,x0]=TXW[i],[t1,x1]=TXW[i+1];if(u<=t1){const f=(u-t0)/(t1-t0);return X0+(x0+(x1-x0)*f*f*(3-2*f))*BURROW.s;}}return X0-70*BURROW.s;};
+    const BX=()=>LAY.burrow, BY=BURROW.y, X0=()=>LAY.burrow+34*BURROW.s;
+    const TXW=[[0,-70],[3,-70],[5,-34],[8,-8],[11,20],[13,52],[17,105],[20.5,105],[21.7,105],[24.5,52],[28.5,-70],[30,-70]];   // [segundo, posición respecto de X0()]
+    const txAt=u=>{for(let i=0;i<TXW.length-1;i++){const [t0,x0]=TXW[i],[t1,x1]=TXW[i+1];if(u<=t1){const f=(u-t0)/(t1-t0);return X0()+(x0+(x1-x0)*f*f*(3-2*f))*BURROW.s;}}return X0()-70*BURROW.s;};
     const spawnTucu=force=>{
-      if(A.some(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&(Math.abs(b.x-(BX+50))<b.half+150||Math.abs(b.stop-(BX+50))<b.half+150))) return false;   // sitio ocupado
+      if(A.some(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&(Math.abs(b.x-(BX()+50))<b.half+150||Math.abs(b.stop-(BX()+50))<b.half+150))) return false;   // sitio ocupado
       const T=SP.tucutucu;
       A.push({id:++nid,type:"tucutucu",lane:-1,half:110,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(600,1200),seen:!!force,
-        burrow:true,st:"wait",dir:1,fl:1,s:T.s*BURROW.s,x:BX+50,y:BY,sy:BY+.5,tx:X0-70*BURROW.s,yo:50,dg:0,sn:0,bph:0,mv:0,V:1});
+        burrow:true,st:"wait",dir:1,fl:1,s:T.s*BURROW.s,x:BX()+50,y:BY,sy:BY+.5,tx:X0()-70*BURROW.s,yo:50,dg:0,sn:0,bph:0,mv:0,V:1});
       A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
     };
     const burrowPose=a=>{
@@ -1608,18 +1640,18 @@ function App(){
       let flT=1;
       if(a.st==="wait"){ a.tx=txAt(u); flT=(u>=20.5&&u<28.5)?-1:1; }
       else{   // se retira: si está afuera se da vuelta y vuelve caminando; si está en la boca, entra de espaldas
-        if(a.tx<X0-8*BURROW.s){a.done=true;return;}
-        const out=a.tx>X0+45*BURROW.s; flT=out?-1:1;
+        if(a.tx<X0()-8*BURROW.s){a.done=true;return;}
+        const out=a.tx>X0()+45*BURROW.s; flT=out?-1:1;
         a.tx-=(a.st==="out"?110:60)*dt*(out?Math.max(0,1-Math.abs(a.fl+1)):1);
-        if(a.tx<X0-62*BURROW.s){a.done=true;return;}
+        if(a.tx<X0()-62*BURROW.s){a.done=true;return;}
       }
       a.fl+=(flT-a.fl)*Math.min(1,dt*3);
       a.mv=Math.abs(a.tx-prev)/dt; a.bph+=Math.abs(a.tx-prev)/a.s*.6;
-      a.yo=a.tx<X0-8*BURROW.s?50:0;
+      a.yo=a.tx<X0()-8*BURROW.s?50:0;
       const snT=(a.st==="wait"&&u>17&&u<20.5)?1:0, dgT=(a.st==="wait"&&u>18.2&&u<20)?1:0;
       a.sn+=(snT-a.sn)*Math.min(1,dt*3); a.dg+=(dgT-a.dg)*Math.min(1,dt*3);
       if(!a.seen&&a.yo<34){a.seen=true;discoverRef.current(a.type);}
-      const full=a.tx>X0+60*BURROW.s, th=58+a.fl*(X0-a.tx)/a.s, c=a.r.gtclip;
+      const full=a.tx>X0()+60*BURROW.s, th=58+a.fl*(X0()-a.tx)/a.s, c=a.r.gtclip;
       if(c){c.setAttribute("x",full?-1000:(a.fl>0?th:th-1000));c.setAttribute("width",full?3000:1000);}
       a.root.setAttribute("transform",`translate(${a.tx} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(-58 -62)`);
       PZ=a.pz; burrowPose(a); alertFx(a,dt);
@@ -1627,9 +1659,9 @@ function App(){
     // Laucha: corre en tramos cortos hasta un escondite (piedra o montículo del paisaje), se oculta detrás, asoma la cabeza, sale
     // corriendo y olfatea. El escondite se dibuja encima de ella; además un recorte vertical oculta lo que queda detrás del objeto.
     const spawnMouse=force=>{
-      const used=A.filter(b=>b.mouse&&!b.done).map(b=>b.hide), free=HIDES.map((_,i)=>i).filter(i=>!used.includes(i));
+      const used=A.filter(b=>b.mouse&&!b.done).map(b=>b.hide), free=hidesNow().filter(h=>!used.includes(h.x));
       if(!free.length) return false;
-      const hi=free[Math.random()*free.length|0], H=HIDES[hi], T=SP.laucha, side=force&&force.side?-force.side:(Math.random()<.5?-1:1), P=H.x+side*.62*H.hw;
+      const H=free[Math.random()*free.length|0], hi=H.x, T=SP.laucha, side=force&&force.side?-force.side:(Math.random()<.5?-1:1), P=H.x+side*.62*H.hw;
       A.push({id:++nid,type:"laucha",lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(300,600),seen:!!force,
         mouse:true,hide:hi,side,P,hw:H.hw,st:"in",dir:1,fl:-side,s:T.s,x:H.x,y:H.y-1,sy:H.y-1.2,tx:side>0?vis()[1]+40:vis()[0]-40,yo:0,sn:0,pk:0,bph:0,mv:0,V:1});
       A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
@@ -1656,7 +1688,7 @@ function App(){
       a.mv=Math.abs(a.tx-prev)/dt; a.bph+=Math.abs(a.tx-prev)/a.s*.7;
       a.yo=o<-20?50:0;
       a.sn+=(((a.st==="loop"&&u>8.4&&u<11.4)?1:0)-a.sn)*Math.min(1,dt*4); a.pk+=(((a.st==="loop"&&u>5&&u<7)?1:0)-a.pk)*Math.min(1,dt*4);
-      if(!a.seen&&a.yo<34&&a.tx>0&&a.tx<1600){a.seen=true;discoverRef.current(a.type);}
+      if(!a.seen&&a.yo<34&&a.tx>visNow()[0]&&a.tx<visNow()[1]){a.seen=true;discoverRef.current(a.type);}
       const out=o>18, fs=a.fl>=0?1:-1, th=27+(P-a.tx)/(fs*a.s), c=a.r.lsclip;   // todo lo que queda del lado del objeto se oculta
       if(c){c.setAttribute("x",out?-1000:(side*fs>0?th:th-1000));c.setAttribute("width",out?3000:1000);}
       a.root.setAttribute("transform",`translate(${a.tx} ${a.y}) scale(${a.fl*a.s} ${a.s}) translate(-27 -22)`);
@@ -1667,7 +1699,7 @@ function App(){
       if(A.some(b=>b.still&&!b.done)) return false;
       const T=SP.urutau;
       A.push({id:++nid,type:"urutau",lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(900,1800),seen:!!force,
-        still:true,st:"fadein",op:0,dir:1,fl:1,s:T.s,x:URU.x,y:URU.y,sy:689.6,V:1});
+        still:true,st:"fadein",op:0,dir:1,fl:1,s:T.s,x:LAY.trunk+TRUNK[3]*3,y:URU.y,sy:689.6,V:1});
       A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]); return true;
     };
     const stillPose=a=>{
@@ -1692,14 +1724,14 @@ function App(){
       const T=SP.lechuza, perch=Math.random()<.65, dir=(force&&force.side)||(Math.random()<.5?-1:1);
       const base={id:++nid,type:"lechuza",lane:-1,half:0,stop:-9999,v:0,t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(480,900),seen:!!force,fold:0,foldT:0};
       if(perch){const sx=dir>0?vis()[0]-90:vis()[1]+90;
-        A.push({...base,perch:true,st:"land",dir,fl:1,s:T.s,y:PY,sy:690.5,V:T.v,x:sx,span:Math.abs(PX-sx),stay:rnd(480,900),yy:PY-140,rise:0});}
+        A.push({...base,perch:true,st:"land",dir,fl:1,s:T.s,y:PY,sy:690.5,V:T.v,x:sx,span:Math.abs(PXf()-sx),stay:rnd(480,900),yy:PY-140,rise:0});}
       else{const d=Math.random();
         A.push({...base,st:"fly",dir,fl:dir,s:T.s*(1+.4*d),y:410-110*d,V:T.v*(.7+.3*d),x:dir>0?vis()[0]-T.half*.9-30:vis()[1]+T.half*.9+30});}
       A.sort((p,q)=>(p.sy??p.y)-(q.sy??q.y)); setList([...A]);
     };
     // Lechuza posada: llega volando al poste, se posa (alas plegadas, gira la cabeza) y luego se va volando.
     const perchStep=(a,dt)=>{
-      const T=SP[a.type], ease=p=>p*p*(3-2*p), px=a.px??PX, py=a.py??PY, hA=a.hA??140, nr=a.nr??260, fr=a.fr??40;
+      const T=SP[a.type], ease=p=>p*p*(3-2*p), px=a.px??PXf(), py=a.py??PY, hA=a.hA??140, nr=a.nr??260, fr=a.fr??40;
       if(a.st!=="out"&&a.st!=="bye") a.age+=dt;
       if(a.st==="land"){
         // El aterrizaje depende de la distancia real al poste (igual desde cualquier lado): vuela a altura constante con aleteo,
@@ -1713,7 +1745,7 @@ function App(){
       }else{
         a.foldT=0; if(a.fold<.4) a.rise=Math.min(120,a.rise+dt*40);
         a.x+=a.dir*a.V*dt*Math.min(1,Math.max(0,(.35-a.fold)/.35))*(T.side?Math.max(0,1-Math.abs(a.fl-a.dir)):1); a.yy=py-a.rise;   // no avanza hasta tener las alas casi extendidas
-        if(a.x<-720||a.x>2320){a.done=true;return;}
+        if(gone(a)){a.done=true;return;}
       }
       a.fold+=(a.foldT-a.fold)*Math.min(1,dt*2.2);
       if(T.side) a.fl+=(a.dir-a.fl)*Math.min(1,dt*3);   // aves de perfil: miran hacia donde van
@@ -1721,7 +1753,15 @@ function App(){
       a.root.setAttribute("transform",`translate(${a.x} ${a.yy}) scale(${(T.side?a.fl:1)*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
       PZ=a.pz; T.pose(a.r,0,a.fold,a.clk); alertFx(a,dt);
     };
-    const vis=()=>{const w=Math.min(1600,900*innerWidth/Math.max(1,innerHeight));return [800-w/2,800+w/2];};
+    relayoutRef.current=d=>{   // al cambiar la pantalla, los animales anclados acompañan a su tronco, madriguera o alambrado
+      if(!d||(!d.trunk&&!d.burrow&&!d.fx)) return;
+      A.forEach(a=>{
+        if(a.still) a.x+=d.trunk;
+        if(a.burrow){a.tx+=d.burrow;a.x+=d.burrow;}
+        if(a.perch){a.x+=d.fx; if(a.px!==undefined) a.px+=d.fx;}
+      });
+    };
+    const vis=visNow;
     const spawn=(force,relax)=>{   // force={type,side}: aparición manual de prueba (ignora rarezas y hora del ciclo); relax: entra aunque falte sitio
       if(A.length>=LIM+4) return false;
       const ex=new Set();   // lechuza y carancho: uno a la vez
@@ -1758,17 +1798,17 @@ function App(){
         A.push({id:++nid,type,lane:c.lane,depth:c.d,y:c.y,k:c.k,s:c.s,half:c.half,dir,stop:c.stop,V,fl:dir,rest:0,x:dir>0?vis()[0]-c.half-30:vis()[1]+c.half+30,v:V*.8,st:"in",t:0,ph:0,h:0,clk:rnd(0,10),r:{},done:false,exo:0,pz:0,alert:false,age:0,life:rnd(900,1800),seen:!!force,...(c.extra||{})});
         A.sort((p,q)=>p.y-q.y); setList([...A]); return true;
       };
-      if(type==="lagartija"&&Math.random()<.55){   // a veces va derecho a una piedra del paisaje a tomar sol
-        const r=ROCKS[Math.random()*ROCKS.length|0], half=T.half*T.s;
+      if(type==="lagartija"&&Math.random()<.55&&hidesNow().some(h=>h.rock)){   // a veces va derecho a una piedra del paisaje a tomar sol
+        const rk=hidesNow().filter(h=>h.rock), r=rk[Math.random()*rk.length|0], half=T.half*T.s;
         const gap=Math.min(999,...A.filter(b=>!b.done&&!SP[b.type].fly).map(b=>Math.min(Math.abs(r.x-b.stop),Math.abs(r.x-b.x))-half-b.half));
         if(relax||gap>=40) return commit({lane:-1,d:1,y:r.y+.5,k:1,s:T.s,half,stop:r.x,extra:{rock:true,rockH:r.h}});
       }
       let best=null;
       for(let n=0;n<40;n++){
-        const lane=free[Math.random()*free.length|0], [d,y]=LN[lane], k=DK[d], s=T.s*k, half=T.half*s, stop=rnd(150,1450);
+        const lane=free[Math.random()*free.length|0], [d,y]=LN[lane], k=DK[d], s=T.s*k, half=T.half*s, stop=rnd(vis()[0]+150,vis()[1]-150);
         if(type==="vaca"){const cw=A.filter(b=>b.type==="vaca"&&!b.done), nd=cw.filter(b=>b.depth===d).length;
           if((d===1&&nd>=1)||(d===2&&nd>=2)||(d===0&&cw.length>=3)) continue;}   // hasta 2 vacas en primer plano, 1 en la zona media
-        if(stop-half<20||stop+half>1580) continue;
+        if(stop-half<vis()[0]+20||stop+half>vis()[1]-20) continue;
         const gap=Math.min(999,...A.filter(b=>!b.done&&!SP[b.type].fly).map(b=>{const g=Math.min(Math.abs(stop-b.stop),Math.abs(stop-b.x))-half-b.half; return (b.depth===undefined||b.depth===d)?g:g+.45*(half+b.half);}));   // a distinta profundidad se permite cierto solapamiento
         if(!relax&&gap<40) continue;
         if(type==="nandu"){const nn=A.filter(b=>b.type==="nandu"&&!b.done); if(d===2||nn.length>=2||nn.some(b=>b.depth===d)) continue;}   // grande: nunca en primer plano
@@ -1789,9 +1829,9 @@ function App(){
     };
     const wander=a=>{
       if(A.some(b=>b.st==="walk")) return false;
-      const lo=a.half+40, hi=1600-a.half-40;
+      const lo=vis()[0]+a.half+40, hi=vis()[1]-a.half-40;
       for(let n=0;n<14;n++){
-        const tx=Math.max(lo,Math.min(hi,(a.type==="sapo"&&Math.random()<.35)?PUDDLE.x+(Math.random()<.5?-1:1)*(PUDDLE.rx+26):a.x+(Math.random()<.5?-1:1)*rnd(110,300)*(.6+.4*a.k)));
+        const tx=Math.max(lo,Math.min(hi,(a.type==="sapo"&&Math.random()<.35)?LAY.puddle+(Math.random()<.5?-1:1)*(PUDDLE.rx+26):a.x+(Math.random()<.5?-1:1)*rnd(110,300)*(.6+.4*a.k)));
         if(Math.abs(tx-a.x)<70) continue;
         const l=Math.min(a.x,tx), r=Math.max(a.x,tx);
         if(A.some(b=>{if(b===a||b.done||SP[b.type].fly||b.st==="out"||b.st==="bye") return false;
@@ -1804,7 +1844,7 @@ function App(){
       if(A.length>=LIM+4){retire(1);return false;}
       const ok=spawn(f)||spawn(f,true);
       if(ok){const n=active();if(n>LIM) retire(n>LIM+1?2:1);}
-      else if(f.type==="tucutucu") A.filter(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&b.st!=="out"&&b.st!=="bye"&&(Math.abs(b.x-(BX+50))<b.half+150||Math.abs(b.stop-(BX+50))<b.half+150)).forEach((b,i)=>softRetire(b,3+i*6));
+      else if(f.type==="tucutucu") A.filter(b=>!b.done&&!SP[b.type].fly&&!b.burrow&&b.st!=="out"&&b.st!=="bye"&&(Math.abs(b.x-(BX()+50))<b.half+150||Math.abs(b.stop-(BX()+50))<b.half+150)).forEach((b,i)=>softRetire(b,3+i*6));
       else if(f.type!=="laucha"&&f.type!=="urutau"&&!A.some(a=>a.retiring&&!a.done)) retire(1);
       return ok;
     };
@@ -1821,17 +1861,17 @@ function App(){
     const step=(a,dt)=>{
       const T=SP[a.type]; a.clk+=dt;
       a.pz=a.pz>.004?a.pz*(1-Math.min(1,dt*3)):0;
-      if(!a.seen&&!a.burrow&&!a.mouse&&!a.still&&a.x>0&&a.x<1600){a.seen=true;discoverRef.current(a.type);}
+      if(!a.seen&&!a.burrow&&!a.mouse&&!a.still&&a.x>visNow()[0]&&a.x<visNow()[1]){a.seen=true;discoverRef.current(a.type);}
       if(a.burrow){burrowStep(a,dt);return;}
       if(a.mouse){mouseStep(a,dt);return;}
       if(a.still){stillStep(a,dt);return;}
       if(a.perch){perchStep(a,dt);return;}
       if(T.fly){
         if(a.st==="fly"){a.age+=dt;if(a.age>a.life&&!a.alert){a.dir=a.x<800?-1:1;a.st="bye";}}
-        if(a.st==="fly"&&((a.dir>0&&a.x>1250)||(a.dir<0&&a.x<350))) a.dir=-a.dir;
+        if(a.st==="fly"&&((a.dir>0&&a.x>vis()[1]-350)||(a.dir<0&&a.x<vis()[0]+350))) a.dir=-a.dir;
         a.fl+=(a.dir-a.fl)*Math.min(1,dt*2.2);
         a.x+=a.dir*a.V*dt*(a.st==="out"||a.st==="bye"?1:Math.max(.25,Math.abs(a.fl)));
-        if(a.x<-720||a.x>2320){a.done=true;return;}
+        if(gone(a)){a.done=true;return;}
         const yy=a.y+22*Math.sin(a.clk*.35)+9*Math.sin(a.clk*.9+1)+(T.bob||0)*Math.sin(a.clk*4.2), bank=Math.sin(a.clk*.35+1.2)*2.5;
         a.root.setAttribute("transform",`translate(${a.x} ${yy}) rotate(${bank}) scale(${a.fl*a.s} ${a.s}) translate(${-T.cx} ${-T.gy})`);
         a.lyy=yy;a.lbank=bank;PZ=a.pz;T.pose(a.r,0,a.fold||0,a.clk); alertFx(a,dt); return;
@@ -1854,7 +1894,7 @@ function App(){
         if(rem<1.5){a.st="rest";a.t=0;a.rest=rnd(...T.rs);a.stop=a.x;}
       }else{
         a.v+=(a.V-a.v)*Math.min(1,dt*1.2); a.x+=a.dir*a.v*dt*turn*hs;
-        if(a.x<-720||a.x>2320){a.done=true;return;}
+        if(gone(a)){a.done=true;return;}
       }
       const hT=a.st==="rest"?T.tg(a):0;
       a.h+=(hT-a.h)*Math.min(1,dt*T.rt);
@@ -1894,7 +1934,7 @@ function App(){
       E.lit.style.filter=k<.003?"":`brightness(${m("b")}) saturate(${m("s")}) sepia(${m("sp")}) hue-rotate(${m("h")}deg)`;
       E.stars.setAttribute("opacity",m("st")); E.glow.setAttribute("opacity",m("gl")); E.moon.setAttribute("opacity",m("mo"));
       const mu=Math.max(0,Math.min(1,(u-.5)/.4));
-      E.moon.setAttribute("transform",`translate(${1250-900*mu} ${300-70*Math.sin(Math.PI*mu)})`);
+      {const vv=visNow(),m0=vv[1]-350,m1=vv[0]+350; E.moon.setAttribute("transform",`translate(${m0+(m1-m0)*mu} ${300-70*Math.sin(Math.PI*mu)})`);}
     };
     cycSetRef.current=t=>{cyc.t=t;cyc.k=1;cyc.acc=0;cyc.dirty=true;applyLight(t,1);};
     const tick=now=>{
@@ -1951,7 +1991,7 @@ function App(){
   },[]);
   return(
     <div className={paused?"paused":""} style={{height:"100%"}}>
-      <Scene R={R} list={list}/>
+      <Scene R={R} list={list} vx0={vx0} vx1={vx1}/>
       <div className={"pz"+(paused?" on":"")} aria-live="polite">Pausa · Atentos</div>
       <div className="al">
         {albumOpen&&<div className="box">
