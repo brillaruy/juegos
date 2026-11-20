@@ -1193,16 +1193,17 @@ const HABITOS={
   tijereta: {base:1,   act:[1,.2,0,.1]},
   venado:   {base:.35, act:[1,1,.05,1]},   // rara
   lagartija:{base:.5,  act:[1,.5,.02,.1]},   // poco frecuente
-  gato:     {base:.12, act:[.05,.8,1,.8]},   // muy rara
-  aguara:   {base:.06, act:[.05,.8,1,.8]},   // extremadamente rara
+  gato:     {base:.30, act:[.05,.8,1,.8]},   // muy rara
+  aguara:   {base:.18, act:[.05,.8,1,.8]},   // extremadamente rara
   laucha:   {base:1.2, act:[.05,.8,1,.8]},   // provisional: nocturna y crepuscular
   sapo:     {base:1,   act:[.05,.8,1,.7]},   // provisional: nocturno y crepuscular
   murcielago:{base:.8, act:[0,0,1,0]},       // provisional: solo de noche
-  urutau:   {base:.05, act:[0,.1,1,.1]}      // extremadamente rara; casi solo de noche, nunca de día
+  urutau:   {base:.09, act:[0,.1,1,.1]}      // extremadamente rara; casi solo de noche, nunca de día
 };
 const momentoDe=t=>t>=.94||t<.40?0:t<.58?1:t<.80?2:3;   // 0 día, 1 atardecer, 2 noche, 3 amanecer (según la hora del ciclo)
-const pickType=(m,excl)=>{
-  const W=Object.keys(HABITOS).filter(k=>!excl.has(k)).map(k=>[k,HABITOS[k].base*HABITOS[k].act[m]]);
+const NUEVA=1.6;   // multiplicador moderado del peso de las especies todavía no descubiertas
+const pickType=(m,excl,found)=>{
+  const W=Object.keys(HABITOS).filter(k=>!excl.has(k)).map(k=>[k,HABITOS[k].base*HABITOS[k].act[m]*(found&&!found[k]?NUEVA:1)]);
   let x=Math.random()*W.reduce((t,w)=>t+w[1],0);
   for(const [k,w] of W){x-=w;if(x<=0) return k;}
   return "vaca";
@@ -1421,13 +1422,13 @@ const Album=({found})=>(
   </div>);
 
 // Duración de la barra «Próximo visitante»: Rápido 15 s, Normal 35 s, Lento 60 s o Personalizado (10-120 s).
-const RITMOS=[["animado","Animado · cada 2 min"],["normal","Normal · cada 5 min"],["tranquilo","Tranquilo · cada 8 min"],["personalizado","Personalizado"]];
+const RITMOS=[["animado","Animado · cada 2 min"],["normal","Normal · cada 4 min"],["tranquilo","Tranquilo · cada 7 min"]];
 const loadRitmo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ritmo2")||"null")||{};
   return {m:RITMOS.some(x=>x[0]===o.m)?o.m:"normal",s:Math.min(60,Math.max(.5,+o.s||5))};}catch(e){return {m:"normal",s:5};}};   // s: minutos (personalizado)
-const ritmoSecs=r=>(r.m==="animado"?2:r.m==="tranquilo"?8:r.m==="personalizado"?r.s:5)*60;
+const ritmoSecs=r=>(r.m==="animado"?2:r.m==="tranquilo"?7:4)*60;
 
 // Modo de juego: "calma" (control de ruido) o "viva" (solo la barra de visitantes, sin ruido ni sustos).
-const loadJuego=()=>{try{return localStorage.getItem("pradera.modo")==="viva"?"viva":"calma";}catch(e){return "calma";}};
+const loadJuego=()=>{try{return localStorage.getItem("pradera.modo")==="calma"?"calma":"viva";}catch(e){return "viva";}};
 
 // Ciclo día/noche: se interpola entre puntos de luz (cielo, brillo del paisaje, estrellas, luna, resplandor del horizonte).
 const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
@@ -1459,7 +1460,7 @@ const STARS=(()=>{
   return out;
 })();
 const CICLO_D=[[60,"Prueba · 1 min"],[300,"5 min"],[900,"15 min"],[1800,"30 min"]];
-const loadCiclo=()=>{try{const o=JSON.parse(localStorage.getItem("pradera.ciclo")||"null")||{};return {on:true,d:CICLO_D.some(x=>x[0]===+o.d)?+o.d:300};}catch(e){return {on:true,d:300};}};
+const loadCiclo=()=>({on:true,d:900});   // ciclo completo fijo de 15 min
 
 // Almacenamiento local de los ajustes (límite y sensibilidad), tolerante a fallos.
 const store={
@@ -1561,6 +1562,9 @@ function App(){
     if(j==="viva"){stopMic();setMicSt("idle");setMsg("");}          // sin micrófono en Pradera viva
     else if(modeRef.current==="mic"){levelRef.current=0;setVol(0);startMic();}   // vuelve a la fuente elegida
   };
+  // Control de ruido: activarlo reutiliza el modo "calma" con el micrófono; desactivarlo, el modo "viva" (sin micrófono).
+  const setRuido=on=>{if(on){chooseJuego("calma");if(modeRef.current!=="mic")chooseMode("mic");}else chooseJuego("viva");};
+  const showTools=(()=>{try{return /pruebas/i.test(location.hash+location.search)||localStorage.getItem("pradera.pruebas")==="1";}catch(e){return false;}})();   // herramientas de prueba ocultas
   const doReset=()=>{
     try{localStorage.removeItem("pradera.album");}catch(e){}   // solo los descubrimientos; ajustes de ruido intactos
     foundRef.current={}; setFound({}); setFresh(false); setAskReset(false);
@@ -1773,7 +1777,7 @@ function App(){
       if(A.some(a=>a.type==="murcielago"&&!a.done)) ex.add("murcielago");
       if(A.some(a=>a.type==="urutau"&&!a.done)) ex.add("urutau");
       if(!force){const cnt={}; A.forEach(a=>{if(!a.done&&a.st!=="bye"&&a.st!=="out") cnt[a.type]=(cnt[a.type]||0)+1;}); for(const k in cnt) if(cnt[k]>=2) ex.add(k);}   // nunca más de 2 de una misma especie
-      const ty=force?force.type:pickType(momento(),ex);
+      const ty=force?force.type:pickType(momento(),ex,foundRef.current);
       if(ty==="lechuza"){spawnOwl(force);return true;}
       if(ty==="churrinche"||ty==="tijereta"||ty==="murcielago"){spawnBird(ty,force,ty==="churrinche"?1:ty==="tijereta"?.6:0);return true;}
       if(ty==="laucha") return spawnMouse(force);
@@ -2030,25 +2034,22 @@ function App(){
       </div>
       {open&&<div className="np"><div className="box">
         <div className="hd2">Ajustes</div>
-        <div className="lbl">Modo de juego</div>
-        <div className="modes"><button className={juego==="calma"?"on":""} onClick={()=>chooseJuego("calma")}>Pradera en calma</button><button className={juego==="viva"?"on":""} onClick={()=>chooseJuego("viva")}>Pradera viva</button></div>
         <div className="lbl">Frecuencia de aparición</div>
         <div className="chips">{RITMOS.map(([m,t])=><button key={m} className={ritmo.m===m?"on":""} onClick={()=>chooseRitmo({...ritmo,m})}>{t}</button>)}</div>
-        {ritmo.m==="personalizado"&&<label>Minutos entre apariciones<b>{ritmo.s} min</b>
-          <input type="number" min="0.5" max="60" step="0.5" value={ritmo.s} onChange={e=>chooseRitmo({m:"personalizado",s:Math.min(60,Math.max(.5,+e.target.value||5))})}/></label>}
+        <div className="lbl">Control de ruido</div>
+        <div className="modes"><button className={juego==="calma"?"on":""} onClick={()=>setRuido(true)}>Activado</button><button className={juego!=="calma"?"on":""} onClick={()=>setRuido(false)}>Desactivado</button></div>
         {juego==="calma"&&<>
-        <div className="lbl">Ruido</div>
-        <div className="modes"><button className={mode==="mic"?"on":""} onClick={()=>chooseMode(mode==="mic"?"sim":"mic")}>{mode==="mic"?"Micrófono activado":"Activar micrófono"}</button></div>
-        {mode==="mic"&&<label>Sensibilidad del micrófono (calibración)<b>{sens}</b>
-          <input type="range" min="0" max="100" value={sens} onChange={e=>{const v=+e.target.value;setSens(v);sensRef.current=v;store.set("sensibilidad",v);}}/></label>}
-        <label>Límite de ruido permitido<b>{lim}</b>
+        <label>Tolerancia al ruido<b>{lim}</b>
           <input type="range" min="0" max="100" value={lim} onChange={e=>{const v=+e.target.value;setLim(v);limitRef.current=v;store.set("limite",v);}}/></label>
         <div className={"st"+(vol>lim?" over":"")}>{vol>lim?"Demasiado ruido":"Tranquilo"}{mode==="mic"&&<span> · nivel {vol}</span>}{ui.ph==="episode"&&<span> · {ui.cd} s</span>}</div>
         {(mode==="mic"||msg)&&<div className="msg">{msg||(micSt==="activo"?"Micrófono activo · el audio no se graba":"Solicitando permiso…")}</div>}
-        <div className="note">Con ruido por encima del límite durante {NC.loudSec} s, las apariciones se detienen. A los {NC.warnAt} s de la cuenta un animal muestra «!» y a los {NC.countSec} s se retira (uno por episodio), caminando o volando. Con {NC.calmSec} s de calma se cancela.</div>
         </>}
-        <div className="sep"><button className="rs" onClick={()=>setPruebas(o=>!o)} aria-expanded={pruebas}>{pruebas?"Pruebas ▾":"Pruebas ▸"}</button></div>
-        {pruebas&&<>
+        {showTools&&<div className="sep"><button className="rs" onClick={()=>setPruebas(o=>!o)} aria-expanded={pruebas}>{pruebas?"Pruebas ▾":"Pruebas ▸"}</button></div>}
+        {showTools&&pruebas&&<>
+        <div className="lbl">Fuente de ruido (prueba)</div>
+        <div className="modes"><button className={mode==="sim"?"on":""} onClick={()=>chooseMode("sim")}>Simulación</button><button className={mode==="mic"?"on":""} onClick={()=>chooseMode("mic")}>Micrófono</button></div>
+        {mode==="mic"&&<label>Sensibilidad del micrófono (calibración)<b>{sens}</b>
+          <input type="range" min="0" max="100" value={sens} onChange={e=>{const v=+e.target.value;setSens(v);sensRef.current=v;store.set("sensibilidad",v);}}/></label>}
         {juego==="calma"&&<>
         <div className="lbl">Simulación del volumen {mode==="mic"?"(solo sin micrófono)":""}</div>
         <label>Volumen simulado<b>{vol}</b>
