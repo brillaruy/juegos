@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Décimos – Brillar*UY</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        brillar: {
+                            blue: '#00A8E8',
+                            yellow: '#FFD166',
+                            green: '#10B981',
+                            purple: '#8B5CF6',
+                            coral: '#EF476F'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background-color: #F4F7FA;
+        }
+
+        /* 3D Tactile Button Effects */
+        .btn-tactile {
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.15s ease;
+            box-shadow: 0 5px 0 var(--tw-shadow-color, #cbd5e1);
+        }
+        .btn-tactile:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 var(--tw-shadow-color, #cbd5e1);
+        }
+
+        /* Cell color transitions */
+        .grid-cell {
+            transition: background-color 0.12s ease, border-color 0.12s ease;
+        }
+
+        /* Number line handle drag cursor */
+        .nl-handle {
+            transition: transform 0.05s ease-out;
+            touch-action: none;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between font-fredoka p-2 sm:p-4 selection:bg-none">
+
+    <!-- ==========================================
+         BARRA SUPERIOR MINIMALISTA
+         ========================================== -->
+    <header class="max-w-5xl w-full mx-auto bg-white rounded-2xl shadow-sm border-2 border-slate-200/80 px-3 py-2 flex items-center justify-between gap-2 shrink-0">
+        
+        <!-- Logo Mascot + Label -->
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 bg-amber-400 rounded-2xl border-2 border-amber-500 flex items-center justify-center shadow-xs shrink-0">
+                <svg class="w-6 h-6 text-amber-950" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7zm-3 18a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1z"/>
+                </svg>
+            </div>
+            <div class="hidden xs:block">
+                <h1 class="text-base sm:text-lg font-black text-sky-700 leading-none">Explorador de Décimos</h1>
+                <span class="text-[10px] bg-amber-200 text-amber-950 font-extrabold px-2 py-0.5 rounded-full inline-block mt-0.5">Brillar*UY</span>
+            </div>
+        </div>
+
+        <!-- Pestañas de Modo -->
+        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 space-x-1">
+            <button id="tab-btn-1" onclick="switchTab(1)" 
+                class="px-3 sm:px-4 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all bg-sky-500 text-white shadow-xs flex items-center gap-1.5">
+                <span class="text-base">🧩</span>
+                <span>Unidades</span>
+            </button>
+            
+            <button id="tab-btn-2" onclick="switchTab(2)" 
+                class="px-3 sm:px-4 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-600 hover:bg-slate-200/60 flex items-center gap-1.5">
+                <span class="text-base">📏</span>
+                <span>Recta</span>
+            </button>
+
+            <button id="tab-btn-3" onclick="switchTab(3)" 
+                class="px-3 sm:px-4 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-600 hover:bg-slate-200/60 flex items-center gap-1.5">
+                <span class="text-base">⚡</span>
+                <span>Desafío</span>
+            </button>
+
+            <button id="tab-btn-4" onclick="switchTab(4)" 
+                class="px-3 sm:px-4 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-600 hover:bg-slate-200/60 flex items-center gap-1.5">
+                <span class="text-base">🎨</span>
+                <span>Construir</span>
+            </button>
+        </div>
+
+        <!-- Audio & Fullscreen -->
+        <div class="flex items-center space-x-1.5">
+            <button id="btn-sound" onclick="toggleSound()" title="Sonido On/Off"
+                class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300">
+                <svg id="icon-sound-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M6.5 9.5H3a1 1 0 00-1 1v3a1 1 0 001 1h3.5l4 4V5.5l-4 4z"/>
+                </svg>
+                <svg id="icon-sound-off" class="w-5 h-5 hidden text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                </svg>
+            </button>
+            <button onclick="toggleFullscreen()" title="Pantalla Completa"
+                class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-300 hidden sm:block">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+
+    <!-- ==========================================
+         CONTENEDOR PRINCIPAL
+         ========================================== -->
+    <main class="max-w-5xl w-full mx-auto my-auto flex-1 flex flex-col justify-center py-2">
+
+        <!-- ==========================================
+             MODO 1: TOCAR UNIDADES (ULTRA LIMPIO)
+             ========================================== -->
+        <section id="tab-1-content" class="flex flex-col space-y-4">
+            
+            <!-- TARJETA DE EQUIVALENCIA (SOLO FRACCIÓN Y DECIMAL) -->
+            <div class="bg-white rounded-3xl p-4 sm:p-5 border-2 border-slate-200/90 shadow-sm flex items-center justify-center">
+                <div class="flex items-center justify-center gap-4 sm:gap-8">
+                    
+                    <!-- Fracción -->
+                    <div class="flex flex-col items-center justify-center bg-sky-50 border-2 border-sky-300 rounded-2xl px-6 py-3 min-w-[100px] sm:min-w-[130px]">
+                        <div class="inline-flex flex-col items-center leading-none">
+                            <span id="m1-num" class="text-3xl sm:text-5xl font-black text-sky-700">3</span>
+                            <div class="w-12 sm:w-16 h-1 bg-sky-700 rounded-full my-1"></div>
+                            <span class="text-2xl sm:text-4xl font-black text-sky-700">10</span>
+                        </div>
+                    </div>
+
+                    <span class="text-3xl sm:text-5xl font-black text-slate-300">=</span>
+
+                    <!-- Decimal (Unidad Violeta, Coma y Décimo Verde) -->
+                    <div class="flex flex-col items-center justify-center bg-slate-50 border-2 border-slate-200 rounded-2xl px-6 py-3 min-w-[100px] sm:min-w-[130px]">
+                        <div class="text-3xl sm:text-5xl font-black leading-none flex items-center">
+                            <span id="m1-dec-w" class="text-purple-600">0</span>
+                            <span class="text-emerald-500 font-black">,</span>
+                            <span id="m1-dec-t" class="text-emerald-500">3</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ÁREA PRINCIPAL: UNIDADES EN GRILLA 5x2 -->
+            <div class="bg-white rounded-3xl p-4 sm:p-6 border-2 border-slate-200/90 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- Lista de Unidades 5x2 -->
+                <div id="m1-bars-container" class="flex-1 flex flex-wrap gap-4 items-center justify-center w-full">
+                    <!-- Dynamic rendering via JS (5x2 grids) -->
+                </div>
+
+                <!-- Botones Laterales (+ y ↺) -->
+                <div class="flex md:flex-col items-center justify-center gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-4 w-full md:w-auto">
+                    
+                    <!-- Botón + Agregar Unidad -->
+                    <button id="m1-add-btn" onclick="m1AddUnit()" title="Agregar unidad"
+                        class="btn-tactile bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-700 shadow-emerald-700 border-b-4 font-black p-3 sm:p-4 rounded-2xl flex items-center justify-center gap-2 flex-1 md:flex-none md:w-28 text-center">
+                        <span class="text-2xl sm:text-3xl leading-none">+</span>
+                        <span class="text-xs font-extrabold uppercase">Unidad</span>
+                    </button>
+
+                    <!-- Botón Reiniciar ↺ -->
+                    <button onclick="m1Reset()" title="Reiniciar a 1 unidad"
+                        class="btn-tactile bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-400 shadow-slate-400 border-b-4 font-black p-3 sm:p-4 rounded-2xl flex items-center justify-center gap-1.5 flex-1 md:flex-none md:w-28 text-center">
+                        <span class="text-xl sm:text-2xl">↺</span>
+                        <span class="text-xs font-extrabold uppercase">Limpiar</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             MODO 2: RECTA Y BARRAS (EXPLORADOR CONTINUO)
+             ========================================== -->
+        <section id="tab-2-content" class="hidden flex flex-col space-y-4">
+            
+            <!-- TARJETA DE EQUIVALENCIA (SOLO FRACCIÓN Y DECIMAL) -->
+            <div class="bg-white rounded-3xl p-4 border-2 border-slate-200/90 shadow-sm flex items-center justify-center">
+                <div class="flex items-center justify-center gap-4 sm:gap-8">
+                    
+                    <!-- Fracción -->
+                    <div class="flex flex-col items-center justify-center bg-sky-50 border-2 border-sky-300 rounded-2xl px-5 py-2.5 min-w-[90px] sm:min-w-[120px]">
+                        <div class="inline-flex flex-col items-center leading-none">
+                            <span id="m2-num" class="text-2xl sm:text-4xl font-black text-sky-700">14</span>
+                            <div class="w-10 sm:w-14 h-1 bg-sky-700 rounded-full my-0.5"></div>
+                            <span class="text-xl sm:text-3xl font-black text-sky-700">10</span>
+                        </div>
+                    </div>
+
+                    <span class="text-2xl sm:text-4xl font-black text-slate-300">=</span>
+
+                    <!-- Decimal (Unidad Violeta, Coma y Décimo Verde) -->
+                    <div class="flex flex-col items-center justify-center bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-2.5 min-w-[90px] sm:min-w-[120px]">
+                        <div class="text-2xl sm:text-4xl font-black leading-none flex items-center">
+                            <span id="m2-dec-w" class="text-purple-600">1</span>
+                            <span class="text-emerald-500 font-black">,</span>
+                            <span id="m2-dec-t" class="text-emerald-500">4</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- LAS 5 CUADRÍCULAS 5x2 -->
+            <div class="bg-white rounded-3xl p-4 border-2 border-slate-200/90 shadow-sm flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+                <div id="m2-grids-container" class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 w-full">
+                    <!-- Dynamic 5x2 grids rendered via JS -->
+                </div>
+            </div>
+
+            <!-- RECTA NUMÉRICA REAL (0 A 5,0) Y CONTROLES NUMÉRICOS -->
+            <div class="bg-white rounded-3xl p-4 sm:p-5 border-2 border-slate-200/90 shadow-sm space-y-3">
+                
+                <!-- Continuous Line -->
+                <div class="relative w-full pt-2 pb-8 px-4 select-none touch-none" id="numberline-wrapper">
+                    <div class="relative w-full h-3.5 bg-slate-200 rounded-full flex items-center">
+                        <div id="nl-progress" class="h-full bg-gradient-to-r from-emerald-400 via-sky-400 to-violet-500 rounded-full transition-all duration-75" style="width: 28%;"></div>
+
+                        <!-- Draggable Bulb Handle -->
+                        <div id="nl-handle" class="nl-handle absolute top-1/2 -translate-y-1/2 -ml-5 w-10 h-10 bg-amber-400 border-2 border-amber-500 rounded-full shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing z-20">
+                            <svg class="w-6 h-6 text-amber-950" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7zm-3 18a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Ticks & Numbers -->
+                    <div id="nl-ticks-container" class="relative w-full h-7 mt-1">
+                        <!-- Generated via JS -->
+                    </div>
+                </div>
+
+                <!-- CONTROLES NUMÉRICOS (-1, -0,1, ↺, +0,1, +1) -->
+                <div class="flex items-center justify-between gap-1.5 sm:gap-2 pt-1 border-t border-slate-100">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <button onclick="m2Adjust(-10)" class="btn-tactile bg-rose-500 hover:bg-rose-400 text-white border-rose-700 shadow-rose-700 border-b-4 font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm">
+                            -1
+                        </button>
+                        <button onclick="m2Adjust(-1)" class="btn-tactile bg-rose-400 hover:bg-rose-300 text-white border-rose-600 shadow-rose-600 border-b-4 font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm">
+                            -0,1
+                        </button>
+                    </div>
+
+                    <button onclick="m2Set(0)" class="btn-tactile bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-400 shadow-slate-400 border-b-4 font-black px-3 py-2 rounded-xl text-xs sm:text-sm">
+                        ↺
+                    </button>
+
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <button onclick="m2Adjust(1)" class="btn-tactile bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-700 shadow-emerald-700 border-b-4 font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm">
+                            +0,1
+                        </button>
+                        <button onclick="m2Adjust(10)" class="btn-tactile bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-800 shadow-emerald-800 border-b-4 font-extrabold px-3 py-2 rounded-xl text-xs sm:text-sm">
+                            +1
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             MODO 3: DESAFÍO (QUIZ)
+             ========================================== -->
+        <section id="tab-3-content" class="hidden flex flex-col space-y-4">
+            
+            <div class="bg-white rounded-3xl p-4 sm:p-6 border-2 border-violet-200 shadow-sm space-y-4">
+                
+                <!-- Score Counter -->
+                <div class="flex items-center justify-end border-b border-slate-100 pb-2">
+                    <div class="flex items-center space-x-2 bg-amber-400 text-amber-950 font-black px-4 py-1.5 rounded-2xl border border-amber-500 shadow-xs">
+                        <span class="text-xl">⭐</span>
+                        <span id="quiz-streak" class="text-xl leading-none">0</span>
+                    </div>
+                </div>
+
+                <!-- Quiz Card -->
+                <div class="bg-violet-50 border-2 border-violet-200 rounded-3xl p-5 text-center space-y-3">
+                    
+                    <!-- Question Display -->
+                    <div class="flex items-center justify-center">
+                        <div class="inline-flex flex-col items-center bg-white px-8 py-3 rounded-2xl border-2 border-violet-300 shadow-xs">
+                            <span id="quiz-question-num" class="text-4xl sm:text-5xl font-black text-violet-600">24</span>
+                            <div class="w-16 h-1 bg-violet-600 rounded-full my-0.5"></div>
+                            <span class="text-3xl sm:text-4xl font-black text-violet-600">10</span>
+                        </div>
+                    </div>
+
+                    <!-- Hint Button -->
+                    <div>
+                        <button onclick="toggleQuizHint()" class="inline-flex items-center space-x-1 text-xs font-extrabold text-violet-700 bg-violet-100 hover:bg-violet-200 px-3 py-1.5 rounded-xl transition-all">
+                            <span>💡 Pista</span>
+                        </button>
+                    </div>
+
+                    <!-- Visual Hint Box -->
+                    <div id="quiz-hint-box" class="hidden bg-white p-4 rounded-2xl border border-violet-300">
+                        <div id="quiz-hint-grids" class="flex flex-wrap items-center justify-center gap-3"></div>
+                    </div>
+                </div>
+
+                <!-- 4 Options -->
+                <div id="quiz-options-grid" class="grid grid-cols-2 gap-3">
+                    <!-- Dynamic option buttons -->
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="quiz-feedback" class="hidden rounded-2xl p-3 border-2 text-center">
+                    <!-- Dynamic feedback -->
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ==========================================
+             MODO 4: CONSTRUIR (PINTAR Y ESCRIBIR)
+             ========================================== -->
+        <section id="tab-4-content" class="hidden flex flex-col space-y-4">
+            
+            <!-- TARJETA DE CONSIGNA Y ESCRITURA AL LADO -->
+            <div class="bg-white rounded-3xl p-4 sm:p-5 border-2 border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                
+                <!-- Consigna + Input Equivalente -->
+                <div class="flex items-center justify-center gap-3 sm:gap-6 flex-1">
+                    
+                    <!-- Dato Dado (Fracción o Decimal) -->
+                    <div id="m4-given-box" class="flex flex-col items-center justify-center bg-sky-50 border-2 border-sky-300 rounded-2xl px-6 py-3 min-w-[100px] sm:min-w-[130px]">
+                        <!-- Renderizado dinámico -->
+                    </div>
+
+                    <span class="text-3xl sm:text-5xl font-black text-slate-300">=</span>
+
+                    <!-- Dato a Escribir (Decimal o Fracción) -->
+                    <div id="m4-input-box" class="flex flex-col items-center justify-center bg-amber-50 border-2 border-amber-300 rounded-2xl px-5 py-3 min-w-[115px] sm:min-w-[145px]">
+                        <!-- Input dinámico -->
+                    </div>
+
+                </div>
+
+                <!-- Estrella de puntos + Botón Comprobar -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="flex items-center space-x-1.5 bg-amber-400 text-amber-950 font-black px-3.5 py-2 rounded-2xl border border-amber-500 shadow-xs">
+                        <span class="text-lg">⭐</span>
+                        <span id="m4-score" class="text-lg leading-none">0</span>
+                    </div>
+
+                    <button id="m4-check-btn" onclick="m4CheckAnswer()"
+                        class="btn-tactile bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-700 shadow-emerald-700 border-b-4 font-black px-5 py-3 rounded-2xl text-sm sm:text-base">
+                        ✓ Comprobar
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- FEEDBACK BANNER MODO 4 -->
+            <div id="m4-feedback" class="hidden rounded-2xl p-3 border-2 text-center flex items-center justify-between">
+                <!-- Dynamic feedback -->
+            </div>
+
+            <!-- ÁREA PRINCIPAL: UNIDADES EN GRILLA 5x2 PARA PINTAR -->
+            <div class="bg-white rounded-3xl p-4 sm:p-6 border-2 border-slate-200/90 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- Lista de Unidades 5x2 -->
+                <div id="m4-bars-container" class="flex-1 flex flex-wrap gap-4 items-center justify-center w-full">
+                    <!-- Dynamic rendering via JS (5x2 grids) -->
+                </div>
+
+                <!-- Botones Laterales (+ y ↺) -->
+                <div class="flex md:flex-col items-center justify-center gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 md:border-l border-slate-100 md:pl-4 w-full md:w-auto">
+                    
+                    <button id="m4-add-btn" onclick="m4AddUnit()" title="Agregar unidad"
+                        class="btn-tactile bg-emerald-500 hover:bg-emerald-400 text-white border-emerald-700 shadow-emerald-700 border-b-4 font-black p-3 sm:p-4 rounded-2xl flex items-center justify-center gap-2 flex-1 md:flex-none md:w-28 text-center">
+                        <span class="text-2xl sm:text-3xl leading-none">+</span>
+                        <span class="text-xs font-extrabold uppercase">Unidad</span>
+                    </button>
+
+                    <button onclick="m4ResetGrid()" title="Limpiar cuadrícula"
+                        class="btn-tactile bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-400 shadow-slate-400 border-b-4 font-black p-3 sm:p-4 rounded-2xl flex items-center justify-center gap-1.5 flex-1 md:flex-none md:w-28 text-center">
+                        <span class="text-xl sm:text-2xl">↺</span>
+                        <span class="text-xs font-extrabold uppercase">Limpiar</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER MINIMALISTA -->
+    <footer class="max-w-5xl w-full mx-auto text-center text-[11px] text-slate-400 font-medium py-1 shrink-0">
+        Explorador de Décimos – Brillar*UY
+    </footer>
+
+
+    <!-- ==========================================
+         LÓGICA JAVASCRIPT
+         ========================================== -->
+    <script>
+        /* Shared Audio Synthesizer */
+        let isAudioMuted = false;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+        }
+
+        function playSound(type) {
+            if (isAudioMuted) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'pop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.exponentialRampToValueAtTime(640, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'complete') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'success') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(freq, now + i * 0.05);
+                        g.gain.setValueAtTime(0.15, now + i * 0.05);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.2);
+                        o.start(now + i * 0.05);
+                        o.stop(now + i * 0.05 + 0.2);
+                    });
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                }
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            isAudioMuted = !isAudioMuted;
+            document.getElementById('icon-sound-on').classList.toggle('hidden', isAudioMuted);
+            document.getElementById('icon-sound-off').classList.toggle('hidden', !isAudioMuted);
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function formatSpanishDecimal(valInTenths) {
+            const whole = Math.floor(valInTenths / 10);
+            const tenth = valInTenths % 10;
+            return `${whole},${tenth}`;
+        }
+
+        function triggerConfetti() {
+            try { confetti({ particleCount: 40, spread: 55, origin: { y: 0.6 } }); } catch(e) {}
+        }
+
+        /* Tab Switching */
+        function switchTab(tabIndex) {
+            playSound('pop');
+            [1, 2, 3, 4].forEach(idx => {
+                const content = document.getElementById(`tab-${idx}-content`);
+                const btn = document.getElementById(`tab-btn-${idx}`);
+                if (idx === tabIndex) {
+                    content.classList.remove('hidden');
+                    btn.className = "px-3 sm:px-4 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all bg-sky-500 text-white shadow-xs flex items-center gap-1.5";
+                } else {
+                    content.classList.add('hidden');
+                    btn.className = "px-3 sm:px-4 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-600 hover:bg-slate-200/60 flex items-center gap-1.5";
+                }
+            });
+
+            if (tabIndex === 3 && quizOptions.length === 0) {
+                generateQuizQuestion();
+            }
+            if (tabIndex === 4 && !m4Initialized) {
+                m4NewChallenge();
+            }
+        }
+
+        /* Shared Helper: Create a 5x2 Unit Grid */
+        function create5x2GridElement(filledCount, onCellClick = null) {
+            const isFull = filledCount === 10;
+            const gridOuter = document.createElement('div');
+            gridOuter.className = `w-32 sm:w-40 h-16 sm:h-20 rounded-2xl grid grid-cols-5 grid-rows-2 border-4 transition-all shadow-xs overflow-hidden ${
+                isFull
+                ? 'border-purple-600 bg-purple-600'
+                : 'border-slate-300 bg-slate-300'
+            }`;
+
+            for (let c = 0; c < 10; c++) {
+                const isFilled = c < filledCount;
+                const cellEl = onCellClick ? document.createElement('button') : document.createElement('div');
+                
+                if (onCellClick) {
+                    cellEl.onclick = () => onCellClick(c);
+                }
+
+                cellEl.className = `w-full h-full grid-cell border-[0.5px] border-slate-200/60 transition-all ${
+                    isFull
+                    ? 'bg-purple-600'
+                    : (isFilled ? 'bg-emerald-500' : 'bg-white' + (onCellClick ? ' hover:bg-slate-100' : ''))
+                }`;
+                gridOuter.appendChild(cellEl);
+            }
+
+            return gridOuter;
+        }
+
+
+        /* ==========================================
+           MODE 1: TOCAR UNIDADES (5x2 GRID MODE)
+           ========================================== */
+        let m1Units = [
+            Array(10).fill(false) // Starts with 1 unit bar
+        ];
+
+        function m1AddUnit() {
+            playSound('pop');
+            if (m1Units.length < 5) {
+                m1Units.push(Array(10).fill(false));
+                renderM1();
+            }
+        }
+
+        function m1Reset() {
+            playSound('pop');
+            m1Units = [Array(10).fill(false)];
+            renderM1();
+        }
+
+        function m1ToggleCell(unitIndex, cellIndex) {
+            m1Units[unitIndex][cellIndex] = !m1Units[unitIndex][cellIndex];
+            
+            const isFullNow = m1Units[unitIndex].every(Boolean);
+            if (isFullNow) {
+                playSound('complete');
+            } else {
+                playSound('pop');
+            }
+
+            renderM1();
+        }
+
+        function renderM1() {
+            let totalFilled = 0;
+            m1Units.forEach(u => u.forEach(c => { if (c) totalFilled++; }));
+
+            const whole = Math.floor(totalFilled / 10);
+            const tenth = totalFilled % 10;
+
+            // Update Header Values (Unidad en violeta, décimo en verde)
+            document.getElementById('m1-num').innerText = totalFilled;
+            document.getElementById('m1-dec-w').innerText = whole;
+            document.getElementById('m1-dec-t').innerText = tenth;
+
+            // Enable/Disable + button
+            const addBtn = document.getElementById('m1-add-btn');
+            if (m1Units.length >= 5) {
+                addBtn.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                addBtn.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            // Render Units as 5x2 Grids
+            const container = document.getElementById('m1-bars-container');
+            container.innerHTML = '';
+
+            m1Units.forEach((unitArray, uIdx) => {
+                const isFull = unitArray.every(Boolean);
+
+                // 5x2 Unit Container (Outer thick border, clean edges)
+                const gridOuter = document.createElement('div');
+                gridOuter.className = `w-44 sm:w-52 h-24 sm:h-28 rounded-2xl grid grid-cols-5 grid-rows-2 border-4 transition-all shadow-xs overflow-hidden ${
+                    isFull
+                    ? 'border-purple-600 bg-purple-600'
+                    : 'border-slate-300 bg-slate-300'
+                }`;
+
+                for (let cIdx = 0; cIdx < 10; cIdx++) {
+                    const isFilled = unitArray[cIdx];
+
+                    const cellBtn = document.createElement('button');
+                    cellBtn.onclick = () => m1ToggleCell(uIdx, cIdx);
+
+                    cellBtn.className = `w-full h-full grid-cell border-[0.5px] border-slate-200/60 transition-all ${
+                        isFull
+                        ? (isFilled ? 'bg-purple-600' : 'bg-white')
+                        : (isFilled ? 'bg-emerald-500' : 'bg-white hover:bg-slate-100')
+                    }`;
+
+                    gridOuter.appendChild(cellBtn);
+                }
+
+                container.appendChild(gridOuter);
+            });
+        }
+
+
+        /* ==========================================
+           MODE 2: RECTA NUMÉRICA Y UNIDADES 5x2
+           ========================================== */
+        let m2Value = 14; // Default 14 tenths = 1,4
+
+        function m2Adjust(delta) {
+            playSound('pop');
+            m2Set(m2Value + delta);
+        }
+
+        function m2Set(val) {
+            m2Value = Math.max(0, Math.min(50, val));
+            renderM2();
+        }
+
+        function renderM2() {
+            const whole = Math.floor(m2Value / 10);
+            const tenth = m2Value % 10;
+
+            // Math Display (Unidad en violeta, décimo en verde)
+            document.getElementById('m2-num').innerText = m2Value;
+            document.getElementById('m2-dec-w').innerText = whole;
+            document.getElementById('m2-dec-t').innerText = tenth;
+
+            // Render 5 Stacked 5x2 Grids
+            renderM2Grids(whole, tenth);
+
+            // Update Number Line
+            const percent = (m2Value / 50) * 100;
+            document.getElementById('nl-progress').style.width = `${percent}%`;
+            document.getElementById('nl-handle').style.left = `${percent}%`;
+        }
+
+        function renderM2Grids(whole, tenth) {
+            const container = document.getElementById('m2-grids-container');
+            container.innerHTML = '';
+
+            for (let u = 0; u < 5; u++) {
+                const isWholeCompleted = u < whole;
+                const isCurrentPartial = u === whole;
+                const filledInGrid = isWholeCompleted ? 10 : (isCurrentPartial ? tenth : 0);
+
+                const gridElem = create5x2GridElement(filledInGrid, (cIdx) => {
+                    playSound('pop');
+                    const targetVal = u * 10 + cIdx + 1;
+                    m2Set(targetVal === m2Value ? targetVal - 1 : targetVal);
+                });
+
+                container.appendChild(gridElem);
+            }
+        }
+
+        /* Number Line Ticks & Dragging */
+        function initNumberLineTicks() {
+            const container = document.getElementById('nl-ticks-container');
+            container.innerHTML = '';
+
+            for (let i = 0; i <= 50; i++) {
+                const percent = (i / 50) * 100;
+                const isMajor = i % 10 === 0;
+
+                const tick = document.createElement('div');
+                tick.style.left = `${percent}%`;
+
+                if (isMajor) {
+                    tick.className = "absolute top-0 -ml-0.5 w-1 h-3.5 bg-slate-700 rounded-full";
+                    
+                    const label = document.createElement('span');
+                    label.className = "absolute top-4 -ml-2.5 w-5 text-center text-sm font-black text-slate-800";
+                    label.innerText = i / 10;
+                    tick.appendChild(label);
+                } else {
+                    tick.className = "absolute top-0 -ml-[0.5px] w-[1px] h-2 bg-slate-400";
+                }
+
+                container.appendChild(tick);
+            }
+        }
+
+        let isDraggingNL = false;
+        function setupNumberLineDragging() {
+            const wrapper = document.getElementById('numberline-wrapper');
+
+            function getValFromEvent(e) {
+                const rect = wrapper.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+                return Math.round((offsetX / rect.width) * 50);
+            }
+
+            wrapper.addEventListener('pointerdown', (e) => {
+                isDraggingNL = true;
+                m2Set(getValFromEvent(e));
+                playSound('pop');
+            });
+
+            window.addEventListener('pointermove', (e) => {
+                if (!isDraggingNL) return;
+                const newVal = getValFromEvent(e);
+                if (newVal !== m2Value) m2Set(newVal);
+            });
+
+            window.addEventListener('pointerup', () => { isDraggingNL = false; });
+        }
+
+
+        /* ==========================================
+           MODE 3: DESAFÍO (QUIZ)
+           ========================================== */
+        let quizTarget = 24;
+        let quizOptions = [];
+        let quizStreak = 0;
+        let quizAnswered = false;
+
+        function generateQuizQuestion() {
+            quizAnswered = false;
+            quizTarget = Math.floor(Math.random() * 39) + 11;
+            const correctAnswer = formatSpanishDecimal(quizTarget);
+
+            const whole = Math.floor(quizTarget / 10);
+            const tenth = quizTarget % 10;
+
+            const distractors = new Set();
+            distractors.add(`${tenth},${whole}`);
+            distractors.add(`0,${quizTarget}`);
+            distractors.add(formatSpanishDecimal(quizTarget + 10 <= 50 ? quizTarget + 10 : quizTarget - 10));
+
+            const opts = [correctAnswer];
+            distractors.forEach(d => { if (d !== correctAnswer && opts.length < 4) opts.push(d); });
+
+            while (opts.length < 4) {
+                const rand = Math.floor(Math.random() * 45) + 5;
+                const d = formatSpanishDecimal(rand);
+                if (!opts.includes(d)) opts.push(d);
+            }
+
+            quizOptions = opts.sort(() => Math.random() - 0.5);
+
+            document.getElementById('quiz-question-num').innerText = quizTarget;
+            document.getElementById('quiz-hint-box').classList.add('hidden');
+            document.getElementById('quiz-feedback').classList.add('hidden');
+
+            renderQuizGrid();
+        }
+
+        function toggleQuizHint() {
+            playSound('pop');
+            const hintBox = document.getElementById('quiz-hint-box');
+            if (hintBox.classList.contains('hidden')) {
+                hintBox.classList.remove('hidden');
+                renderQuizHintGrids();
+            } else {
+                hintBox.classList.add('hidden');
+            }
+        }
+
+        function renderQuizHintGrids() {
+            const container = document.getElementById('quiz-hint-grids');
+            container.innerHTML = '';
+
+            const whole = Math.floor(quizTarget / 10);
+            const tenth = quizTarget % 10;
+            const totalGridsNeeded = Math.ceil(quizTarget / 10);
+
+            for (let b = 0; b < totalGridsNeeded; b++) {
+                const isFull = b < whole;
+                const count = isFull ? 10 : tenth;
+                const gridElem = create5x2GridElement(count);
+                container.appendChild(gridElem);
+            }
+        }
+
+        function renderQuizGrid() {
+            const grid = document.getElementById('quiz-options-grid');
+            grid.innerHTML = '';
+
+            quizOptions.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectQuizOption(opt);
+                btn.className = "btn-tactile bg-white hover:bg-violet-50 text-slate-800 border-violet-200 border-b-4 font-black text-2xl sm:text-4xl py-4 rounded-2xl border-2 shadow-xs flex items-center justify-center transition-all";
+                btn.innerText = opt;
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectQuizOption(selectedOpt) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const correctAnswer = formatSpanishDecimal(quizTarget);
+            const isCorrect = selectedOpt === correctAnswer;
+            const feedbackBox = document.getElementById('quiz-feedback');
+            feedbackBox.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSound('success');
+                triggerConfetti();
+                quizStreak++;
+                document.getElementById('quiz-streak').innerText = quizStreak;
+
+                feedbackBox.className = "rounded-2xl p-3 border-2 bg-emerald-50 border-emerald-400 text-emerald-950 flex items-center justify-between";
+                feedbackBox.innerHTML = `
+                    <span class="font-black text-lg text-emerald-800">¡Correcto! ${correctAnswer}</span>
+                    <button onclick="generateQuizQuestion()" class="btn-tactile bg-violet-600 hover:bg-violet-500 text-white font-black px-4 py-1.5 rounded-xl text-xs border-b-4 border-violet-800">
+                        ▶ Siguiente
+                    </button>
+                `;
+            } else {
+                playSound('error');
+                quizStreak = 0;
+                document.getElementById('quiz-streak').innerText = 0;
+
+                feedbackBox.className = "rounded-2xl p-3 border-2 bg-rose-50 border-rose-300 text-rose-950 flex items-center justify-between";
+                feedbackBox.innerHTML = `
+                    <span class="font-bold text-sm text-rose-800">${quizTarget}/10 = <strong>${correctAnswer}</strong></span>
+                    <button onclick="generateQuizQuestion()" class="btn-tactile bg-slate-700 hover:bg-slate-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs border-b-4 border-slate-900">
+                        🔄
+                    </button>
+                `;
+            }
+        }
+
+
+        /* ==========================================
+           MODE 4: CONSTRUIR (PINTAR + ESCRIBIR)
+           ========================================== */
+        let m4Initialized = false;
+        let m4Target = 16;          // Valor objetivo en décimos (ej: 16 -> 16/10 o 1,6)
+        let m4GivenType = 'fraction'; // 'fraction' (pide decimal) o 'decimal' (pide fracción)
+        let m4Units = [Array(10).fill(false)];
+        let m4Score = 0;
+        let m4Solved = false;
+
+        function m4NewChallenge() {
+            m4Initialized = true;
+            m4Solved = false;
+            m4Target = Math.floor(Math.random() * 39) + 11; // 11 a 49 décimos
+            m4GivenType = Math.random() < 0.5 ? 'fraction' : 'decimal';
+            m4Units = [Array(10).fill(false)];
+
+            document.getElementById('m4-feedback').classList.add('hidden');
+            const checkBtn = document.getElementById('m4-check-btn');
+            checkBtn.classList.remove('opacity-40', 'pointer-events-none');
+
+            const whole = Math.floor(m4Target / 10);
+            const tenth = m4Target % 10;
+
+            const givenBox = document.getElementById('m4-given-box');
+            const inputBox = document.getElementById('m4-input-box');
+
+            if (m4GivenType === 'fraction') {
+                // Se da la fracción -> el alumno pinta y escribe el decimal
+                givenBox.className = "flex flex-col items-center justify-center bg-sky-50 border-2 border-sky-300 rounded-2xl px-6 py-3 min-w-[100px] sm:min-w-[130px]";
+                givenBox.innerHTML = `
+                    <div class="inline-flex flex-col items-center leading-none">
+                        <span class="text-3xl sm:text-5xl font-black text-sky-700">${m4Target}</span>
+                        <div class="w-12 sm:w-16 h-1 bg-sky-700 rounded-full my-1"></div>
+                        <span class="text-2xl sm:text-4xl font-black text-sky-700">10</span>
+                    </div>
+                `;
+
+                inputBox.className = "flex flex-col items-center justify-center bg-amber-50 border-2 border-amber-300 rounded-2xl px-4 py-3 min-w-[125px] sm:min-w-[155px]";
+                inputBox.innerHTML = `
+                    <input id="m4-user-input" type="text" inputmode="decimal" maxlength="4" placeholder="0,0"
+                        onkeydown="if(event.key==='Enter') m4CheckAnswer()"
+                        class="w-24 sm:w-28 text-center text-3xl sm:text-4xl font-black text-slate-800 bg-white border-2 border-amber-400 focus:border-amber-600 focus:outline-none rounded-xl py-1 shadow-inner" />
+                `;
+            } else {
+                // Se da el decimal -> el alumno pinta y escribe el numerador de la fracción
+                givenBox.className = "flex flex-col items-center justify-center bg-slate-50 border-2 border-slate-200 rounded-2xl px-6 py-3 min-w-[100px] sm:min-w-[130px]";
+                givenBox.innerHTML = `
+                    <div class="text-3xl sm:text-5xl font-black leading-none flex items-center">
+                        <span class="text-purple-600">${whole}</span>
+                        <span class="text-emerald-500 font-black">,</span>
+                        <span class="text-emerald-500">${tenth}</span>
+                    </div>
+                `;
+
+                inputBox.className = "flex flex-col items-center justify-center bg-amber-50 border-2 border-amber-300 rounded-2xl px-4 py-2.5 min-w-[125px] sm:min-w-[155px]";
+                inputBox.innerHTML = `
+                    <div class="inline-flex flex-col items-center leading-none">
+                        <input id="m4-user-input" type="text" inputmode="numeric" maxlength="2" placeholder="?"
+                            onkeydown="if(event.key==='Enter') m4CheckAnswer()"
+                            class="w-16 sm:w-20 text-center text-2xl sm:text-4xl font-black text-sky-700 bg-white border-2 border-amber-400 focus:border-amber-600 focus:outline-none rounded-xl py-0.5 shadow-inner" />
+                        <div class="w-14 sm:w-16 h-1 bg-sky-700 rounded-full my-1"></div>
+                        <span class="text-xl sm:text-3xl font-black text-sky-700">10</span>
+                    </div>
+                `;
+            }
+
+            renderM4();
+            setTimeout(() => {
+                const inp = document.getElementById('m4-user-input');
+                if (inp) inp.focus();
+            }, 50);
+        }
+
+        function m4AddUnit() {
+            playSound('pop');
+            if (m4Units.length < 5) {
+                m4Units.push(Array(10).fill(false));
+                renderM4();
+            }
+        }
+
+        function m4ResetGrid() {
+            playSound('pop');
+            m4Units = [Array(10).fill(false)];
+            renderM4();
+        }
+
+        function m4ToggleCell(unitIndex, cellIndex) {
+            if (m4Solved) return;
+            m4Units[unitIndex][cellIndex] = !m4Units[unitIndex][cellIndex];
+            const isFullNow = m4Units[unitIndex].every(Boolean);
+            playSound(isFullNow ? 'complete' : 'pop');
+            renderM4();
+        }
+
+        function renderM4() {
+            const addBtn = document.getElementById('m4-add-btn');
+            if (m4Units.length >= 5) {
+                addBtn.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                addBtn.classList.remove('opacity-40', 'pointer-events-none');
+            }
+
+            const container = document.getElementById('m4-bars-container');
+            container.innerHTML = '';
+
+            m4Units.forEach((unitArray, uIdx) => {
+                const isFull = unitArray.every(Boolean);
+
+                const gridOuter = document.createElement('div');
+                gridOuter.className = `w-44 sm:w-52 h-24 sm:h-28 rounded-2xl grid grid-cols-5 grid-rows-2 border-4 transition-all shadow-xs overflow-hidden ${
+                    isFull
+                    ? 'border-purple-600 bg-purple-600'
+                    : 'border-slate-300 bg-slate-300'
+                }`;
+
+                for (let cIdx = 0; cIdx < 10; cIdx++) {
+                    const isFilled = unitArray[cIdx];
+                    const cellBtn = document.createElement('button');
+                    cellBtn.onclick = () => m4ToggleCell(uIdx, cIdx);
+
+                    cellBtn.className = `w-full h-full grid-cell border-[0.5px] border-slate-200/60 transition-all ${
+                        isFull
+                        ? (isFilled ? 'bg-purple-600' : 'bg-white')
+                        : (isFilled ? 'bg-emerald-500' : 'bg-white hover:bg-slate-100')
+                    }`;
+
+                    gridOuter.appendChild(cellBtn);
+                }
+
+                container.appendChild(gridOuter);
+            });
+        }
+
+        function m4CheckAnswer() {
+            if (m4Solved) return;
+
+            // 1. Contar cuadros pintados
+            let paintedCount = 0;
+            m4Units.forEach(u => u.forEach(c => { if (c) paintedCount++; }));
+            const isPaintingCorrect = paintedCount === m4Target;
+
+            // 2. Validar número escrito
+            const inputEl = document.getElementById('m4-user-input');
+            const rawVal = (inputEl ? inputEl.value : '').trim().replace('.', ',');
+            let isTextCorrect = false;
+
+            if (m4GivenType === 'fraction') {
+                const expectedDecimal = formatSpanishDecimal(m4Target);
+                isTextCorrect = rawVal === expectedDecimal;
+            } else {
+                const parsedNum = parseInt(rawVal, 10);
+                isTextCorrect = !isNaN(parsedNum) && parsedNum === m4Target;
+            }
+
+            const feedbackBox = document.getElementById('m4-feedback');
+            feedbackBox.classList.remove('hidden');
+
+            if (isPaintingCorrect && isTextCorrect) {
+                m4Solved = true;
+                playSound('success');
+                triggerConfetti();
+                m4Score++;
+                document.getElementById('m4-score').innerText = m4Score;
+
+                const checkBtn = document.getElementById('m4-check-btn');
+                checkBtn.classList.add('opacity-40', 'pointer-events-none');
+
+                feedbackBox.className = "rounded-2xl p-3 border-2 bg-emerald-50 border-emerald-400 text-emerald-950 flex items-center justify-between";
+                feedbackBox.innerHTML = `
+                    <span class="font-black text-base sm:text-lg text-emerald-800">¡Excelente! ${m4Target}/10 = ${formatSpanishDecimal(m4Target)}</span>
+                    <button onclick="m4NewChallenge()" class="btn-tactile bg-sky-500 hover:bg-sky-400 text-white font-black px-4 py-1.5 rounded-xl text-xs sm:text-sm border-b-4 border-sky-700">
+                        ▶ Siguiente
+                    </button>
+                `;
+            } else {
+                playSound('error');
+                let hintMsg = '';
+                if (!isPaintingCorrect && !isTextCorrect) {
+                    hintMsg = `Revisa los cuadros pintados (llevas ${paintedCount}) y el número escrito.`;
+                } else if (!isPaintingCorrect) {
+                    hintMsg = `El número escrito está bien, pero pintaste ${paintedCount} décimos.`;
+                } else {
+                    hintMsg = `¡Los cuadros están perfectos! Revisa el número escrito al lado.`;
+                }
+
+                feedbackBox.className = "rounded-2xl p-3 border-2 bg-rose-50 border-rose-300 text-rose-900 flex items-center justify-center";
+                feedbackBox.innerHTML = `<span class="font-bold text-sm sm:text-base">${hintMsg}</span>`;
+            }
+        }
+
+
+        /* INITIALIZATION */
+        window.onload = function() {
+            renderM1();
+            initNumberLineTicks();
+            setupNumberLineDragging();
+            renderM2();
+        };
+    </script>
+</body>
+</html>
