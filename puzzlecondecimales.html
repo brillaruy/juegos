@@ -232,6 +232,8 @@
       border-radius: 20px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.12), inset 0 2px 6px rgba(0,0,0,0.2);
       flex-shrink: 0;
+      overflow: hidden;
+      transition: gap 0.5s ease, padding 0.5s ease, transform 0.5s ease;
     }
     #jugador1 .cuadricula { background-color: #0369a1; }
     #jugador2 .cuadricula { background-color: #be123c; }
@@ -242,6 +244,18 @@
       overflow: hidden;
       background-repeat: no-repeat;
       background-color: #1e293b;
+      transition: border-radius 0.5s ease;
+    }
+
+    /* Estado completado: une todas las piezas sin líneas divisorias */
+    .cuadricula.completa {
+      gap: 0px !important;
+      padding: 0px !important;
+      transform: scale(1.02);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+    }
+    .cuadricula.completa .celda {
+      border-radius: 0px !important;
     }
 
     .tapa-operacion {
@@ -382,7 +396,7 @@
       box-shadow: 0 4px 0 #9f1239, 0 6px 10px rgba(225, 29, 72, 0.28);
     }
 
-    /* Pantalla de Victoria */
+    /* Pantalla de Victoria con fotografía completa */
     #pantalla-victoria {
       display: none;
       position: fixed;
@@ -400,37 +414,55 @@
     .tarjeta-victoria {
       background: white;
       color: #1e293b;
-      padding: 35px 50px;
+      padding: 26px 40px 30px 40px;
       border-radius: 32px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       border: 6px solid #facc15;
       animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      max-width: 600px;
+      max-width: 580px;
+      width: 95%;
     }
     @keyframes popIn {
       from { transform: scale(0.7); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
     .tarjeta-victoria h1 {
-      font-size: 2.8rem;
-      margin: 0 0 10px 0;
+      font-size: 2.5rem;
+      margin: 0 0 12px 0;
       color: #0284c7;
     }
+    .marco-foto-ganador {
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 4 / 3;
+      margin: 0 auto 12px auto;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 4px solid #e2e8f0;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+      background-color: #1e293b;
+    }
+    .marco-foto-ganador img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
     .tarjeta-victoria p {
-      font-size: 1.35rem;
-      margin: 0 0 28px 0;
-      color: #475569;
-      font-weight: 600;
+      font-size: 1.3rem;
+      margin: 0 0 22px 0;
+      color: #334155;
+      font-weight: 700;
     }
     .acciones-victoria {
       display: flex;
-      gap: 16px;
+      gap: 14px;
       justify-content: center;
       flex-wrap: wrap;
     }
     .btn-victoria {
-      padding: 15px 32px;
-      font-size: 1.35rem;
+      padding: 13px 28px;
+      font-size: 1.25rem;
       font-weight: 700;
       border: none;
       border-radius: 50px;
@@ -498,42 +530,22 @@
   <!-- BOMBILLA MASCOTA CON ETIQUETA Brillar*UY -->
   <div class="mascota-central" title="Brillar*UY">
     <svg viewBox="0 0 220 260" xmlns="http://www.w3.org/2000/svg">
-      <!-- Piernas -->
       <path d="M98,215 L98,242 L84,242" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M122,215 L122,242 L136,242" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-
-      <!-- Brazos saludando -->
       <path d="M48,132 Q25,132 18,118" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
       <path d="M18,118 L12,110 M18,118 L22,108 M18,118 L10,122" fill="none" stroke="#3b1d14" stroke-width="4.5" stroke-linecap="round"/>
-
       <path d="M172,132 Q195,132 202,118" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
       <path d="M202,118 L208,110 M202,118 L198,108 M202,118 L210,122" fill="none" stroke="#3b1d14" stroke-width="4.5" stroke-linecap="round"/>
-
-      <!-- Cuerpo de cristal amarillo -->
       <path d="M110,14 C56,14 26,54 26,96 C26,128 48,144 58,162 C64,173 66,182 68,188 L152,188 C154,182 156,173 162,162 C172,144 194,128 194,96 C194,54 164,14 110,14 Z" fill="#f7df38"/>
-
-      <!-- Sombra suave derecha -->
       <path d="M148,26 C174,42 186,70 186,96 C186,125 166,141 156,159 C150,170 148,180 146,188 L152,188 C154,182 156,173 162,162 C172,144 194,128 194,96 C194,64 176,38 148,26 Z" fill="#e6c822"/>
-
-      <!-- Brillos blancos izquierda -->
       <ellipse cx="52" cy="64" rx="11" ry="20" transform="rotate(24 52 64)" fill="#ffffff"/>
       <circle cx="42" cy="96" r="7.5" fill="#ffffff"/>
-
-      <!-- Filamento blanco interior -->
       <path d="M104,188 L104,160 C104,146 86,146 86,158 C86,168 104,166 110,166 C116,166 134,168 134,158 C134,146 116,146 116,160 L116,188" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round"/>
-
-      <!-- Ojitos felices cerrados -->
       <path d="M68,108 Q77,118 86,108" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
       <path d="M134,108 Q143,118 152,108" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
-
-      <!-- Sonrisa -->
       <path d="M101,116 Q110,130 119,116" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
-
-      <!-- Mejillas sonrojadas -->
       <ellipse cx="74" cy="124" rx="11" ry="7" fill="#f26d52"/>
       <ellipse cx="146" cy="124" rx="11" ry="7" fill="#f26d52"/>
-
-      <!-- Casquillo metálico gris -->
       <rect x="70" y="185" width="80" height="11" rx="5.5" fill="#9fb6bd"/>
       <rect x="66" y="195" width="88" height="11" rx="5.5" fill="#829ca4"/>
       <rect x="72" y="205" width="76" height="11" rx="5.5" fill="#9fb6bd"/>
@@ -553,13 +565,16 @@
   </div>
 </div>
 
-<!-- MODAL DE VICTORIA -->
+<!-- MODAL DE VICTORIA CON FOTOGRAFÍA COMPLETA -->
 <div id="pantalla-victoria">
   <div class="tarjeta-victoria">
     <h1 id="texto-ganador">¡Ganó el Jugador 1! 🏆</h1>
-    <p id="subtitulo-ganador">¡Descubriste toda la fotografía!</p>
+    <div class="marco-foto-ganador">
+      <img id="imagen-ganador" src="" alt="Lugar descubierto">
+    </div>
+    <p id="subtitulo-ganador">📍 Descubriste: Torre Eiffel, París</p>
     <div class="acciones-victoria">
-      <button class="btn-victoria" id="btn-reiniciar" onclick="iniciarJuego()">Jugar otra vez</button>
+      <button class="btn-victoria" id="btn-reiniciar" onclick="iniciarJuego(true)">Jugar otra vez</button>
       <button class="btn-victoria" id="btn-cambiar-nivel" onclick="volverAlMenu()">Cambiar dificultad</button>
     </div>
   </div>
@@ -574,7 +589,7 @@
   let aciertos = { 1: 0, 2: 0 };
   let juegoTerminado = true;
   let juegoIniciado = false;
-  let lugaresAsignados = { 1: "", 2: "" };
+  let lugaresAsignados = { 1: null, 2: null };
 
   // Banco de 30 lugares famosos del mundo
   const LUGARES_MUNDO = [
@@ -610,12 +625,10 @@
     { nombre: "Times Square, Nueva York", url: "https://images.unsplash.com/photo-1534430480872-3498386e7856?auto=format&fit=crop&w=900&q=80" }
   ];
 
-  // Cola de índices sin repetir mientras la página siga abierta
   let colaImagenes = [];
   let fotosActuales = [null, null];
 
   function obtenerDosLugaresSinRepetir() {
-    // Si quedan menos de 2 imágenes disponibles, rellenar y barajar todo el mazo de 30
     if (colaImagenes.length < 2) {
       const todosLosIndices = LUGARES_MUNDO.map((_, i) => i);
       colaImagenes = mezclar(todosLosIndices);
@@ -711,8 +724,9 @@
     const areaFichas = document.getElementById(`fichas${jugador}`);
     
     cuadricula.innerHTML = '';
+    cuadricula.classList.remove('completa');
     areaFichas.innerHTML = '';
-    lugaresAsignados[jugador] = lugarObj.nombre;
+    lugaresAsignados[jugador] = lugarObj;
 
     const operaciones = generarOperaciones();
 
@@ -851,7 +865,10 @@
 
           if (aciertos[jugador] === TOTAL_CELDAS) {
             juegoTerminado = true;
-            setTimeout(() => finalizarJuego(jugador), 750);
+            // Quita las líneas divisorias de la cuadrícula ganadora para unir la foto
+            document.getElementById(`cuadricula${jugador}`).classList.add('completa');
+            // Espera 2 segundos para apreciar la imagen unida antes de mostrar el modal
+            setTimeout(() => finalizarJuego(jugador), 2000);
           }
         }
       }
@@ -868,9 +885,13 @@
   function finalizarJuego(ganador) {
     const titulo = document.getElementById('texto-ganador');
     const subtitulo = document.getElementById('subtitulo-ganador');
+    const imgGanador = document.getElementById('imagen-ganador');
+    const lugar = lugaresAsignados[ganador];
+
     titulo.textContent = `¡Ganó el Jugador ${ganador}! 🏆`;
     titulo.style.color = ganador === 1 ? '#0284c7' : '#e11d48';
-    subtitulo.textContent = `📍 Descubriste: ${lugaresAsignados[ganador]}`;
+    imgGanador.src = lugar.url;
+    subtitulo.textContent = `📍 Descubriste: ${lugar.nombre}`;
     document.getElementById('pantalla-victoria').style.display = 'flex';
   }
 
