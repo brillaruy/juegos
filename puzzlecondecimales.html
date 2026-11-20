@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Fracciones y Decimales - Brillar*UY</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Fredoka', 'Segoe UI', Tahoma, sans-serif;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
+      background-color: #f8fafc;
+    }
+
+    /* BARRA DE CONTROLES SUPERIORES EN SU PROPIA FRANJA */
+    .controles-globales {
+      position: fixed;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1100;
+      display: flex;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 5px 14px;
+      border-radius: 50px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+      border: 2px solid #cbd5e1;
+      height: 40px;
+      align-items: center;
+    }
+    .btn-top {
+      border: none;
+      border-radius: 30px;
+      padding: 4px 14px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.1s ease, filter 0.15s ease;
+    }
+    .btn-top:hover {
+      filter: brightness(0.95);
+    }
+    .btn-top:active {
+      transform: scale(0.94);
+    }
+    #btn-top-inicio {
+      background-color: #fef08a;
+      color: #854d0e;
+      display: none;
+    }
+    #btn-top-fullscreen {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    /* PANTALLA INICIAL DE SELECCIÓN DE DIFICULTAD */
+    #pantalla-inicio {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: linear-gradient(135deg, #bae6fd 0%, #fbcfe8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .tarjeta-inicio {
+      background: white;
+      padding: 40px 50px 30px 50px;
+      border-radius: 36px;
+      text-align: center;
+      max-width: 680px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+      border: 6px solid #ffffff;
+    }
+    .tarjeta-inicio h1 {
+      font-size: 2.6rem;
+      margin: 0 0 10px 0;
+      color: #0369a1;
+    }
+    .tarjeta-inicio p {
+      font-size: 1.35rem;
+      color: #64748b;
+      margin: 0 0 32px 0;
+    }
+    .botones-nivel {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-nivel {
+      flex: 1;
+      min-width: 230px;
+      padding: 24px 20px;
+      border: none;
+      border-radius: 26px;
+      cursor: pointer;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .btn-nivel:hover {
+      filter: brightness(1.05);
+    }
+    .btn-nivel:active {
+      transform: translateY(5px);
+    }
+    .btn-facil {
+      background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+      box-shadow: 0 7px 0 #15803d, 0 12px 24px rgba(22, 163, 74, 0.3);
+    }
+    .btn-dificil {
+      background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+      box-shadow: 0 7px 0 #9a3412, 0 12px 24px rgba(234, 88, 12, 0.3);
+    }
+    .nivel-titulo {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .nivel-desc {
+      font-size: 1.15rem;
+      opacity: 0.95;
+      background: rgba(0,0,0,0.15);
+      padding: 4px 14px;
+      border-radius: 20px;
+    }
+    .firma-inicio {
+      margin-top: 26px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+
+    /* CONTENEDOR PRINCIPAL DEL JUEGO */
+    #contenedor-juego {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .zona-jugador {
+      flex: 1;
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 56px 18px 12px 18px;
+    }
+
+    #jugador1 {
+      background-color: #e0f4ff;
+      background-image: radial-gradient(#bce6ff 2px, transparent 2px);
+      background-size: 24px 24px;
+      border-right: 5px dashed #7cc4fa;
+    }
+    #jugador2 {
+      background-color: #fff0f5;
+      background-image: radial-gradient(#ffd1e1 2px, transparent 2px);
+      background-size: 24px 24px;
+    }
+
+    .cabecera {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 6px 14px;
+      border-radius: 50px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      flex-shrink: 0;
+    }
+    .nombre-jugador {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #jugador1 .nombre-jugador { color: #0284c7; }
+    #jugador2 .nombre-jugador { color: #e11d48; }
+
+    .etiqueta-nivel {
+      font-size: 0.85rem;
+      padding: 2px 9px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .contador-piezas {
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+      color: white;
+    }
+    #jugador1 .contador-piezas { background-color: #0ea5e9; }
+    #jugador2 .contador-piezas { background-color: #f43f5e; }
+
+    /* Marco del rompecabezas */
+    .cuadricula {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 4px;
+      height: 56%;
+      width: 100%;
+      padding: 7px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12), inset 0 2px 6px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+    #jugador1 .cuadricula { background-color: #0369a1; }
+    #jugador2 .cuadricula { background-color: #be123c; }
+
+    .celda {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background-repeat: no-repeat;
+      background-color: #1e293b;
+    }
+
+    .tapa-operacion {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.08);
+      transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #jugador1 .tapa-operacion {
+      color: #0369a1;
+      border: 2px solid #bae6fd;
+    }
+    #jugador2 .tapa-operacion {
+      color: #be123c;
+      border: 2px solid #fecdd3;
+    }
+
+    /* Estilo de fracción vertical (numerador / 10) */
+    .fraccion {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.02;
+      font-size: 1.38rem;
+    }
+    .fraccion .num {
+      padding: 0 8px 2px 8px;
+      border-bottom: 3px solid currentColor;
+      min-width: 34px;
+      text-align: center;
+    }
+    .fraccion .den {
+      padding-top: 2px;
+    }
+
+    .celda.resuelta .tapa-operacion {
+      opacity: 0;
+      transform: scale(1.2) rotate(3deg);
+      pointer-events: none;
+    }
+
+    /* Área inferior compacta donde descansan las fichas */
+    .area-fichas {
+      flex: 1;
+      position: relative;
+      margin-top: 10px;
+      border-radius: 18px;
+      background-color: rgba(255, 255, 255, 0.6);
+      border: 2px dashed rgba(0, 0, 0, 0.12);
+    }
+
+    /* MASCOTA CENTRAL CON MARCA Brillar*UY */
+    .mascota-central {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 55%, #fef9c3 100%);
+      border: 4px solid #facc15;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18), 0 0 0 3px #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      pointer-events: none;
+      animation: flotarSuave 3s ease-in-out infinite;
+    }
+    .mascota-central svg {
+      width: 80%;
+      height: 80%;
+      margin-bottom: 8px;
+      overflow: visible;
+    }
+    .etiqueta-marca {
+      position: absolute;
+      bottom: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+      color: #422006;
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 2px 12px;
+      border-radius: 20px;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    @keyframes flotarSuave {
+      0%, 100% { transform: translateX(-50%) translateY(0px); }
+      50% { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    .ficha {
+      width: 68px;
+      height: 44px;
+      border-radius: 13px;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.32rem;
+      font-weight: 700;
+      color: white;
+      cursor: grab;
+      touch-action: none;
+      z-index: 10;
+      transition: transform 0.15s ease;
+    }
+    .ficha.volviendo {
+      transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s;
+    }
+    .ficha.arrastrando {
+      cursor: grabbing;
+      transform: scale(1.2) rotate(0deg) !important;
+      z-index: 100;
+      filter: brightness(1.06);
+    }
+    .ficha-j1 {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 0 #0369a1, 0 6px 10px rgba(2, 132, 199, 0.28);
+    }
+    .ficha-j2 {
+      background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+      border: 2px solid #ffffff;
+      box-shadow: 0 4px 0 #9f1239, 0 6px 10px rgba(225, 29, 72, 0.28);
+    }
+
+    /* Pantalla de Victoria */
+    #pantalla-victoria {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .tarjeta-victoria {
+      background: white;
+      color: #1e293b;
+      padding: 35px 50px;
+      border-radius: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border: 6px solid #facc15;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-width: 600px;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .tarjeta-victoria h1 {
+      font-size: 2.8rem;
+      margin: 0 0 10px 0;
+      color: #0284c7;
+    }
+    .tarjeta-victoria p {
+      font-size: 1.35rem;
+      margin: 0 0 28px 0;
+      color: #475569;
+      font-weight: 600;
+    }
+    .acciones-victoria {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-victoria {
+      padding: 15px 32px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .btn-victoria:active {
+      transform: translateY(4px);
+    }
+    #btn-reiniciar {
+      background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+      color: #422006;
+      box-shadow: 0 6px 0 #a16207, 0 10px 20px rgba(0,0,0,0.2);
+    }
+    #btn-cambiar-nivel {
+      background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
+      color: #334155;
+      box-shadow: 0 6px 0 #94a3b8, 0 10px 20px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+
+<!-- CONTROLES SUPERIORES GLOBALES -->
+<div class="controles-globales">
+  <button class="btn-top" id="btn-top-inicio" onclick="volverAlMenu()" title="Volver a elegir dificultad">
+    🏠 Inicio
+  </button>
+  <button class="btn-top" id="btn-top-fullscreen" onclick="alternarPantallaCompleta()" title="Activar o salir de pantalla completa">
+    ⛶ Pantalla completa
+  </button>
+</div>
+
+<!-- PANTALLA INICIAL DE SELECCIÓN DE NIVEL -->
+<div id="pantalla-inicio">
+  <div class="tarjeta-inicio">
+    <h1>🌍 Fracciones y Decimales</h1>
+    <p>Elijan el nivel de dificultad para comenzar a jugar:</p>
+    <div class="botones-nivel">
+      <button class="btn-nivel btn-facil" onclick="seleccionarDificultad(10)">
+        <span class="nivel-titulo">🟢 Fácil</span>
+        <span class="nivel-desc">Fracciones 1/10 al 10/10</span>
+      </button>
+      <button class="btn-nivel btn-dificil" onclick="seleccionarDificultad(50)">
+        <span class="nivel-titulo">🔴 Difícil</span>
+        <span class="nivel-desc">Fracciones 1/10 al 50/10</span>
+      </button>
+    </div>
+    <div class="firma-inicio">💡 Brillar*UY</div>
+  </div>
+</div>
+
+<!-- TABLERO DE JUEGO -->
+<div id="contenedor-juego">
+  <!-- JUGADOR 1 -->
+  <div class="zona-jugador" id="jugador1">
+    <div class="cabecera">
+      <span class="nombre-jugador">🔵 Jugador 1 <span class="etiqueta-nivel" id="badge-nivel-1">1/10 al 10/10</span></span>
+      <span class="contador-piezas">⭐ <span id="puntos1">0</span> / 12</span>
+    </div>
+    <div class="cuadricula" id="cuadricula1"></div>
+    <div class="area-fichas" id="fichas1"></div>
+  </div>
+
+  <!-- BOMBILLA MASCOTA CON ETIQUETA Brillar*UY -->
+  <div class="mascota-central" title="Brillar*UY">
+    <svg viewBox="0 0 220 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- Piernas -->
+      <path d="M98,215 L98,242 L84,242" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M122,215 L122,242 L136,242" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <!-- Brazos saludando -->
+      <path d="M48,132 Q25,132 18,118" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
+      <path d="M18,118 L12,110 M18,118 L22,108 M18,118 L10,122" fill="none" stroke="#3b1d14" stroke-width="4.5" stroke-linecap="round"/>
+
+      <path d="M172,132 Q195,132 202,118" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
+      <path d="M202,118 L208,110 M202,118 L198,108 M202,118 L210,122" fill="none" stroke="#3b1d14" stroke-width="4.5" stroke-linecap="round"/>
+
+      <!-- Cuerpo de cristal amarillo -->
+      <path d="M110,14 C56,14 26,54 26,96 C26,128 48,144 58,162 C64,173 66,182 68,188 L152,188 C154,182 156,173 162,162 C172,144 194,128 194,96 C194,54 164,14 110,14 Z" fill="#f7df38"/>
+
+      <!-- Sombra suave derecha -->
+      <path d="M148,26 C174,42 186,70 186,96 C186,125 166,141 156,159 C150,170 148,180 146,188 L152,188 C154,182 156,173 162,162 C172,144 194,128 194,96 C194,64 176,38 148,26 Z" fill="#e6c822"/>
+
+      <!-- Brillos blancos izquierda -->
+      <ellipse cx="52" cy="64" rx="11" ry="20" transform="rotate(24 52 64)" fill="#ffffff"/>
+      <circle cx="42" cy="96" r="7.5" fill="#ffffff"/>
+
+      <!-- Filamento blanco interior -->
+      <path d="M104,188 L104,160 C104,146 86,146 86,158 C86,168 104,166 110,166 C116,166 134,168 134,158 C134,146 116,146 116,160 L116,188" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round"/>
+
+      <!-- Ojitos felices cerrados -->
+      <path d="M68,108 Q77,118 86,108" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
+      <path d="M134,108 Q143,118 152,108" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
+
+      <!-- Sonrisa -->
+      <path d="M101,116 Q110,130 119,116" fill="none" stroke="#3b1d14" stroke-width="6" stroke-linecap="round"/>
+
+      <!-- Mejillas sonrojadas -->
+      <ellipse cx="74" cy="124" rx="11" ry="7" fill="#f26d52"/>
+      <ellipse cx="146" cy="124" rx="11" ry="7" fill="#f26d52"/>
+
+      <!-- Casquillo metálico gris -->
+      <rect x="70" y="185" width="80" height="11" rx="5.5" fill="#9fb6bd"/>
+      <rect x="66" y="195" width="88" height="11" rx="5.5" fill="#829ca4"/>
+      <rect x="72" y="205" width="76" height="11" rx="5.5" fill="#9fb6bd"/>
+      <path d="M88,216 L132,216 C128,225 92,225 88,216 Z" fill="#5c727a"/>
+    </svg>
+    <div class="etiqueta-marca">Brillar*UY</div>
+  </div>
+
+  <!-- JUGADOR 2 -->
+  <div class="zona-jugador" id="jugador2">
+    <div class="cabecera">
+      <span class="nombre-jugador">🔴 Jugador 2 <span class="etiqueta-nivel" id="badge-nivel-2">1/10 al 10/10</span></span>
+      <span class="contador-piezas">⭐ <span id="puntos2">0</span> / 12</span>
+    </div>
+    <div class="cuadricula" id="cuadricula2"></div>
+    <div class="area-fichas" id="fichas2"></div>
+  </div>
+</div>
+
+<!-- MODAL DE VICTORIA -->
+<div id="pantalla-victoria">
+  <div class="tarjeta-victoria">
+    <h1 id="texto-ganador">¡Ganó el Jugador 1! 🏆</h1>
+    <p id="subtitulo-ganador">¡Descubriste toda la fotografía!</p>
+    <div class="acciones-victoria">
+      <button class="btn-victoria" id="btn-reiniciar" onclick="iniciarJuego()">Jugar otra vez</button>
+      <button class="btn-victoria" id="btn-cambiar-nivel" onclick="volverAlMenu()">Cambiar dificultad</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const COLS = 4;
+  const ROWS = 3;
+  const TOTAL_CELDAS = COLS * ROWS; // 12 piezas
+
+  let maxNumerador = 10;
+  let aciertos = { 1: 0, 2: 0 };
+  let juegoTerminado = true;
+  let juegoIniciado = false;
+  let lugaresAsignados = { 1: "", 2: "" };
+
+  // Banco de 30 lugares famosos del mundo
+  const LUGARES_MUNDO = [
+    { nombre: "Torre Eiffel, París", url: "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Taj Mahal, India", url: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Coliseo Romano, Italia", url: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Machu Picchu, Perú", url: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Pirámides de Giza, Egipto", url: "https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Estadio de Fútbol Iluminado", url: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Gran Muralla China", url: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Cristo Redentor, Río de Janeiro", url: "https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Estatua de la Libertad, Nueva York", url: "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Big Ben y Parlamento, Londres", url: "https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Puente Golden Gate, San Francisco", url: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Ópera de Sídney, Australia", url: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Chichén Itzá, México", url: "https://images.unsplash.com/photo-1518638150340-f706e86654de?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Petra, Jordania", url: "https://images.unsplash.com/photo-1579606032821-4e6161c81bd3?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Sagrada Familia, Barcelona", url: "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Estadio Camp Nou / Arena Europea", url: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Monte Fuji, Japón", url: "https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Acrópolis de Atenas, Grecia", url: "https://images.unsplash.com/photo-1555993539-1732b0258235?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Torre Inclinada de Pisa, Italia", url: "https://images.unsplash.com/photo-1543429776-2782fc8e1acd?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Cataratas del Niágara", url: "https://images.unsplash.com/photo-1489447068241-b3490214e879?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Canales de Venecia, Italia", url: "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Santorini, Grecia", url: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Stonehenge, Inglaterra", url: "https://images.unsplash.com/photo-1599833975787-5c143f373c30?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Burj Khalifa, Dubái", url: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Castillo de Neuschwanstein, Alemania", url: "https://images.unsplash.com/photo-1534313314376-a72289b6181e?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Angkor Wat, Camboya", url: "https://images.unsplash.com/photo-1540611025311-01df3cef54b5?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Puente de la Torre, Londres", url: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Estadio de Fútbol Mundialista", url: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "La Alhambra, Granada", url: "https://images.unsplash.com/photo-1591122947157-26bad3a117d2?auto=format&fit=crop&w=900&q=80" },
+    { nombre: "Times Square, Nueva York", url: "https://images.unsplash.com/photo-1534430480872-3498386e7856?auto=format&fit=crop&w=900&q=80" }
+  ];
+
+  // Cola de índices sin repetir mientras la página siga abierta
+  let colaImagenes = [];
+  let fotosActuales = [null, null];
+
+  function obtenerDosLugaresSinRepetir() {
+    // Si quedan menos de 2 imágenes disponibles, rellenar y barajar todo el mazo de 30
+    if (colaImagenes.length < 2) {
+      const todosLosIndices = LUGARES_MUNDO.map((_, i) => i);
+      colaImagenes = mezclar(todosLosIndices);
+    }
+    const idx1 = colaImagenes.pop();
+    const idx2 = colaImagenes.pop();
+    return [LUGARES_MUNDO[idx1], LUGARES_MUNDO[idx2]];
+  }
+
+  function alternarPantallaCompleta() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn("No se pudo activar pantalla completa:", err);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('btn-top-fullscreen');
+    if (document.fullscreenElement) {
+      btn.textContent = '✕ Salir pantalla completa';
+    } else {
+      btn.textContent = '⛶ Pantalla completa';
+    }
+  });
+
+  function seleccionarDificultad(nivelMaximo) {
+    maxNumerador = nivelMaximo;
+    const textoNivel = `1/10 al ${maxNumerador}/10`;
+    document.getElementById('badge-nivel-1').textContent = textoNivel;
+    document.getElementById('badge-nivel-2').textContent = textoNivel;
+
+    document.getElementById('pantalla-inicio').style.display = 'none';
+    document.getElementById('btn-top-inicio').style.display = 'flex';
+    juegoIniciado = true;
+    iniciarJuego(true);
+  }
+
+  function volverAlMenu() {
+    juegoTerminado = true;
+    juegoIniciado = false;
+    document.getElementById('pantalla-victoria').style.display = 'none';
+    document.getElementById('btn-top-inicio').style.display = 'none';
+    document.getElementById('pantalla-inicio').style.display = 'flex';
+  }
+
+  function formatearOperacion(x) {
+    const entero = Math.floor(x / 10);
+    const decima = x % 10;
+    return {
+      numerador: x,
+      resultado: `${entero},${decima}`
+    };
+  }
+
+  function generarOperaciones() {
+    const numeradores = [];
+
+    if (maxNumerador <= TOTAL_CELDAS) {
+      for (let i = 1; i <= maxNumerador; i++) {
+        numeradores.push(i);
+      }
+      while (numeradores.length < TOTAL_CELDAS) {
+        const extra = Math.floor(Math.random() * maxNumerador) + 1;
+        numeradores.push(extra);
+      }
+      return mezclar(numeradores).map(formatearOperacion);
+    } else {
+      const usados = new Set();
+      while (usados.size < TOTAL_CELDAS) {
+        const x = Math.floor(Math.random() * maxNumerador) + 1;
+        usados.add(x);
+      }
+      return Array.from(usados).map(formatearOperacion);
+    }
+  }
+
+  function mezclar(array) {
+    const copia = [...array];
+    for (let i = copia.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+    }
+    return copia;
+  }
+
+  function configurarTablero(jugador, lugarObj) {
+    const cuadricula = document.getElementById(`cuadricula${jugador}`);
+    const areaFichas = document.getElementById(`fichas${jugador}`);
+    
+    cuadricula.innerHTML = '';
+    areaFichas.innerHTML = '';
+    lugaresAsignados[jugador] = lugarObj.nombre;
+
+    const operaciones = generarOperaciones();
+
+    operaciones.forEach((op, index) => {
+      const col = index % COLS;
+      const row = Math.floor(index / COLS);
+
+      const celda = document.createElement('div');
+      celda.classList.add('celda');
+      celda.dataset.resultado = op.resultado;
+
+      celda.style.backgroundImage = `url("${lugarObj.url}")`;
+      celda.style.backgroundSize = `${COLS * 100}% ${ROWS * 100}%`;
+      const posX = (col / (COLS - 1)) * 100;
+      const posY = (row / (ROWS - 1)) * 100;
+      celda.style.backgroundPosition = `${posX}% ${posY}%`;
+
+      const tapa = document.createElement('div');
+      tapa.classList.add('tapa-operacion');
+      tapa.innerHTML = `
+        <span class="fraccion">
+          <span class="num">${op.numerador}</span>
+          <span class="den">10</span>
+        </span>
+      `;
+
+      celda.appendChild(tapa);
+      cuadricula.appendChild(celda);
+    });
+
+    const operacionesMezcladas = mezclar(operaciones);
+    
+    requestAnimationFrame(() => {
+      const margenIzq = jugador === 2 ? 40 : 6;
+      const margenDer = jugador === 1 ? 40 : 6;
+
+      const anchoUtil = areaFichas.clientWidth - margenIzq - margenDer;
+      const altoArea = areaFichas.clientHeight;
+      const anchoCelda = anchoUtil / COLS;
+      const altoCelda = altoArea / ROWS;
+
+      operacionesMezcladas.forEach((op, index) => {
+        const ficha = document.createElement('div');
+        ficha.classList.add('ficha', `ficha-j${jugador}`);
+        ficha.textContent = op.resultado;
+        ficha.dataset.valor = op.resultado;
+
+        const col = index % COLS;
+        const row = Math.floor(index / COLS);
+        
+        const jitterX = (Math.random() - 0.5) * 8;
+        const jitterY = (Math.random() - 0.5) * 6;
+        const rotacion = (Math.random() - 0.5) * 8;
+
+        const baseX = margenIzq + col * anchoCelda + (anchoCelda - 68) / 2 + jitterX;
+        const posX = Math.max(margenIzq, Math.min(areaFichas.clientWidth - margenDer - 68, baseX));
+        const posY = Math.max(4, Math.min(altoArea - 48, row * altoCelda + (altoCelda - 44) / 2 + jitterY));
+
+        ficha.style.left = `${posX}px`;
+        ficha.style.top = `${posY}px`;
+        ficha.style.transform = `rotate(${rotacion}deg)`;
+        ficha.dataset.homeX = posX;
+        ficha.dataset.homeY = posY;
+        ficha.dataset.rotacion = rotacion;
+
+        habilitarArrastre(ficha, jugador);
+        areaFichas.appendChild(ficha);
+      });
+    });
+  }
+
+  function habilitarArrastre(ficha, jugador) {
+    let offsetX = 0;
+    let offsetY = 0;
+
+    ficha.addEventListener('pointerdown', (e) => {
+      if (juegoTerminado) return;
+      ficha.setPointerCapture(e.pointerId);
+      ficha.classList.remove('volviendo');
+      ficha.classList.add('arrastrando');
+
+      const rect = ficha.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+    });
+
+    ficha.addEventListener('pointermove', (e) => {
+      if (!ficha.hasPointerCapture(e.pointerId) || juegoTerminado) return;
+
+      const zona = document.getElementById(`jugador${jugador}`);
+      const areaFichas = document.getElementById(`fichas${jugador}`);
+      const zonaRect = zona.getBoundingClientRect();
+      const areaRect = areaFichas.getBoundingClientRect();
+
+      let clientX = Math.max(zonaRect.left, Math.min(e.clientX, zonaRect.right - ficha.offsetWidth));
+      let clientY = Math.max(zonaRect.top, Math.min(e.clientY, zonaRect.bottom - ficha.offsetHeight));
+
+      ficha.style.left = `${clientX - areaRect.left}px`;
+      ficha.style.top = `${clientY - areaRect.top}px`;
+    });
+
+    ficha.addEventListener('pointerup', (e) => {
+      if (!ficha.hasPointerCapture(e.pointerId)) return;
+      ficha.releasePointerCapture(e.pointerId);
+      ficha.classList.remove('arrastrando');
+
+      verificarSoltar(ficha, jugador);
+    });
+  }
+
+  function verificarSoltar(ficha, jugador) {
+    const fichaRect = ficha.getBoundingClientRect();
+    const centroX = fichaRect.left + fichaRect.width / 2;
+    const centroY = fichaRect.top + fichaRect.height / 2;
+
+    const celdas = document.querySelectorAll(`#cuadricula${jugador} .celda:not(.resuelta)`);
+    let acerto = false;
+
+    celdas.forEach((celda) => {
+      if (acerto) return;
+      const celdaRect = celda.getBoundingClientRect();
+
+      if (
+        centroX >= celdaRect.left &&
+        centroX <= celdaRect.right &&
+        centroY >= celdaRect.top &&
+        centroY <= celdaRect.bottom
+      ) {
+        if (ficha.dataset.valor === celda.dataset.resultado) {
+          acerto = true;
+          celda.classList.add('resuelta');
+          ficha.remove();
+
+          aciertos[jugador]++;
+          document.getElementById(`puntos${jugador}`).textContent = aciertos[jugador];
+
+          if (aciertos[jugador] === TOTAL_CELDAS) {
+            juegoTerminado = true;
+            setTimeout(() => finalizarJuego(jugador), 750);
+          }
+        }
+      }
+    });
+
+    if (!acerto) {
+      ficha.classList.add('volviendo');
+      ficha.style.left = `${ficha.dataset.homeX}px`;
+      ficha.style.top = `${ficha.dataset.homeY}px`;
+      ficha.style.transform = `rotate(${ficha.dataset.rotacion}deg)`;
+    }
+  }
+
+  function finalizarJuego(ganador) {
+    const titulo = document.getElementById('texto-ganador');
+    const subtitulo = document.getElementById('subtitulo-ganador');
+    titulo.textContent = `¡Ganó el Jugador ${ganador}! 🏆`;
+    titulo.style.color = ganador === 1 ? '#0284c7' : '#e11d48';
+    subtitulo.textContent = `📍 Descubriste: ${lugaresAsignados[ganador]}`;
+    document.getElementById('pantalla-victoria').style.display = 'flex';
+  }
+
+  function iniciarJuego(nuevasFotos = true) {
+    if (!juegoIniciado) return;
+    juegoTerminado = false;
+    aciertos = { 1: 0, 2: 0 };
+    document.getElementById('puntos1').textContent = '0';
+    document.getElementById('puntos2').textContent = '0';
+    document.getElementById('pantalla-victoria').style.display = 'none';
+
+    if (nuevasFotos || !fotosActuales[0]) {
+      fotosActuales = obtenerDosLugaresSinRepetir();
+    }
+
+    configurarTablero(1, fotosActuales[0]);
+    configurarTablero(2, fotosActuales[1]);
+  }
+
+  window.addEventListener('resize', () => {
+    if (juegoIniciado && !juegoTerminado) {
+      iniciarJuego(false);
+    }
+  });
+</script>
+
+</body>
+</html>
