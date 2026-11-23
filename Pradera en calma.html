@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -32,7 +33,7 @@ button.pp:focus-visible{outline:2px solid var(--btn-ink);outline-offset:2px}
 .pz{position:fixed;top:calc(max(12px,env(safe-area-inset-top,0px)) + 62px);left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:999px;background:rgba(255,255,255,.6);color:var(--btn-ink);font:12px/1.4 system-ui,sans-serif;opacity:0;transition:opacity .5s;pointer-events:none}
 .pz.on{opacity:1}
 .np .modes{display:flex;gap:4px;margin-bottom:8px}
-.np .modes button{flex:1;height:26px;border:0;border-radius:13px;background:rgba(47,93,58,.12);color:inherit;font:inherit;cursor:pointer}
+.np .modes button{flex:1;height:26px;padding:0 4px;border:0;border-radius:13px;background:rgba(47,93,58,.12);color:inherit;font:inherit;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .np .modes button.on{background:var(--btn-ink);color:#fff}
 .np .msg{margin-top:4px;opacity:.85}
 .np input:disabled{opacity:.55}
@@ -66,7 +67,7 @@ button.pp:focus-visible{outline:2px solid var(--btn-ink);outline-offset:2px}
 @media (max-width:480px){.hud{left:max(14px,env(safe-area-inset-left,0px));transform:none}.pz{left:max(14px,env(safe-area-inset-left,0px));transform:none}}
 .np .lbl{font-weight:600;margin:2px 0 4px}
 .np .chips{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px}
-.np .chips button{height:26px;border:0;border-radius:13px;background:rgba(47,93,58,.12);color:inherit;font:inherit;cursor:pointer}
+.np .chips button{height:26px;padding:0 4px;border:0;border-radius:13px;background:rgba(47,93,58,.12);color:inherit;font:inherit;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .np .chips button.on{background:var(--btn-ink);color:#fff}
 @keyframes tw{0%,100%{opacity:.55}50%{opacity:1}}
 .tw{animation:tw 3.2s ease-in-out infinite}
@@ -1519,8 +1520,9 @@ function App(){
     micRef.current=null;
   };
   useEffect(()=>()=>stopMic(),[]);
+  const micFail=()=>{chooseJuego("viva");setMsg("No se pudo acceder al micrófono. La pradera continuará funcionando sin control de ruido.");};   // sin simulador: la pradera sigue sin sonido
   const startMic=async()=>{
-    setMicSt("pidiendo");
+    setMicSt("pidiendo"); setMsg("");
     try{
       if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw {name:"NotFoundError"};
       const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
@@ -1539,12 +1541,9 @@ function App(){
         if(++n%3===0) setVol(Math.round(sm));
       },60);
       micRef.current={stream,ctx,timer}; setMicSt("activo");
+      stream.getAudioTracks().forEach(t=>{t.onended=()=>{if(micRef.current&&micRef.current.stream===stream) micFail();};});
     }catch(err){
-      const nm=err&&err.name;
-      const text=(nm==="NotAllowedError"||nm==="SecurityError")?"Permiso de micrófono denegado o bloqueado. Se usa la simulación."
-        :(nm==="NotFoundError"||nm==="OverconstrainedError"||nm==="DevicesNotFoundError")?"No se encontró un micrófono. Se usa la simulación."
-        :"No se pudo usar el micrófono. Se usa la simulación.";
-      chooseMode("sim"); setMsg(text);
+      micFail();
     }
   };
   const chooseMode=m=>{
@@ -2038,6 +2037,7 @@ function App(){
         <div className="chips">{RITMOS.map(([m,t])=><button key={m} className={ritmo.m===m?"on":""} onClick={()=>chooseRitmo({...ritmo,m})}>{t}</button>)}</div>
         <div className="lbl">Control de ruido</div>
         <div className="modes"><button className={juego==="calma"?"on":""} onClick={()=>setRuido(true)}>Activado</button><button className={juego!=="calma"?"on":""} onClick={()=>setRuido(false)}>Desactivado</button></div>
+        {msg&&juego!=="calma"&&<div className="msg">{msg}</div>}
         {juego==="calma"&&<>
         <label>Tolerancia al ruido<b>{lim}</b>
           <input type="range" min="0" max="100" value={lim} onChange={e=>{const v=+e.target.value;setLim(v);limitRef.current=v;store.set("limite",v);}}/></label>
@@ -2077,3 +2077,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
+
+</body></html>
