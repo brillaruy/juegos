@@ -21,7 +21,7 @@
       height: 100%;
       overflow: hidden;
       touch-action: none;
-      background-color: #f8fafc;
+      background-color: #e0f4ff;
     }
 
     /* BARRA DE CONTROLES SUPERIORES EN SU PROPIA FRANJA */
@@ -69,7 +69,7 @@
       color: #0369a1;
     }
 
-    /* PANTALLA INICIAL DE SELECCIÓN DE DIFICULTAD */
+    /* PANTALLA INICIAL DE SELECCIÓN DE MODO Y DIFICULTAD */
     #pantalla-inicio {
       position: fixed;
       inset: 0;
@@ -82,24 +82,59 @@
     }
     .tarjeta-inicio {
       background: white;
-      padding: 40px 50px 30px 50px;
+      padding: 34px 46px 26px 46px;
       border-radius: 36px;
       text-align: center;
-      max-width: 680px;
+      max-width: 700px;
       width: 100%;
       box-shadow: 0 20px 45px rgba(0,0,0,0.18);
       border: 6px solid #ffffff;
     }
     .tarjeta-inicio h1 {
-      font-size: 2.6rem;
-      margin: 0 0 10px 0;
+      font-size: 2.5rem;
+      margin: 0 0 8px 0;
       color: #0369a1;
     }
-    .tarjeta-inicio p {
-      font-size: 1.35rem;
+    .subtitulo-inicio {
+      font-size: 1.2rem;
       color: #64748b;
-      margin: 0 0 32px 0;
+      margin: 0 0 20px 0;
+      font-weight: 600;
     }
+
+    /* Selector de Cantidad de Jugadores */
+    .selector-jugadores {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .btn-modo {
+      flex: 1;
+      max-width: 240px;
+      padding: 14px 18px;
+      border-radius: 22px;
+      border: 3px solid #cbd5e1;
+      background-color: #f8fafc;
+      color: #475569;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .btn-modo.activo {
+      background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+      border-color: #0284c7;
+      color: #0369a1;
+      box-shadow: 0 4px 0 #0284c7;
+      transform: translateY(-2px);
+    }
+
+    /* Botones de Dificultad */
     .botones-nivel {
       display: flex;
       gap: 24px;
@@ -109,7 +144,7 @@
     .btn-nivel {
       flex: 1;
       min-width: 230px;
-      padding: 24px 20px;
+      padding: 22px 20px;
       border: none;
       border-radius: 26px;
       cursor: pointer;
@@ -135,18 +170,18 @@
       box-shadow: 0 7px 0 #9a3412, 0 12px 24px rgba(234, 88, 12, 0.3);
     }
     .nivel-titulo {
-      font-size: 1.8rem;
+      font-size: 1.75rem;
       font-weight: 700;
     }
     .nivel-desc {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       opacity: 0.95;
       background: rgba(0,0,0,0.15);
       padding: 4px 14px;
       border-radius: 20px;
     }
     .firma-inicio {
-      margin-top: 26px;
+      margin-top: 24px;
       font-size: 1.05rem;
       font-weight: 700;
       color: #94a3b8;
@@ -159,6 +194,10 @@
       width: 100%;
       height: 100%;
       position: relative;
+      justify-content: center;
+      background-color: #e0f4ff;
+      background-image: radial-gradient(#bce6ff 2px, transparent 2px);
+      background-size: 24px 24px;
     }
     .zona-jugador {
       flex: 1;
@@ -179,6 +218,36 @@
       background-color: #fff0f5;
       background-image: radial-gradient(#ffd1e1 2px, transparent 2px);
       background-size: 24px 24px;
+    }
+
+    /* AJUSTES ESPECÍFICOS PARA MODO 1 JUGADOR */
+    #contenedor-juego.modo-un-jugador #jugador2 {
+      display: none;
+    }
+    #contenedor-juego.modo-un-jugador #jugador1 {
+      border-right: none;
+      max-width: 920px;
+      width: 100%;
+      padding: 56px 28px 16px 28px;
+    }
+    #contenedor-juego.modo-un-jugador .ficha {
+      width: 84px;
+      height: 48px;
+      font-size: 1.45rem;
+    }
+    #contenedor-juego.modo-un-jugador .fraccion {
+      font-size: 1.65rem;
+    }
+    #contenedor-juego.modo-un-jugador .mascota-central {
+      left: auto;
+      right: 22px;
+      bottom: 18px;
+      transform: none;
+      animation: flotarSuaveDerecha 3s ease-in-out infinite;
+    }
+    @keyframes flotarSuaveDerecha {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
     }
 
     .cabecera {
@@ -247,7 +316,6 @@
       transition: border-radius 0.5s ease;
     }
 
-    /* Estado completado: une todas las piezas sin líneas divisorias */
     .cuadricula.completa {
       gap: 0px !important;
       padding: 0px !important;
@@ -279,7 +347,6 @@
       border: 2px solid #fecdd3;
     }
 
-    /* Estilo de fracción vertical (numerador / 10) */
     .fraccion {
       display: inline-flex;
       flex-direction: column;
@@ -304,7 +371,7 @@
       pointer-events: none;
     }
 
-    /* Área inferior compacta donde descansan las fichas */
+    /* Área inferior donde descansan las fichas */
     .area-fichas {
       flex: 1;
       position: relative;
@@ -488,7 +555,7 @@
 
 <!-- CONTROLES SUPERIORES GLOBALES -->
 <div class="controles-globales">
-  <button class="btn-top" id="btn-top-inicio" onclick="volverAlMenu()" title="Volver a elegir dificultad">
+  <button class="btn-top" id="btn-top-inicio" onclick="volverAlMenu()" title="Volver a elegir modo y dificultad">
     🏠 Inicio
   </button>
   <button class="btn-top" id="btn-top-fullscreen" onclick="alternarPantallaCompleta()" title="Activar o salir de pantalla completa">
@@ -496,11 +563,22 @@
   </button>
 </div>
 
-<!-- PANTALLA INICIAL DE SELECCIÓN DE NIVEL -->
+<!-- PANTALLA INICIAL DE SELECCIÓN DE MODO Y NIVEL -->
 <div id="pantalla-inicio">
   <div class="tarjeta-inicio">
     <h1>🌍 Fracciones y Decimales</h1>
-    <p>Elijan el nivel de dificultad para comenzar a jugar:</p>
+    <p class="subtitulo-inicio">1. Elige cuántos jugadores participarán:</p>
+    
+    <div class="selector-jugadores">
+      <button class="btn-modo" id="btn-modo-1" onclick="elegirModoJugadores(1)">
+        👤 1 Jugador
+      </button>
+      <button class="btn-modo activo" id="btn-modo-2" onclick="elegirModoJugadores(2)">
+        👥 2 Jugadores
+      </button>
+    </div>
+
+    <p class="subtitulo-inicio">2. Elige la dificultad para empezar:</p>
     <div class="botones-nivel">
       <button class="btn-nivel btn-facil" onclick="seleccionarDificultad(10)">
         <span class="nivel-titulo">🟢 Fácil</span>
@@ -520,7 +598,7 @@
   <!-- JUGADOR 1 -->
   <div class="zona-jugador" id="jugador1">
     <div class="cabecera">
-      <span class="nombre-jugador">🔵 Jugador 1 <span class="etiqueta-nivel" id="badge-nivel-1">1/10 al 10/10</span></span>
+      <span class="nombre-jugador">🔵 <span id="titulo-j1">Jugador 1</span> <span class="etiqueta-nivel" id="badge-nivel-1">1/10 al 10/10</span></span>
       <span class="contador-piezas">⭐ <span id="puntos1">0</span> / 12</span>
     </div>
     <div class="cuadricula" id="cuadricula1"></div>
@@ -575,7 +653,7 @@
     <p id="subtitulo-ganador">📍 Descubriste: Torre Eiffel, París</p>
     <div class="acciones-victoria">
       <button class="btn-victoria" id="btn-reiniciar" onclick="iniciarJuego(true)">Jugar otra vez</button>
-      <button class="btn-victoria" id="btn-cambiar-nivel" onclick="volverAlMenu()">Cambiar dificultad</button>
+      <button class="btn-victoria" id="btn-cambiar-nivel" onclick="volverAlMenu()">Cambiar modo / nivel</button>
     </div>
   </div>
 </div>
@@ -585,6 +663,7 @@
   const ROWS = 3;
   const TOTAL_CELDAS = COLS * ROWS; // 12 piezas
 
+  let cantidadJugadores = 2; // 1 o 2
   let maxNumerador = 10;
   let aciertos = { 1: 0, 2: 0 };
   let juegoTerminado = true;
@@ -628,14 +707,29 @@
   let colaImagenes = [];
   let fotosActuales = [null, null];
 
-  function obtenerDosLugaresSinRepetir() {
-    if (colaImagenes.length < 2) {
+  function elegirModoJugadores(num) {
+    cantidadJugadores = num;
+    document.getElementById('btn-modo-1').classList.toggle('activo', num === 1);
+    document.getElementById('btn-modo-2').classList.toggle('activo', num === 2);
+
+    const contenedor = document.getElementById('contenedor-juego');
+    const tituloJ1 = document.getElementById('titulo-j1');
+
+    if (num === 1) {
+      contenedor.classList.add('modo-un-jugador');
+      tituloJ1.textContent = '1 Jugador';
+    } else {
+      contenedor.classList.remove('modo-un-jugador');
+      tituloJ1.textContent = 'Jugador 1';
+    }
+  }
+
+  function obtenerLugarSinRepetir() {
+    if (colaImagenes.length < 1) {
       const todosLosIndices = LUGARES_MUNDO.map((_, i) => i);
       colaImagenes = mezclar(todosLosIndices);
     }
-    const idx1 = colaImagenes.pop();
-    const idx2 = colaImagenes.pop();
-    return [LUGARES_MUNDO[idx1], LUGARES_MUNDO[idx2]];
+    return LUGARES_MUNDO[colaImagenes.pop()];
   }
 
   function alternarPantallaCompleta() {
@@ -760,8 +854,18 @@
     const operacionesMezcladas = mezclar(operaciones);
     
     requestAnimationFrame(() => {
-      const margenIzq = jugador === 2 ? 40 : 6;
-      const margenDer = jugador === 1 ? 40 : 6;
+      // En modo 1 jugador la mascota está a la derecha, por lo que dejamos margen derecho
+      let margenIzq = 6;
+      let margenDer = 6;
+      if (cantidadJugadores === 1) {
+        margenDer = 105;
+      } else {
+        margenIzq = jugador === 2 ? 40 : 6;
+        margenDer = jugador === 1 ? 40 : 6;
+      }
+
+      const anchoFicha = cantidadJugadores === 1 ? 84 : 68;
+      const altoFicha = cantidadJugadores === 1 ? 48 : 44;
 
       const anchoUtil = areaFichas.clientWidth - margenIzq - margenDer;
       const altoArea = areaFichas.clientHeight;
@@ -781,9 +885,9 @@
         const jitterY = (Math.random() - 0.5) * 6;
         const rotacion = (Math.random() - 0.5) * 8;
 
-        const baseX = margenIzq + col * anchoCelda + (anchoCelda - 68) / 2 + jitterX;
-        const posX = Math.max(margenIzq, Math.min(areaFichas.clientWidth - margenDer - 68, baseX));
-        const posY = Math.max(4, Math.min(altoArea - 48, row * altoCelda + (altoCelda - 44) / 2 + jitterY));
+        const baseX = margenIzq + col * anchoCelda + (anchoCelda - anchoFicha) / 2 + jitterX;
+        const posX = Math.max(margenIzq, Math.min(areaFichas.clientWidth - margenDer - anchoFicha, baseX));
+        const posY = Math.max(4, Math.min(altoArea - altoFicha - 4, row * altoCelda + (altoCelda - altoFicha) / 2 + jitterY));
 
         ficha.style.left = `${posX}px`;
         ficha.style.top = `${posY}px`;
@@ -865,9 +969,7 @@
 
           if (aciertos[jugador] === TOTAL_CELDAS) {
             juegoTerminado = true;
-            // Quita las líneas divisorias de la cuadrícula ganadora para unir la foto
             document.getElementById(`cuadricula${jugador}`).classList.add('completa');
-            // Espera 2 segundos para apreciar la imagen unida antes de mostrar el modal
             setTimeout(() => finalizarJuego(jugador), 2000);
           }
         }
@@ -888,8 +990,14 @@
     const imgGanador = document.getElementById('imagen-ganador');
     const lugar = lugaresAsignados[ganador];
 
-    titulo.textContent = `¡Ganó el Jugador ${ganador}! 🏆`;
-    titulo.style.color = ganador === 1 ? '#0284c7' : '#e11d48';
+    if (cantidadJugadores === 1) {
+      titulo.textContent = `¡Excelente trabajo! 🏆`;
+      titulo.style.color = '#0284c7';
+    } else {
+      titulo.textContent = `¡Ganó el Jugador ${ganador}! 🏆`;
+      titulo.style.color = ganador === 1 ? '#0284c7' : '#e11d48';
+    }
+
     imgGanador.src = lugar.url;
     subtitulo.textContent = `📍 Descubriste: ${lugar.nombre}`;
     document.getElementById('pantalla-victoria').style.display = 'flex';
@@ -904,11 +1012,16 @@
     document.getElementById('pantalla-victoria').style.display = 'none';
 
     if (nuevasFotos || !fotosActuales[0]) {
-      fotosActuales = obtenerDosLugaresSinRepetir();
+      fotosActuales[0] = obtenerLugarSinRepetir();
+      if (cantidadJugadores === 2) {
+        fotosActuales[1] = obtenerLugarSinRepetir();
+      }
     }
 
     configurarTablero(1, fotosActuales[0]);
-    configurarTablero(2, fotosActuales[1]);
+    if (cantidadJugadores === 2) {
+      configurarTablero(2, fotosActuales[1]);
+    }
   }
 
   window.addEventListener('resize', () => {
